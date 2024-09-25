@@ -4,12 +4,12 @@ import autoTable from 'jspdf-autotable'
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
-  }
-  
-  function maybeProcessGalleryCardNumber(cardNumber) {
+}
+
+function maybeProcessGalleryCardNumber(cardNumber) {
     const regex = /(?<=gg)0*/i;
     return cardNumber.replace(regex, '');
-  }
+}
 
 
 function ExportModal({ undeletedCardData, cardDatabase }) {
@@ -179,10 +179,17 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     }
     return <div>
         <h2>Export Decklist</h2>
-        <hr/>
-        <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding!</b></div>
-        <br />
-        <div><b className='error-text'>Especially for Pokémon versions</b></div>
+        <hr />
+        {totalCountValid ?
+            <>
+                <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding!</b></div>
+                <br />
+                <div><b className='error-text'>Especially for Pokémon versions</b></div>
+            </> :
+            <b>
+                <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
+            </b>
+        }
         <hr />
         <div>
             <div>
@@ -227,7 +234,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 Email Decklist
             </button></a>
         </div>
-    </div>;
+    </div >;
 }
 
 export default ExportModal;

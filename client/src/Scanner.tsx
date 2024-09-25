@@ -305,7 +305,7 @@ function Scanner({ cardDatabase }) {
                 )
             }</div>
             <div className='video-feed-sub-instructions'>{
-                    currentDetectedCardID == null ? 'Hold the text within the frame' : null
+                currentDetectedCardID == null ? 'Hold the text within the frame' : null
             }</div>
             {currentDetectedCardID != null ? <div className='detected-card-in-feed'>
                 <CardImageForID id={currentDetectedCardID} />
@@ -343,11 +343,6 @@ function Scanner({ cardDatabase }) {
             </div>
         </div> : null}
         {
-            totalCards == 60 ? <div>
-                <button onClick={() => setIsExportModalOpen(true)} className='export-modal-open-button success-text' disabled={totalCards != 60 && false}>Export</button>
-            </div> : null
-        }
-        {
             currentDetectedCardName == null ? <div>
                 <Select
                     options={cardNameOptions}
@@ -369,6 +364,9 @@ function Scanner({ cardDatabase }) {
             </div> : null
         }
         <div className='scans-feed-header'>
+            <div>
+                <button onClick={() => setIsExportModalOpen(true)} className={'export-modal-open-button' + (totalCards === 60 ? ' success-text' : '')} disabled={totalCards != 60 && false}>Export</button>
+            </div>
             <h3>Scanned Cards: {totalCards}</h3>
         </div>
         <div className='scans-feed'>
