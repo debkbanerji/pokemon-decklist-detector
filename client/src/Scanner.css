@@ -1,0 +1,255 @@
+body {
+    overflow-anchor: none;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+.video-feed-container {
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    border-radius: 5px;
+}
+
+.video-feed-viewport {
+    content: '';
+    position: absolute;
+    border-radius: 8px;
+    box-shadow: 0px 0px 0px 2000px rgba(0, 0, 0, 0.7);
+    background-size: cover;
+}
+
+.cancel-scan-button {
+    padding: 0.3em 0.6em;
+    font-size: 0.8em;
+    font-weight: 400;
+    color: red;
+    margin-right: 8px;
+}
+
+.detected-card-name {
+    top: 62%;
+    font-size: larger;
+    font-weight: bold;
+    color: white;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+}
+
+.detected-card-in-feed {
+    top: 2%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: 50%;
+    z-index: 1;
+    margin-bottom: 0;
+    border-radius: 10px;
+    box-shadow: 0px 0px 0px 2000px rgba(0, 0, 0, 0.7);
+}
+
+.detected-card-in-feed img {
+    display: block;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+}
+
+.video-feed-instructions {
+    top: 30%;
+    font-size: large;
+    font-weight: bold;
+    color: white;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+}
+
+.video-feed-sub-instructions {
+    top: 37%;
+    font-size: smaller;
+    color: grey;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+}
+
+.card-count-selector {
+    bottom: 8px;
+    font-size: large;
+    font-weight: bold;
+    color: white;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+    width: 80%;
+}
+
+.card-count-selector button {
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 2px;
+}
+
+.card-count-selector>div {
+    display: flex;
+    flex-direction: row;
+    margin-top: 4px;
+    overflow: auto;
+    width: 100;
+}
+
+.card-count-selector-instructions{
+    justify-content: center;
+}
+
+.card-count-selector-buttons-4 {
+    justify-content: center;
+}
+
+.card-count-selector-buttons-energy {
+    justify-content: left;
+}
+
+.video-feed {
+    width: 100%;
+    height: auto;
+    /* dumb hack to get rid of a buggy strip of grey at the bottom: */
+    /* (hopefully doesn't mess with cropping logic lol) */
+    margin-bottom: -5px;
+}
+
+.export-modal-open-button {
+    font-size: larger;
+    width: 95%;
+    margin-bottom: 10px;
+}
+
+.candidate-card-ids {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.candidate-card-ids>div {
+    width: calc(25% - 8px);
+    padding: 4px;
+}
+
+.select-name-manually-instructions {
+    text-align: left;
+    font-size: small;
+    margin-left: 35px;
+    color: #777
+}
+
+.select-name-manually-instructions>ul {
+    margin-top: 2px;
+    padding-left: 15px;
+}
+
+.scans-feed-header {
+    border-top: 0.5px solid;
+}
+
+.scans-feed {
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.scan-row {
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    border: solid 0.5px rgb(214, 217, 220);
+    border-radius: 5px;
+    margin-bottom: 12px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.scan-row-image {
+    width: 20%;
+    margin-right: 5px;
+}
+
+.scan-row-image>img {
+    width: 100%;
+    border-radius: 5px;
+}
+
+.scan-row-input {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.delete-and-count-button {
+    border-top: 0.5px solid;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: large;
+}
+
+.delete-button {
+    padding-right: 12px;
+    padding-left: 12px;
+    height: 30px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.set-info {
+    font-size: small;
+}
+
+.export-modal {
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.export-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 5px;
+}
