@@ -38,9 +38,6 @@ await tesseractWorker.setParameters({
     tessedit_pageseg_mode: PSM.SPARSE_TEXT
 });
 
-const VIDEO_WIDTH_PX = 512;
-const VIDEO_HEIGHT_PX = 512;
-
 function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     if (currentDetectedCardName == null && currentDetectedCardID == null) {
         // Detecting title
@@ -143,8 +140,6 @@ function Scanner({ cardDatabase }) {
                     'audio': false,
                     'video': {
                         facingMode: 'environment',
-                        height: { exact: VIDEO_HEIGHT_PX },
-                        width: { exact: VIDEO_WIDTH_PX },
                     },
                 })
                 .then((stream) => {
@@ -158,8 +153,6 @@ function Scanner({ cardDatabase }) {
                                     'video': {
                                         facingMode: 'environment',
                                         // reverse height/width because the OS was not kind the first time
-                                        height: { exact: VIDEO_WIDTH_PX },
-                                        width: { exact: VIDEO_HEIGHT_PX },
                                     },
                                 })
                                 .then((stream) => {
