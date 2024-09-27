@@ -338,7 +338,10 @@ function Scanner({ cardDatabase }) {
             <h3> Or, select the art directly:</h3>
             <div className='candidate-card-ids'>
                 {candidateCardIDs.map(id => {
-                    return <div onClick={() => setCurrentDetectedCardID(id)} key={id}><CardImageForID id={id} /></div>
+                    return <div onClick={() => {
+                        setCurrentDetectedCardID(id);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }} key={id}><CardImageForID id={id} /></div>
                 })}
             </div>
         </div> : null}
@@ -347,7 +350,10 @@ function Scanner({ cardDatabase }) {
                 <Select
                     options={cardNameOptions}
                     defaultValue={null}
-                    onChange={({ value }) => setCardNameWrapped(value)}
+                    onChange={({ value }) => {
+                        setCardNameWrapped(value);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     name={'manual-name-selector'}
                     className="name-selector"
                     placeholder="Card name not scanning? Select it manually"
