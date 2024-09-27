@@ -280,7 +280,13 @@ function Scanner({ cardDatabase }) {
     }
 
     return <div>
-        <h3>Deb's Dubious Decklist Detector</h3>
+        <h3 className="title">Deb's Dubious Decklist Detector</h3>
+        <div className="subtitle">
+          <small>
+            <span>Made with ♥</span> &bull;
+            <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank"> Source Code</a>
+          </small>
+        </div>
         <div>{errorMessage}</div>
         <div className="video-feed-container">
             <video className="video-feed" ref={videoRef}>Video stream not available.</video>

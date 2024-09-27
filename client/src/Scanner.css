@@ -6,6 +6,14 @@ h3 {
     margin-top: 0;
 }
 
+.title {
+    margin-bottom: 0;
+}
+
+.subtitle {
+    margin-bottom: 4px;
+}
+
 .video-feed-container {
     width: 90%;
     position: relative;
