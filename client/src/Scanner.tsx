@@ -7,6 +7,15 @@ import { createWorker, PSM } from 'tesseract.js';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
+const EDGE_CASE_REGEXES = [
+    [/(professor.*research)/i,'Professor\'s Research'],
+    [/(boss.*order)/i,'Boss\'s Orders'],
+    [/(professor turo)/i,'Professor Turo\'s Scenario'],
+    [/(professor sada)/i,'Professor Sada\'s Vitality'],
+    [/(ciphermaniac)/i,'Ciphermaniac\'s Codebreaking'],
+    [/(lono)/i,'Iono']
+]
+
 const BASIC_ENERGY_NAMES = [
     'Grass Energy',
     'Fire Energy',
@@ -192,6 +201,11 @@ function Scanner({ cardDatabase }) {
                     validCardNames.push(cardName);
                 }
             });
+            EDGE_CASE_REGEXES.forEach(edgeCase=>{
+                if (edgeCase[0].test(lowercaseText)) {
+                    validCardNames.push(edgeCase[1]);
+                }
+            })
             validCardNames.sort((a, b) => b.length - a.length); // longest first
             validCardNames = validCardNames.filter(name => name.toLocaleLowerCase() !== 'eri'); // Sorry Eri, you're just a frequent false positive :(
             // users will just have to enter this manually
