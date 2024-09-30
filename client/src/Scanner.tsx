@@ -367,6 +367,12 @@ function Scanner({ cardDatabase }) {
             <div className='video-feed-sub-instructions'>{
                 currentDetectedCardID == null ? 'Hold the text within the frame' : null
             }</div>
+            <div className='video-feed-lighting-instructions'>{
+                currentDetectedCardID == null ? <div>
+                    Avoid shadows if possible!
+                    <br />Well lit cards lead to easier scanning
+                </div> : null
+            }</div>
             {currentDetectedCardID != null ? <div className='detected-card-in-feed'>
                 <CardImageForID id={currentDetectedCardID} />
             </div> : null
@@ -419,8 +425,6 @@ function Scanner({ cardDatabase }) {
                     placeholder="Card name not scanning? Select it manually"
                 />
                 <div className='select-name-manually-instructions'>
-                    <b>Well lit cards lead to better results</b>
-                    <br />
                     Certain cards don't scan reliably:
                     <ul>
                         <li>Basic energies</li>

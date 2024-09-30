@@ -39,7 +39,7 @@ h3 {
 }
 
 .detected-card-name {
-    top: 62%;
+    top: 60%;
     font-size: larger;
     font-weight: bold;
     color: white;
@@ -85,6 +85,18 @@ h3 {
 
 .video-feed-sub-instructions {
     top: 37%;
+    font-size: smaller;
+    color: grey;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+}
+
+.video-feed-lighting-instructions {
+    top: 67%;
     font-size: smaller;
     color: grey;
     position: absolute;
