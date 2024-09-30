@@ -123,7 +123,7 @@ h3 {
     width: 100;
 }
 
-.card-count-selector-instructions{
+.card-count-selector-instructions {
     justify-content: center;
 }
 
@@ -165,7 +165,8 @@ h3 {
     text-align: left;
     font-size: small;
     margin-left: 35px;
-    color: #777
+    color: #777;
+    margin-top: 4px;
 }
 
 .select-name-manually-instructions>ul {

@@ -5,15 +5,19 @@ import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM } from 'tesseract.js';
 
+const TITLE_ADJECTIVES = [
+    'Dubious', 'Dazzling', 'Dope', 'Decent', 'Deluxe', 'Distinguished', 'Divine', 'Dynamic', 'Dastardly', 'Diabolical', 'Demure', 'Duplicitous', 'Dilapidated', 'Distinctive'
+];
+
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
 const EDGE_CASE_REGEXES = [
-    [/(professor.*research)/i,'Professor\'s Research'],
-    [/(boss.*order)/i,'Boss\'s Orders'],
-    [/(professor turo)/i,'Professor Turo\'s Scenario'],
-    [/(professor sada)/i,'Professor Sada\'s Vitality'],
-    [/(ciphermaniac)/i,'Ciphermaniac\'s Codebreaking'],
-    [/(lono)/i,'Iono']
+    [/(professor.*research)/i, 'Professor\'s Research'],
+    [/(boss.*order)/i, 'Boss\'s Orders'],
+    [/(professor turo)/i, 'Professor Turo\'s Scenario'],
+    [/(professor sada)/i, 'Professor Sada\'s Vitality'],
+    [/(ciphermaniac)/i, 'Ciphermaniac\'s Codebreaking'],
+    [/(lono)/i, 'Iono']
 ]
 
 const BASIC_ENERGY_NAMES = [
@@ -36,6 +40,42 @@ function contrastImage(imgData, contrast) {  //input range [-100..100]
         d[i] = d[i] * contrast + intercept;
         d[i + 1] = d[i + 1] * contrast + intercept;
         d[i + 2] = d[i + 2] * contrast + intercept;
+    }
+    return imgData;
+}
+
+function greyscaleImage(imgData, contrast) {
+    let d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
+        const avg = d[i] + d[i + 1] + d[i + 2];
+        d[i] = avg;
+        d[i + 1] = avg;
+        d[i + 2] = avg;
+    }
+    return imgData;
+}
+
+function normalizeImage(imgData, contrast) {
+    let d = imgData.data;
+    let min1 = 255;
+    let min2 = 255;
+    let min3 = 255;
+    let max1 = 0;
+    let max2 = 0;
+    let max3 = 0;
+    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
+        const avg = d[i] + d[i + 1] + d[i + 2];
+        min1 = Math.min(min1, d[i]);
+        min2 = Math.min(min2, d[i + 1]);
+        min3 = Math.min(min3, d[i + 2]);
+        max1 = Math.max(max1, d[i]);
+        max2 = Math.max(max2, d[i + 1]);
+        max3 = Math.max(max3, d[i + 2]);
+    }
+    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
+        d[i] = Math.floor((d[i] - min1) * 255 / (max1 - min1));
+        d[i + 1] = Math.floor((d[i + 1] - min2) * 255 / (max2 - min2));;
+        d[i + 2] = Math.floor((d[i + 1] - min3) * 255 / (max3 - min3));;
     }
     return imgData;
 }
@@ -201,7 +241,7 @@ function Scanner({ cardDatabase }) {
                     validCardNames.push(cardName);
                 }
             });
-            EDGE_CASE_REGEXES.forEach(edgeCase=>{
+            EDGE_CASE_REGEXES.forEach(edgeCase => {
                 if (edgeCase[0].test(lowercaseText)) {
                     validCardNames.push(edgeCase[1]);
                 }
@@ -249,7 +289,7 @@ function Scanner({ cardDatabase }) {
 
         setTimeout(async () => {
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = contrastImage(imageData, 100);
+            const pixels = normalizeImage(imageData, 100);
             context.putImageData(pixels, 0, 0);
 
             setTimeout(async () => {
@@ -259,8 +299,8 @@ function Scanner({ cardDatabase }) {
                 setTesseractOutput(text);
 
                 requestAnimationFrame(tesseractTick);
-            }, 100);
-        }, 100);
+            }, 70);
+        }, 70);
     }
 
     const addCard = (cardInfo, count) => {
@@ -286,15 +326,22 @@ function Scanner({ cardDatabase }) {
         }
     }
 
+
+    const titleAdjective = useMemo(() => {
+        return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
+    }, [TITLE_ADJECTIVES]);
+
     return <div>
-        <h3 className="title">Deb's Dubious Decklist Detector</h3>
+        <h3 className="title">Deb's {titleAdjective} Decklist Detector</h3>
         <div className="subtitle">
-          <small>
-            <span>Made with ♥</span> &bull;
-            <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank"> Source Code</a>
-          </small>
+            <small>
+                <span>Made with ♥</span> &bull;
+                <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank"> Source Code</a>
+            </small>
         </div>
-        <div>{errorMessage}</div>
+        <div>{errorMessage} </div>
+        <canvas ref={tesseractCanvasRef} hidden></canvas>
+
         <div className="video-feed-container">
             <video className="video-feed" ref={videoRef}>Video stream not available.</video>
             {
@@ -372,6 +419,8 @@ function Scanner({ cardDatabase }) {
                     placeholder="Card name not scanning? Select it manually"
                 />
                 <div className='select-name-manually-instructions'>
+                    <b>Well lit cards lead to better results</b>
+                    <br />
                     Certain cards don't scan reliably:
                     <ul>
                         <li>Basic energies</li>
@@ -418,7 +467,6 @@ function Scanner({ cardDatabase }) {
 
                 </div>
             })}</div>
-        <canvas ref={tesseractCanvasRef} hidden></canvas>
         {
             isExportModalOpen ? <div ref={exportModalRef} className="export-modal">
                 <div className="export-modal-content">
