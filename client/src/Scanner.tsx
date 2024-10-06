@@ -29,17 +29,51 @@ function doesCaseSensitiveTextContainEri(text) {
     return text.includes('Eri');
 }
 
-const BASIC_ENERGY_NAMES = [
-    'Grass Energy',
-    'Fire Energy',
-    'Water Energy',
-    'Lightning Energy',
-    'Psychic Energy',
-    'Fighting Energy',
-    'Darkness Energy',
-    'Metal Energy',
-    'Fairy Energy',
+const BASIC_ENERGY_INFO = [
+    {
+        name: 'Grass Energy',
+        idSample: 'sve-9',
+        iconUri: 'grass-energy-symbol.png'
+    },
+    {
+        name: 'Fire Energy',
+        idSample: 'sve-10',
+        iconUri: 'fire-energy-symbol.png'
+    },
+    {
+        name: 'Water Energy',
+        idSample: 'sve-11',
+        iconUri: 'water-energy-symbol.png'
+    },
+    {
+        name: 'Lightning Energy',
+        idSample: 'sve-12',
+        iconUri: 'lightning-energy-symbol.png'
+    },
+    {
+        name: 'Psychic Energy',
+        idSample: 'sve-13',
+        iconUri: 'psychic-energy-symbol.png'
+    },
+    {
+        name: 'Fighting Energy',
+        idSample: 'sve-14',
+        iconUri: 'fighting-energy-symbol.png'
+    },
+    {
+        name: 'Darkness Energy',
+        idSample: 'sve-15',
+        iconUri: 'darkness-energy-symbol.png'
+    },
+    {
+        name: 'Metal Energy',
+        idSample: 'sve-16',
+        iconUri: 'metal-energy-symbol.png'
+    },
 ]
+
+const BASIC_ENERGY_NAMES = BASIC_ENERGY_INFO.map(energy => energy.name);
+
 
 function contrastImage(imgData, contrast) {  //input range [-100..100]
     let d = imgData.data;
@@ -135,6 +169,7 @@ function Scanner({ cardDatabase }) {
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
     const [cardInfoList, setCardInfoList] = useState([]); // the result
     const cardInfoListNonNull = cardInfoList.filter(item => item != null);
@@ -167,11 +202,19 @@ function Scanner({ cardDatabase }) {
     const cardNameOptions = useMemo(() => cardNames.map(name => { return { label: name, value: name } }), [cardNameToIDs]);
 
     function setCardNameWrapped(cardName) {
+        setShowBasicEnergySelector(false); // clear this
         setCurrentDetectedCardName(cardName);
         const cardSample = cardDatabase[cardNameToIDs[cardName][0]];
         if (cardSample?.supertype !== 'Pokémon') {
             // not a Pokemon - directly set card ID since art doesn't matter
-            setCurrentDetectedCardID(cardSample.id);
+            let cardID = cardSample.id;
+            BASIC_ENERGY_INFO.forEach(energyInfo => {
+                // if it's an energy card, replace it with an SCR sample
+                if (energyInfo.name === cardName) {
+                    cardID = energyInfo.idSample;
+                }
+            });
+            setCurrentDetectedCardID(cardID);
         }
     }
 
@@ -240,6 +283,11 @@ function Scanner({ cardDatabase }) {
     // listen to changes to the tesseract output
     useEffect(() => {
         const lowercaseText = tesseractOutput.toLocaleLowerCase().replace(DETECTION_REPLACE_REGEX, '');
+
+        if (lowercaseText.includes('energy') && currentDetectedCardName == null) {
+            setShowBasicEnergySelector(true);
+        }
+
         if (currentDetectedCardName == null) {
             // trying to detect the card name
             let validCardNames = [];
@@ -269,6 +317,7 @@ function Scanner({ cardDatabase }) {
                 // if the latest scanned card is not a pokemon, and its name matches this one, don't scan again
                 // this protects against accident duplicate scans of trainer cards
                 if (latestCard == null || (latestCard.supertype === 'Pokémon' || latestCard.name !== validCardNames[0])) {
+                    // We also clear the energy selector within the function below
                     setCardNameWrapped(validCardNames[0]);
                 }
             }
@@ -280,6 +329,7 @@ function Scanner({ cardDatabase }) {
                 const includeSetNameInString = /[a-zA-Z]+/.test(number) || ['PR', 'SVP'].includes(set_code);
                 const setInfoRegex = new RegExp('.*' + (includeSetNameInString ? `${number}` : `${number}.*${set_printed_total}`) + '.*', 'gi');
                 if (lowercaseText.match(setInfoRegex)) {
+                    setShowBasicEnergySelector(false); // clear this
                     setCurrentDetectedCardID(id);
                 }
             });
@@ -318,6 +368,7 @@ function Scanner({ cardDatabase }) {
     }
 
     const addCard = (cardInfo, count) => {
+        setShowBasicEnergySelector(false); // clear this
         const augmentedCardInfo = {
             count,
             ...cardInfo,
@@ -329,6 +380,7 @@ function Scanner({ cardDatabase }) {
     }
 
     const cancelScan = () => {
+        setShowBasicEnergySelector(false); // clear this
         if (currentDetectedCardID != null) {
             if (cardDatabase[currentDetectedCardID].supertype !== 'Pokémon') {
                 // not a Pokemon - clear out the name too
@@ -387,6 +439,21 @@ function Scanner({ cardDatabase }) {
                     <br />Well lit cards lead to easier scanning
                 </div> : null
             }</div>
+            {
+                currentDetectedCardID == null && showBasicEnergySelector ? <div className='video-feed-basic-energy-selector'>
+                    <button onClick={() => setShowBasicEnergySelector(false)}>&#10006;</button>
+                    &nbsp;
+                    Is this basic energy?
+                    <br />
+                    {BASIC_ENERGY_INFO.map(energyInfo => {
+                        const onClick = () => {
+                            setCurrentDetectedCardName(energyInfo.name);
+                            setCurrentDetectedCardID(energyInfo.idSample);
+                        }
+                        return <button key={energyInfo.name} onClick={onClick}><img src={energyInfo.iconUri}></img></button>
+                    })}
+                </div> : null
+            }
             {currentDetectedCardID != null ? <div className='detected-card-in-feed'>
                 <CardImageForID id={currentDetectedCardID} />
             </div> : null
@@ -441,7 +508,6 @@ function Scanner({ cardDatabase }) {
                 <div className='select-name-manually-instructions'>
                     Certain cards don't scan reliably:
                     <ul>
-                        <li>Basic energies</li>
                         <li>Some reverse holos</li>
                         <li>Some full arts</li>
                     </ul>

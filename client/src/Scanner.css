@@ -107,6 +107,24 @@ h3 {
     z-index: 1;
 }
 
+.video-feed-basic-energy-selector {
+    font-size: smaller;
+    color: grey;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+    bottom: 12px;
+}
+
+.video-feed-basic-energy-selector > button {
+    padding: 0;
+    margin: 4px;
+    margin-top: 6px;
+}
+
 .card-count-selector {
     bottom: 8px;
     font-size: large;
