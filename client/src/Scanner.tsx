@@ -20,6 +20,15 @@ const EDGE_CASE_REGEXES = [
     [/(lono)/i, 'Iono']
 ]
 
+function doesCaseSensitiveTextContainEri(text) {
+    // Hack to detext Eri
+    // Eri is a common substring when the check is case sensitive
+    // An uppercase 'E', however, is rare enough that we can use it to help us find Eri
+    // while reducing the odds of false positives
+
+    return text.includes('Eri');
+}
+
 const BASIC_ENERGY_NAMES = [
     'Grass Energy',
     'Fire Energy',
@@ -248,7 +257,12 @@ function Scanner({ cardDatabase }) {
             })
             validCardNames.sort((a, b) => b.length - a.length); // longest first
             validCardNames = validCardNames.filter(name => name.toLocaleLowerCase() !== 'eri'); // Sorry Eri, you're just a frequent false positive :(
-            // users will just have to enter this manually
+
+            // Manually add back Eri through a case sensitive check
+            // It's the only card of name length 3 we recognize
+            if (doesCaseSensitiveTextContainEri(tesseractOutput)) {
+                validCardNames.push('Eri')
+            }
             if (validCardNames.length > 0) {
                 const latestCard = cardInfoListNonNull.length > 0 ? cardInfoListNonNull[cardInfoListNonNull.length - 1] : null;
                 // test against the latest scanned card
@@ -428,7 +442,6 @@ function Scanner({ cardDatabase }) {
                     Certain cards don't scan reliably:
                     <ul>
                         <li>Basic energies</li>
-                        <li>Eri</li>
                         <li>Some reverse holos</li>
                         <li>Some full arts</li>
                     </ul>
