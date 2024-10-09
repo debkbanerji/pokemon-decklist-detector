@@ -81,6 +81,7 @@ def get_cards(): # Returns dataframe
                 "number": card.number,
                 "set_printed_total": card.set.printedTotal, # The total printed on the card - excludes secret rares
                 "small_image_url": card.images.small,
+                "types": card.types
             } for card in full_card_objects
         ]
         dfs_list.append(pd.DataFrame(processed_cards))

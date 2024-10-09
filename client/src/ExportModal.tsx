@@ -11,6 +11,18 @@ function maybeProcessGalleryCardNumber(cardNumber) {
     return cardNumber.replace(regex, '');
 }
 
+const TYPE_TO_ENERGY_SYMBOL_URL = {
+    'Grass': 'grass-energy-symbol.png',
+    'Fire': 'fire-energy-symbol.png',
+    'Water': 'water-energy-symbol.png',
+    'Lightning': 'lightning-energy-symbol.png',
+    'Psychic': 'psychic-energy-symbol.png',
+    'Fighting': 'fighting-energy-symbol.png',
+    'Darkness': 'darkness-energy-symbol.png',
+    'Metal': 'metal-energy-symbol.png',
+    'Colorless': 'colorless-energy-symbol.png',
+}
+
 
 function ExportModal({ undeletedCardData, cardDatabase }) {
     const pokemonDict = {};
@@ -110,7 +122,8 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             const id = row[0];
             const count = row[1];
             const card = cardDatabase[id];
-            return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark']]
+            const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
+            return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], energySymbolUrl];
         }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
         const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
@@ -156,6 +169,19 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             columnStyles,
             headStyles,
             margin: { top: 42 },
+            didDrawCell: function (data) {
+                if (data.column.index === 1 && data.row.section === 'body') {
+                    const energySymbolUrl = pokemonTable[data.row.index][5]
+                    const dim = data.cell.height - data.cell.padding('vertical');
+                    const textPos = data.cell.textPos;
+                    if (energySymbolUrl != null && energySymbolUrl.length > 0) {
+                        const img = new Image();
+                        img.src = energySymbolUrl;
+                        // Feature disabled - uncomment to draw energy symbol on output
+                        // doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
+                    }
+                }
+            }
         });
 
         doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
