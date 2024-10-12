@@ -11,6 +11,25 @@ function maybeProcessGalleryCardNumber(cardNumber) {
     return cardNumber.replace(regex, '');
 }
 
+// The DB has some gaps - manual map a few pokemon
+const NAME_TO_POKEDEX_NUMBER_FALLBACK = {
+    "Dipplin": 1011,
+    "Poltchageist": 1012,
+    "Sinistcha": 1013,
+    "Okidogi": 1014,
+    "Munkidori": 1015,
+    "Fezandipiti": 1016,
+    "Ogerpon": 1017,
+    "Archaludon": 1018,
+    "Hydrapple": 1019,
+    "Gouging Fire": 1020,
+    "Raging Bolt": 1021,
+    "Iron Boulder": 1022,
+    "Iron Crown": 1023,
+    "Terapagos": 1024,
+    "Pecharunt": 1025,
+}
+
 const TYPE_TO_ENERGY_SYMBOL_URL = {
     'Grass': 'grass-energy-symbol.png',
     'Fire': 'fire-energy-symbol.png',
@@ -122,8 +141,11 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             const id = row[0];
             const count = row[1];
             const card = cardDatabase[id];
+            const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
+            const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
             const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
-            return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], energySymbolUrl];
+
+            return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
         }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
         const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
@@ -171,14 +193,14 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             margin: { top: 42 },
             didDrawCell: function (data) {
                 if (data.column.index === 1 && data.row.section === 'body') {
-                    const energySymbolUrl = pokemonTable[data.row.index][5]
+                    const spriteUrl = pokemonTable[data.row.index][5]
                     const dim = data.cell.height - data.cell.padding('vertical');
                     const textPos = data.cell.textPos;
-                    if (energySymbolUrl != null && energySymbolUrl.length > 0) {
+                    if (spriteUrl != null && spriteUrl.length > 0) {
                         const img = new Image();
-                        img.src = energySymbolUrl;
+                        img.src = spriteUrl;
                         // Feature disabled - uncomment to draw energy symbol on output
-                        // doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
+                        doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
                     }
                 }
             }

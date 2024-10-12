@@ -15,6 +15,13 @@ CLIENT_CARD_IMAGES_DIRECTORY = './../client/public/cards'
 if not os.path.exists(CLIENT_CARD_IMAGES_DIRECTORY):
     os.makedirs(CLIENT_CARD_IMAGES_DIRECTORY)
 
+SPRITES_DIRECTORY = DATA_DIRECTORY + '/sprites'
+if not os.path.exists(SPRITES_DIRECTORY):
+    os.makedirs(SPRITES_DIRECTORY)
+CLIENT_SPRITES_DIRECTORY = './../client/public/sprites'
+if not os.path.exists(CLIENT_SPRITES_DIRECTORY):
+    os.makedirs(CLIENT_SPRITES_DIRECTORY)
+
 api_key_file = open("pokemontcg_api_key.txt", "r")
 api_key = api_key_file.read().strip()
 
@@ -81,7 +88,8 @@ def get_cards(): # Returns dataframe
                 "number": card.number,
                 "set_printed_total": card.set.printedTotal, # The total printed on the card - excludes secret rares
                 "small_image_url": card.images.small,
-                "types": card.types
+                "types": card.types,
+                "national_pokedex_numbers": card.nationalPokedexNumbers
             } for card in full_card_objects
         ]
         dfs_list.append(pd.DataFrame(processed_cards))
@@ -94,7 +102,7 @@ def get_cards(): # Returns dataframe
     print("Finished downloading info for " + str(concatenated_df.shape[0]) + " cards")
     return concatenated_df
 
-def download_missing_card_images_for_df(cards_df):
+def download_missing_card_images_and_sprites_for_df(cards_df):
     print("Downloading image data")
     # Downloads images of cards for which the image does not already exist in CARD_IMAGES_DIRECTORY
     # Naturally, this function will download all the images if none of them exist
@@ -111,11 +119,22 @@ def download_missing_card_images_for_df(cards_df):
             print("#" + str(index + 1) + ": " + img_path + " already exists; skipping download")
         shutil.copy(img_path, CLIENT_CARD_IMAGES_DIRECTORY + "/" + file_name)
 
+    for pokedex_number in range(0,1025 + 1): # Up to pecharunt
+        sprite_file_name = str(pokedex_number) + ".png"
+        sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
+        sprite_url = 'https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/other/home/' + sprite_file_name + '?raw=true'
+        if not os.path.isfile(sprite_path):
+            print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
+            urllib.request.urlretrieve(sprite_url, sprite_path)
+        else:
+            print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
+        shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
+
 if __name__ == '__main__':
     cards = get_cards()
     cards_df = pd.DataFrame(cards)
 
-    download_missing_card_images_for_df(cards_df)
+    download_missing_card_images_and_sprites_for_df(cards_df)
 
     cards_dict = {}
     for i, card in cards_df.iterrows():
