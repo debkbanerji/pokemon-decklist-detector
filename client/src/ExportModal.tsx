@@ -200,7 +200,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                         const img = new Image();
                         img.src = spriteUrl;
                         // Feature disabled - uncomment to draw energy symbol on output
-                        doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
+                        // doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
                     }
                 }
             }
