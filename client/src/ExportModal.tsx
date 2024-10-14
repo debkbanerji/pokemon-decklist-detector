@@ -196,11 +196,10 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                     const spriteUrl = pokemonTable[data.row.index][5]
                     const dim = data.cell.height - data.cell.padding('vertical');
                     const textPos = data.cell.textPos;
-                    if (spriteUrl != null && spriteUrl.length > 0) {
-                        // const img = new Image();
-                        // img.src = spriteUrl;
-                        // Feature disabled - uncomment to draw energy symbol on output
-                        // doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
+                    if (spriteUrl != null && spriteUrl.length > 0 && window.location.toString().toLowerCase().includes("includesprite")) {
+                        const img = new Image();
+                        img.src = spriteUrl;
+                        doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
                     }
                 }
             }
