@@ -72,7 +72,7 @@ def get_cards(): # Returns dataframe
     processed_cards = None
     while processed_cards is None or len(processed_cards) > 0:
         query = 'legalities.standard:legal'
-        query = '(regulationMark:f OR regulationMark:g OR regulationMark:h) ' + query
+        query = '(regulationMark:f OR regulationMark:g OR regulationMark:h OR name:basic) ' + query
         # query = 'set.id:swsh9 ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         # query = '(name:dialga OR name:greninja OR name:basculin OR name:beldum OR name:metang) ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         full_card_objects = Card.where(page=page_number, pageSize=PAGE_SIZE, q=query) # All standard legal cards
