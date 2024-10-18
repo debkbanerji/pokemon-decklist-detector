@@ -29,13 +29,15 @@ PokemonTCGSDKRestClient.configure(api_key)
 
 PAGE_SIZE = 250
 
-prefix_replacement_regex = re.compile(r"^(special delivery|radiant|origin forme|hisuian|galarian|alolan|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|dark) ", re.IGNORECASE)
-postfix_replacement_regex = re.compile(r" (ex|v|vstar|vmax)$", re.IGNORECASE)
+prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|dark|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost) )*", re.IGNORECASE)
+postfix_replacement_regex = re.compile(r" (ex|v|vstar|vmax|v-union|sunny form|rainy form|snowy form|with grey felt hat)$", re.IGNORECASE)
 
 professors_research_named_regex = re.compile(r"professor's research \(.*\)$", re.IGNORECASE)
 boss_orders_named_regex = re.compile(r"^boss's orders \(.*\)$", re.IGNORECASE)
 basic_energy_regex = re.compile(r"^basic .* energy$", re.IGNORECASE)
 basic_energy_replacement_regex = re.compile(r"^basic ", re.IGNORECASE)
+sprite_url_replacement_regex = re.compile(r"(\'|\.)", re.IGNORECASE)
+
 
 def get_processed_name(name):
     if professors_research_named_regex.match(name):
@@ -70,6 +72,7 @@ def get_cards(): # Returns dataframe
     processed_cards = None
     while processed_cards is None or len(processed_cards) > 0:
         query = 'legalities.standard:legal'
+        query = '(regulationMark:f OR regulationMark:g OR regulationMark:h) ' + query
         # query = 'set.id:swsh9 ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         # query = '(name:dialga OR name:greninja OR name:basculin OR name:beldum OR name:metang) ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         full_card_objects = Card.where(page=page_number, pageSize=PAGE_SIZE, q=query) # All standard legal cards
@@ -119,16 +122,28 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             print("#" + str(index + 1) + ": " + img_path + " already exists; skipping download")
         shutil.copy(img_path, CLIENT_CARD_IMAGES_DIRECTORY + "/" + file_name)
 
-    for pokedex_number in range(0,1025 + 1): # Up to pecharunt
-        sprite_file_name = str(pokedex_number) + ".png"
-        sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
-        sprite_url = 'https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/other/home/' + sprite_file_name + '?raw=true'
-        if not os.path.isfile(sprite_path):
-            print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
-            urllib.request.urlretrieve(sprite_url, sprite_path)
-        else:
-            print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
-        shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
+        if card["supertype"] == 'Pokémon':
+            name_without_prefix_and_postfix = card["name_without_prefix_and_postfix"]
+            sprite_file_name = re.sub(sprite_url_replacement_regex, '', name_without_prefix_and_postfix.lower().replace(" ", "-").replace("'", "").replace("é", "e").replace("♀", "f").replace("♂", "m")) + ".png"
+            sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
+            sprite_url = 'https://limitlesstcg.s3.us-east-2.amazonaws.com/pokemon/gen9/' + sprite_file_name
+            if not os.path.isfile(sprite_path):
+                print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
+                urllib.request.urlretrieve(sprite_url, sprite_path)
+            else:
+                print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
+            shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
+
+    # for pokedex_number in range(0,1025 + 1): # Up to pecharunt
+    #     sprite_file_name = str(pokedex_number) + ".png"
+    #     sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
+    #     sprite_url = 'https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/other/home/' + sprite_file_name + '?raw=true'
+    #     if not os.path.isfile(sprite_path):
+    #         print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
+    #         urllib.request.urlretrieve(sprite_url, sprite_path)
+    #     else:
+    #         print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
+    #     shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
 if __name__ == '__main__':
     cards = get_cards()

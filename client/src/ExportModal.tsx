@@ -11,7 +11,7 @@ function maybeProcessGalleryCardNumber(cardNumber) {
     return cardNumber.replace(regex, '');
 }
 
-// The DB has some gaps - manual map a few pokemon
+// The DB has some gaps - manually map a few pokemon
 const NAME_TO_POKEDEX_NUMBER_FALLBACK = {
     "Dipplin": 1011,
     "Poltchageist": 1012,
@@ -142,8 +142,10 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             const count = row[1];
             const card = cardDatabase[id];
             const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
-            const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
-            const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
+            // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
+            // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
+            const nameForSpriteUrl = card.name_without_prefix_and_postfix.toLowerCase().replaceAll(' ', '-').replaceAll(/(\'|\.)/gi, '').replaceAll('é', 'e').replace('♀', 'f').replace('♂', 'm')
+            const spriteUrl = 'sprites/' + nameForSpriteUrl + '.png';
 
             return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
         }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
@@ -192,15 +194,22 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             headStyles,
             margin: { top: 42 },
             didDrawCell: function (data) {
-                if (data.column.index === 1 && data.row.section === 'body') {
-                    const spriteUrl = pokemonTable[data.row.index][5]
-                    const dim = data.cell.height - data.cell.padding('vertical');
-                    const textPos = data.cell.textPos;
-                    if (spriteUrl != null && spriteUrl.length > 0 && window.location.toString().toLowerCase().includes("includesprite")) {
-                        const img = new Image();
-                        img.src = spriteUrl;
-                        doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, dim, dim);
+                try {
+                    if (data.column.index === 1 && data.row.section === 'body') {
+                        const spriteUrl = pokemonTable[data.row.index][5];
+                        const dim = data.cell.height - data.cell.padding('vertical');
+                        const textPos = data.cell.textPos;
+                        if (spriteUrl != null && spriteUrl.length > 0) {
+                            const img = new Image();
+                            const imgProps = doc.getImageProperties(spriteUrl);
+                            const height = dim;
+                            const width = (imgProps.width * height) / imgProps.height;
+                            img.src = spriteUrl;
+                            doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
+                        }
                     }
+                } catch (e) {
+                    // do nothing
                 }
             }
         });
