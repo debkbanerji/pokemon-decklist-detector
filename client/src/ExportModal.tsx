@@ -256,13 +256,13 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             <h2>Or</h2>
             <div>
                 <div>
-                    Player Name: <input type="text" onChange={e => setPlayerName(e.target.value)} value={playerName} />
+                    Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
                 </div>
                 <div>
-                    Player ID: <input type="text" onChange={e => setPlayerID(e.target.value)} value={playerID} />
+                    Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
                 </div>
                 <div>
-                    Date of Birth: <input type="date" onChange={e => setPlayerDOB(e.target.value)} value={playerDOB} />
+                    Date of Birth: <input type="date" name='player-dob' onChange={e => setPlayerDOB(e.target.value)} value={playerDOB} />
                 </div>
                 <div>
                     Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
@@ -278,7 +278,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                     </select>
                 </div>
                 <div>
-                    Deck Name (Optional): <input type="text" onChange={e => setDeckName(e.target.value)} value={deckName} />
+                    Deck Name (Optional): <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
                 </div>
                 <br />
                 <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB)}>
