@@ -454,7 +454,7 @@ function Scanner({ cardDatabase }) {
                     })}
                 </div> : null
             }
-            {currentDetectedCardID != null ? <div className='detected-card-in-feed'>
+            {currentDetectedCardID != null ? <div className='detected-card-in-feed filter-blur'>
                 <CardImageForID id={currentDetectedCardID} />
             </div> : null
             }

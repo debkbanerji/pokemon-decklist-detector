@@ -56,3 +56,7 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.filter-blur {
+  filter: url(#blur-and-scale);
+}
