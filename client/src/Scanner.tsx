@@ -431,7 +431,7 @@ function Scanner({ cardDatabase }) {
                 )
             }</div>
             <div className='video-feed-sub-instructions'>{
-                currentDetectedCardID == null ? 'Hold the text within the frame' : null
+                currentDetectedCardID == null ? 'Hold the text within the box' : null
             }</div>
             <div className='video-feed-lighting-instructions'>{
                 currentDetectedCardID == null ? <div>
@@ -441,7 +441,7 @@ function Scanner({ cardDatabase }) {
             }</div>
             {
                 currentDetectedCardID == null && showBasicEnergySelector ? <div className='video-feed-basic-energy-selector'>
-                    <button onClick={() => setShowBasicEnergySelector(false)}>&#10006;</button>
+                    <button onClick={() => setShowBasicEnergySelector(false)} className='cancel-scan-button'>&#10006;</button>
                     &nbsp;
                     Is this basic energy?
                     <br />
@@ -450,7 +450,7 @@ function Scanner({ cardDatabase }) {
                             setCurrentDetectedCardName(energyInfo.name);
                             setCurrentDetectedCardID(energyInfo.idSample);
                         }
-                        return <button key={energyInfo.name} onClick={onClick}><img src={energyInfo.iconUri}></img></button>
+                        return <img key={energyInfo.name} onClick={onClick} src={energyInfo.iconUri} width={30} height={30}></img>
                     })}
                 </div> : null
             }
