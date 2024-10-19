@@ -118,6 +118,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     const [ageDivision, setAgeDivision] = useState('Masters Division');
     const [format, setFormat] = useState('Standard');
     const [deckName, setDeckName] = useState('');
+    const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
 
     const emailText = `Player Name: ${playerName}\n
@@ -137,6 +138,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     const isDownloadPDFEnabled = playerName && playerID && playerDOB;
 
     function onDownloadPDF() {
+        setIsDownloadingPDF(true);
         const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
             const id = row[0];
             const count = row[1];
@@ -232,6 +234,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             headStyles
         })
         doc.save(`${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`)
+        setIsDownloadingPDF(false);
     }
     return <div>
         <h2>Export Decklist</h2>
@@ -281,8 +284,8 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                     Deck Name (Optional): <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
                 </div>
                 <br />
-                <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB)}>
-                    Download PDF
+                <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
+                    {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
             </div>
             <h2>Or</h2>
