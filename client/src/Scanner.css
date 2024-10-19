@@ -200,12 +200,18 @@ h3 {
     padding: 4px;
 }
 
+.card-name-selector-container {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
 .select-name-manually-instructions {
     text-align: left;
     font-size: small;
     margin-left: 35px;
     color: #777;
-    margin-top: 4px;
+    margin-top: 8px;
+    margin-bottom: 4px;
 }
 
 .select-name-manually-instructions>ul {
@@ -300,5 +306,5 @@ h3 {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    border-radius: 5px;
+    border-radius: 12px;
 }

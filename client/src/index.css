@@ -14,6 +14,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -36,9 +37,11 @@ button {
   transition: border-color 0.25s;
   box-shadow: 0 1px 1px #888888;
 }
+
 button:hover {
   /* border-color: #646cff; */
 }
+
 button:focus,
 button:focus-visible {
   /* outline: 4px auto -webkit-focus-ring-color; */
@@ -49,9 +52,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -59,4 +64,9 @@ button:focus-visible {
 
 .filter-blur {
   filter: url(#blur-and-scale);
+}
+
+.name-selector>div {
+  border-radius: 16px;
+  overflow: hidden;
 }

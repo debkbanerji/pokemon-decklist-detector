@@ -493,7 +493,7 @@ function Scanner({ cardDatabase }) {
             </div>
         </div> : null}
         {
-            currentDetectedCardName == null ? <div>
+            currentDetectedCardName == null ? <div className='card-name-selector-container'>
                 <Select
                     options={cardNameOptions}
                     defaultValue={null}
@@ -503,7 +503,7 @@ function Scanner({ cardDatabase }) {
                     }}
                     name={'manual-name-selector'}
                     className="name-selector"
-                    placeholder="Card name not scanning? Select it manually"
+                    placeholder="Name not scanning? Select it manually"
                 />
                 <div className='select-name-manually-instructions'>
                     Certain cards don't scan reliably:
