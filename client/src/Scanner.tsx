@@ -5,10 +5,6 @@ import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM } from 'tesseract.js';
 
-const TITLE_ADJECTIVES = [
-    'Dubious', 'Dazzling', 'Dope', 'Decent', 'Deluxe', 'Distinguished', 'Divine', 'Dynamic', 'Dastardly', 'Diabolical', 'Demure', 'Duplicitous', 'Dilapidated', 'Distinctive'
-];
-
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
 const EDGE_CASE_REGEXES = [
@@ -392,13 +388,7 @@ function Scanner({ cardDatabase }) {
         }
     }
 
-
-    const titleAdjective = useMemo(() => {
-        return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
-    }, [TITLE_ADJECTIVES]);
-
     return <div>
-        <h3 className="title">Deb's {titleAdjective} Decklist Detector</h3>
         <div className="subtitle">
             <small>
                 <span>Made with ♥</span> &bull;

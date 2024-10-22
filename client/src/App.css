@@ -4,7 +4,7 @@
   padding-top: 4px;
   padding-left: 4px;
   padding-right: 4px;
-  width:100%;
+  width: 100%;
   text-align: center;
 }
 
@@ -30,4 +30,23 @@
 
 .warning-disclaimer-container>ul {
   text-align: left;
+}
+
+.title {
+  margin-bottom: 0;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+.demo-video {
+  width: 80%;
+}
+
+.top-description {
+  font-size: small;
+  font-weight: 560;
+  margin-bottom: 8px;
+  margin-top: 8px;
 }
