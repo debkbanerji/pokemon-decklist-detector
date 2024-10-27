@@ -261,7 +261,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             headStyles
         })
         const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
-        doc.save(fileName, { returnPromise: true }).then(setIsDownloadingPDF(false));
+        doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
     }
     return <div>
         <h2>Export Decklist</h2>
@@ -292,7 +292,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                     Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
                 </div>
                 <div className='export-pdf-field'>
-                    Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy"/>
+                    Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
                 </div>
                 <div className='export-pdf-field'>
                     Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
