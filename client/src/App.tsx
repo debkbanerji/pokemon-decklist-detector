@@ -23,7 +23,7 @@ function App() {
   }, [TITLE_ADJECTIVES]);
 
   return <>
-    <h3 className="title">Deb's {titleAdjective} Decklist Detector</h3>
+    <h3 className="title">Deb's {titleAdjective}<br/> Decklist Detector</h3>
     {hasStarted ? <ErrorBoundary>
       {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} /> : 'Loading...'}
     </ErrorBoundary> : <div>
