@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { DatePicker } from 'rsuite';
+import 'rsuite/dist/rsuite.min.css';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -125,7 +127,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
 
     const [playerName, setPlayerName] = useState('');
     const [playerID, setPlayerID] = useState('');
-    const [playerDOB, setPlayerDOB] = useState('');
+    const [playerDOB, setPlayerDOB] = useState();
     const [ageDivision, setAgeDivision] = useState('Masters Division');
     const [format, setFormat] = useState('Standard');
     const [coverPokemon, setCoverPokemon] = useState('');
@@ -142,7 +144,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
 
     const emailText = `Player Name: ${playerName}\n
   Player ID: ${playerID}\n
-  Date of Birth: ${playerDOB}\n
+  Date of Birth: ${playerDOB != null ? playerDOB.toLocaleDateString() : ''}\n
   Age Division: ${ageDivision}\n
   Format: ${format}\n\n
   
@@ -191,7 +193,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         doc.setFontSize(13);
         doc.text(`Player Name: ${playerName}`, 15, 10);
         doc.text(`Player ID: ${playerID}`, 15, 15);
-        doc.text(`Date of Birth: ${playerDOB}`, 15, 20);
+        doc.text(`Date of Birth: ${playerDOB.toLocaleDateString()}`, 15, 20);
         doc.text(`Age Division: ${ageDivision}`, 15, 25);
         doc.text(`Format: ${format}`, 15, 30);
 
@@ -283,30 +285,30 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             </div>
             <h2>Or</h2>
             <div>
-                <div>
+                <div className='export-pdf-field'>
                     Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
                 </div>
-                <div>
+                <div className='export-pdf-field'>
                     Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
                 </div>
-                <div>
-                    Date of Birth: <input type="date" name='player-dob' onChange={e => setPlayerDOB(e.target.value)} value={playerDOB} />
+                <div className='export-pdf-field'>
+                    Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy"/>
                 </div>
-                <div>
+                <div className='export-pdf-field'>
                     Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
                         <option>Junior Division</option>
                         <option>Senior Division</option>
                         <option>Masters Division</option>
                     </select>
                 </div>
-                <div>
+                <div className='export-pdf-field'>
                     Format: <select onChange={e => setFormat(e.target.value)} value={format}>
                         <option>Standard</option>
                         <option>Expanded</option>
                     </select>
                 </div>
                 <br />
-                <div>
+                <div className='export-pdf-field'>
                     Cover Pokemon (Optional): <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
                         <option value={''} key="unset">(none)</option>
                         {Object.keys(pokemonNameToSpriteUrl).map(name =>
@@ -314,7 +316,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                         )}
                     </select>
                 </div>
-                <div>
+                <div className='export-pdf-field'>
                     Deck Name (Optional): <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
                 </div>
                 <br />

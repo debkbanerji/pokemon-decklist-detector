@@ -33,9 +33,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
+  color: #2196f3;
   cursor: pointer;
   transition: border-color 0.25s;
   box-shadow: 0 1px 1px #888888;
+}
+
+button[disabled]{
+  color: grey;
 }
 
 button:hover {

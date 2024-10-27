@@ -17,6 +17,7 @@
     "react-dom": "^18.2.0",
     "react-numeric-input": "^2.2.3",
     "react-select": "^5.8.0",
+    "rsuite": "^5.73.1",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {

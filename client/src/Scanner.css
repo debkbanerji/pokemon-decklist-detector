@@ -304,3 +304,7 @@ h3 {
     width: 80%;
     border-radius: 12px;
 }
+
+.export-pdf-field {
+    margin-top: 3px;
+}
