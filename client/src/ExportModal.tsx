@@ -198,13 +198,13 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         doc.text(`Format: ${format}`, 15, 30);
 
         const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
-        const decknameOffset = deckName || (coverPokemonOffset > 0) ? 8 : 0;
+        const decknameOffset = deckName || (coverPokemonOffset > 0) ? 11 : 0;
         doc.setFontSize(16);
         doc.text(deckName, 187.5 + (coverPokemon.length > 0 ? 0 : 8) - doc.getTextWidth(deckName), decknameOffset);
 
         if (coverPokemon.length > 0) {
             const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
-            doc.addImage(coverPokemonUrl, 'png', 190, 2, 8, 8);
+            doc.addImage(coverPokemonUrl, 'png', 190, 5, 8, 8);
         }
 
         doc.setFontSize(8);
