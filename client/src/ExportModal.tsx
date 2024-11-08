@@ -235,15 +235,14 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         const headStyles = { fillColor: '#a9a9a9' };
 
         doc.setFontSize(13);
-        doc.text(`Player Name: ${playerName}`, 15, 10);
-        doc.text(`Player ID: ${playerID}`, 15, 15);
-        doc.text(`Date of Birth: ${playerDOB.toLocaleDateString()}`, 15, 20);
-        const ageDivisionText = `Age Division: ${ageDivision}`;
-        doc.text(ageDivisionText, 15, 25);
+        doc.setFont(undefined, 'bold').text('Player Name:', 15, 10).setFont(undefined, 'normal').text(playerName, 45, 10);
+        doc.setFont(undefined, 'bold').text('Player ID:', 15, 15).setFont(undefined, 'normal').text(playerID, 37, 15);
+        doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 20).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 20);
+        doc.setFont(undefined, 'bold').text('Age Division:', 15, 25).setFont(undefined, 'normal').text(ageDivision, 45, 25);
         const ageDivisionPokeballIcon = new Image();
         ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
-        doc.addImage(ageDivisionPokeballIcon, 'png', 15.5 + doc.getTextWidth(ageDivisionText), 21.5, 4.5, 4.5);
-        doc.text(`Format: ${format}`, 15, 30);
+        doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 21.5, 4.5, 4.5);
+        doc.setFont(undefined, 'bold').text('Format:', 15, 30).setFont(undefined, 'normal').text(format, 33, 30);
 
         const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
         const decknameOffset = deckName || (coverPokemonOffset > 0) ? 11 : 0;
