@@ -61,6 +61,7 @@ set_id_to_official_code_overrides = {
   "sv6": "TWM",
   "sv6pt5": "SFA",
   "sv7": "SCR",
+  "sv8": "SSP",
 }
 
 

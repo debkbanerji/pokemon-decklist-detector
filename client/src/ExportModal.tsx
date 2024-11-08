@@ -18,6 +18,12 @@ function getSpriteUrlForCard(card) {
     return 'sprites/' + nameForSpriteUrl + '.png';
 }
 
+const AGE_DIVISION_TO_POKE_BALL_FILE = {
+    'Junior Division': 'great_ball.png',
+    'Senior Division': 'ultra_ball.png',
+    'Masters Division': 'master_ball.png',
+}
+
 // The DB has some gaps - manually map a few pokemon
 const NAME_TO_POKEDEX_NUMBER_FALLBACK = {
     "Dipplin": 1011,
@@ -194,7 +200,11 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         doc.text(`Player Name: ${playerName}`, 15, 10);
         doc.text(`Player ID: ${playerID}`, 15, 15);
         doc.text(`Date of Birth: ${playerDOB.toLocaleDateString()}`, 15, 20);
-        doc.text(`Age Division: ${ageDivision}`, 15, 25);
+        const ageDivisionText = `Age Division: ${ageDivision}`;
+        doc.text(ageDivisionText, 15, 25);
+        const ageDivisionPokeballIcon = new Image();
+        ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
+        doc.addImage(ageDivisionPokeballIcon, 'png', 15.5 + doc.getTextWidth(ageDivisionText), 21.5, 4.5, 4.5);
         doc.text(`Format: ${format}`, 15, 30);
 
         const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
