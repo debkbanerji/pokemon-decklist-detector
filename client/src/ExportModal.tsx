@@ -57,17 +57,17 @@ const TYPE_TO_ENERGY_SYMBOL_URL = {
 
 function hexToRgb(hex) {
     var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-      return r + r + g + g + b + b;
+    hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+        return r + r + g + g + b + b;
     });
-  
+
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
     } : null;
-  }
+}
 
 const TYPE_TO_HEADER_COLOR_PAIR = {
     'Grass': ['#1B5E20', '#E0E0E0'],
@@ -252,12 +252,19 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         const coverPokemonType = getCoverPokemonType(coverPokemon);
         const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
         doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
-        doc.text(deckName, 187.5 + (coverPokemon.length > 0 ? 0 : 8) - doc.getTextWidth(deckName), decknameOffset);
+        doc.text(deckName, 185.5 + (coverPokemon.length > 0 ? 0 : 10) - doc.getTextWidth(deckName), decknameOffset);
         doc.setTextColor(0, 0, 0);
 
         if (coverPokemon.length > 0) {
+            const coverPokemonImg = new Image();
             const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
-            doc.addImage(coverPokemonUrl, 'png', 190, 5, 8, 8);
+            const imgProps = doc.getImageProperties(coverPokemonUrl);
+            const height = 8;
+            const width = (imgProps.width * height) / imgProps.height;
+            // const width = 8;
+            // const height = (imgProps.height * width) / imgProps.width;
+            coverPokemonImg.src = coverPokemonUrl;
+            doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
         }
 
         doc.setFontSize(8);
@@ -276,7 +283,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
             }
         };
-        
+
 
         autoTable(doc, {
             head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
