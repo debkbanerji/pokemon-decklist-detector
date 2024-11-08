@@ -55,6 +55,33 @@ const TYPE_TO_ENERGY_SYMBOL_URL = {
     'Colorless': 'colorless-energy-symbol.png',
 }
 
+function hexToRgb(hex) {
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+      return r + r + g + g + b + b;
+    });
+  
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+const TYPE_TO_HEADER_COLOR_PAIR = {
+    'Grass': ['#1B5E20', '#E0E0E0'],
+    'Fire': ['#BF360C', '#E0E0E0'],
+    'Water': ['#0D47A1', '#E0E0E0'],
+    'Lightning': ['#A66E00', '#E0E0E0'],
+    'Psychic': ['#AD1457', '#E0E0E0'],
+    'Fighting': ['#895129', '#E0E0E0'],
+    'Darkness': ['#37474F', '#E0E0E0'],
+    'Metal': ['#424242', '#E0E0E0'],
+    'Dragon': ['#A66E00', '#E0E0E0'],
+    'Colorless': ['#000000', '#E0E0E0'],
+}
+
 
 function ExportModal({ undeletedCardData, cardDatabase }) {
     const pokemonDict = {};
@@ -147,6 +174,17 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         }
     }
 
+    function getCoverPokemonType(name) {
+        let coverPokemonType = 'Colorless';
+        const coverPokemonList = pokemon.map(pair => cardDatabase[pair[0]]).filter(
+            card => {
+                return card.name_without_prefix_and_postfix === name
+            }
+        );
+        coverPokemonList.reverse();
+        return (((coverPokemonList[0] ?? {})['types']) ?? [])[0] || 'Colorless';
+    }
+
 
     const emailText = `Player Name: ${playerName}\n
   Player ID: ${playerID}\n
@@ -210,7 +248,12 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
         const decknameOffset = deckName || (coverPokemonOffset > 0) ? 11 : 0;
         doc.setFontSize(16);
+
+        const coverPokemonType = getCoverPokemonType(coverPokemon);
+        const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
+        doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
         doc.text(deckName, 187.5 + (coverPokemon.length > 0 ? 0 : 8) - doc.getTextWidth(deckName), decknameOffset);
+        doc.setTextColor(0, 0, 0);
 
         if (coverPokemon.length > 0) {
             const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
@@ -225,6 +268,16 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
 
         doc.setFontSize(12);
         doc.text(`Pokemon: ${numPokemon}`, 15, 40);
+
+
+        const didParseCell = (table) => {
+            if (table.section === 'head') {
+                // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
+                // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
+            }
+        };
+        
+
         autoTable(doc, {
             head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
             body: pokemonTable,
@@ -232,6 +285,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             columnStyles,
             headStyles,
             margin: { top: 42 },
+            didParseCell,
             didDrawCell: function (data) {
                 try {
                     if (data.column.index === 1 && data.row.section === 'body') {
@@ -259,7 +313,8 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             body: trainerTable,
             styles: tableStyles,
             columnStyles,
-            headStyles
+            headStyles,
+            didParseCell,
         });
 
         doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
@@ -268,7 +323,8 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             body: energyTable,
             styles: tableStyles,
             columnStyles,
-            headStyles
+            headStyles,
+            didParseCell,
         })
         const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
         doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
