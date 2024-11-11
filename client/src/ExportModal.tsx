@@ -204,144 +204,146 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
 
     function onDownloadPDF() {
         setIsDownloadingPDF(true);
-        const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
-            const id = row[0];
-            const count = row[1];
-            const card = cardDatabase[id];
-            const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
-            // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
-            // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
-            const spriteUrl = getSpriteUrlForCard(card);
+        setTimeout(async () => { // Wait a few ms for the UI to update before triggering pdf generation
+            const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
+                const id = row[0];
+                const count = row[1];
+                const card = cardDatabase[id];
+                const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
+                // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
+                // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
+                const spriteUrl = getSpriteUrlForCard(card);
 
-            return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
-        }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+                return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
+            }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-        const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
-            const name = row[0];
-            const count = row[1];
-            return [count, name]
-        }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+            const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
+                const name = row[0];
+                const count = row[1];
+                return [count, name]
+            }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-        const energyTable = energies.filter(row => row[1] > 0).map(row => {
-            const name = row[0];
-            const count = row[1];
-            return [count, name]
-        }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+            const energyTable = energies.filter(row => row[1] > 0).map(row => {
+                const name = row[0];
+                const count = row[1];
+                return [count, name]
+            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-        const doc = new jsPDF();
+            const doc = new jsPDF();
 
-        const tableStyles = { cellPadding: 0.2 };
-        const columnStyles = { 0: { cellWidth: 16 } };
-        const headStyles = { fillColor: '#a9a9a9' };
+            const tableStyles = { cellPadding: 0.2 };
+            const columnStyles = { 0: { cellWidth: 16 } };
+            const headStyles = { fillColor: '#a9a9a9' };
 
-        doc.setFontSize(13);
-        doc.setFont(undefined, 'bold').text('Player Name:', 15, 10).setFont(undefined, 'normal').text(playerName, 45, 10);
-        doc.setFont(undefined, 'bold').text('Player ID:', 15, 15).setFont(undefined, 'normal').text(playerID, 37, 15);
-        doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 20).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 20);
-        doc.setFont(undefined, 'bold').text('Age Division:', 15, 25).setFont(undefined, 'normal').text(ageDivision, 45, 25);
-        const ageDivisionPokeballIcon = new Image();
-        ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
-        doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 21.5, 4.5, 4.5);
-        doc.setFont(undefined, 'bold').text('Format:', 15, 30).setFont(undefined, 'normal').text(format, 33, 30);
+            doc.setFontSize(13);
+            doc.setFont(undefined, 'bold').text('Player Name:', 15, 10).setFont(undefined, 'normal').text(playerName, 45, 10);
+            doc.setFont(undefined, 'bold').text('Player ID:', 15, 15).setFont(undefined, 'normal').text(playerID, 37, 15);
+            doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 20).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 20);
+            doc.setFont(undefined, 'bold').text('Age Division:', 15, 25).setFont(undefined, 'normal').text(ageDivision, 45, 25);
+            const ageDivisionPokeballIcon = new Image();
+            ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
+            doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 21.5, 4.5, 4.5);
+            doc.setFont(undefined, 'bold').text('Format:', 15, 30).setFont(undefined, 'normal').text(format, 33, 30);
 
-        const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
-        const decknameOffset = deckName || (coverPokemonOffset > 0) ? 11 : 0;
-        doc.setFontSize(16);
+            const coverPokemonOffset = coverPokemon.length > 0 ? 8 : 0;
+            const decknameOffset = deckName || (coverPokemonOffset > 0) ? 11 : 0;
+            doc.setFontSize(16);
 
-        const coverPokemonType = getCoverPokemonType(coverPokemon);
-        const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
-        doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
-        doc.text(deckName, 185.5 + (coverPokemon.length > 0 ? 0 : 10) - doc.getTextWidth(deckName), decknameOffset);
-        doc.setTextColor(0, 0, 0);
+            const coverPokemonType = getCoverPokemonType(coverPokemon);
+            const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
+            doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
+            doc.text(deckName, 185.5 + (coverPokemon.length > 0 ? 0 : 10) - doc.getTextWidth(deckName), decknameOffset);
+            doc.setTextColor(0, 0, 0);
 
-        doc.setFontSize(8);
-        doc.text(`Generated by decklist.debkbanerji.com on ${new Date().toLocaleDateString()}`, 130, 5 + decknameOffset);
-        const qrCodeImg = new Image();
-        qrCodeImg.src = 'website-qr-code.png';
-        doc.addImage(qrCodeImg, 'png', 175, 7 + decknameOffset, 22, 22);
+            doc.setFontSize(8);
+            doc.text(`Generated by decklist.debkbanerji.com on ${new Date().toLocaleDateString()}`, 130, 5 + decknameOffset);
+            const qrCodeImg = new Image();
+            qrCodeImg.src = 'website-qr-code.png';
+            doc.addImage(qrCodeImg, 'png', 175, 7 + decknameOffset, 22, 22);
 
-        doc.setFontSize(12);
-        doc.text(`Pokemon: ${numPokemon}`, 15, 40);
-
-
-        const didParseCell = (table) => {
-            if (table.section === 'head') {
-                // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
-                // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
-            }
-        };
+            doc.setFontSize(12);
+            doc.text(`Pokemon: ${numPokemon}`, 15, 40);
 
 
-        autoTable(doc, {
-            head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
-            body: pokemonTable,
-            styles: tableStyles,
-            columnStyles,
-            headStyles,
-            margin: { top: 42 },
-            didParseCell,
-            didDrawCell: function (data) {
-                try {
-                    if (data.column.index === 1 && data.row.section === 'body') {
-                        const spriteUrl = pokemonTable[data.row.index][5];
-                        const dim = data.cell.height - data.cell.padding('vertical');
-                        const textPos = data.cell.textPos;
-                        if (spriteUrl != null && spriteUrl.length > 0) {
-                            const img = new Image();
-                            const imgProps = doc.getImageProperties(spriteUrl);
-                            const height = dim;
-                            const width = (imgProps.width * height) / imgProps.height;
-                            img.src = spriteUrl;
-                            doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
-                        }
-                    }
-                } catch (e) {
-                    // do nothing
+            const didParseCell = (table) => {
+                if (table.section === 'head') {
+                    // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
+                    // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
                 }
+            };
+
+
+            autoTable(doc, {
+                head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
+                body: pokemonTable,
+                styles: tableStyles,
+                columnStyles,
+                headStyles,
+                margin: { top: 42 },
+                didParseCell,
+                didDrawCell: function (data) {
+                    try {
+                        if (data.column.index === 1 && data.row.section === 'body') {
+                            const spriteUrl = pokemonTable[data.row.index][5];
+                            const dim = data.cell.height - data.cell.padding('vertical');
+                            const textPos = data.cell.textPos;
+                            if (spriteUrl != null && spriteUrl.length > 0) {
+                                const img = new Image();
+                                const imgProps = doc.getImageProperties(spriteUrl);
+                                const height = dim;
+                                const width = (imgProps.width * height) / imgProps.height;
+                                img.src = spriteUrl;
+                                doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
+                            }
+                        }
+                    } catch (e) {
+                        // do nothing
+                    }
+                }
+            });
+
+            doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
+            autoTable(doc, {
+                head: [['QTY', 'NAME']],
+                body: trainerTable,
+                styles: tableStyles,
+                columnStyles,
+                headStyles,
+                didParseCell,
+            });
+
+            doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
+            autoTable(doc, {
+                head: [['QTY', 'NAME']],
+                body: energyTable,
+                styles: tableStyles,
+                columnStyles,
+                headStyles,
+                didParseCell,
+            })
+
+            if (coverPokemon.length > 0) {
+                const coverPokemonImg = new Image();
+                const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
+                const imgProps = doc.getImageProperties(coverPokemonUrl);
+                const height = 8;
+                const width = (imgProps.width * height) / imgProps.height;
+                coverPokemonImg.src = coverPokemonUrl;
+                doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
+
+                // Watermark the page
+                doc.setGState(new doc.GState({ opacity: 0.03 }));
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const bigHeight = pageHeight / 3;
+                const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
+                doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
+                doc.setGState(new doc.GState({ opacity: 1 }));
             }
-        });
 
-        doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
-        autoTable(doc, {
-            head: [['QTY', 'NAME']],
-            body: trainerTable,
-            styles: tableStyles,
-            columnStyles,
-            headStyles,
-            didParseCell,
-        });
-
-        doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
-        autoTable(doc, {
-            head: [['QTY', 'NAME']],
-            body: energyTable,
-            styles: tableStyles,
-            columnStyles,
-            headStyles,
-            didParseCell,
-        })
-
-        if (coverPokemon.length > 0) {
-            const coverPokemonImg = new Image();
-            const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
-            const imgProps = doc.getImageProperties(coverPokemonUrl);
-            const height = 8;
-            const width = (imgProps.width * height) / imgProps.height;
-            coverPokemonImg.src = coverPokemonUrl;
-            doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
-
-            // Watermark the page
-            doc.setGState(new doc.GState({ opacity: 0.03 }));
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const bigHeight = pageHeight / 3;
-            const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
-            doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
-            doc.setGState(new doc.GState({ opacity: 1 }));
-        }
-
-        const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
-        doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
+            const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
+            doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
+        }, 30);
     }
     return <div>
         <h2>Export Decklist</h2>
