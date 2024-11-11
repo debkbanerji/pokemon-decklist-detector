@@ -29,7 +29,7 @@ PokemonTCGSDKRestClient.configure(api_key)
 
 PAGE_SIZE = 250
 
-prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|dark|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost) )*", re.IGNORECASE)
+prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|dark|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost|black|white) )*", re.IGNORECASE)
 postfix_replacement_regex = re.compile(r" (ex|v|vstar|vmax|v-union|sunny form|rainy form|snowy form|with grey felt hat)$", re.IGNORECASE)
 
 professors_research_named_regex = re.compile(r"professor's research \(.*\)$", re.IGNORECASE)
