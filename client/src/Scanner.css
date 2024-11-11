@@ -199,20 +199,17 @@ h3 {
 .card-name-selector-container {
     margin-left: 10px;
     margin-right: 10px;
+    margin-bottom: 8px;
 }
 
 .select-name-manually-instructions {
     text-align: left;
     font-size: small;
-    margin-left: 35px;
+    font-weight: 500;
     color: #777;
     margin-top: 8px;
-    margin-bottom: 4px;
-}
-
-.select-name-manually-instructions>ul {
-    margin-top: 2px;
-    padding-left: 15px;
+    margin-bottom: 6px;
+    text-align: center;
 }
 
 .scans-feed-header {

@@ -484,6 +484,9 @@ function Scanner({ cardDatabase }) {
         </div> : null}
         {
             currentDetectedCardName == null ? <div className='card-name-selector-container'>
+                <div className='select-name-manually-instructions'>
+                    Scanning can be imperfect! Please make sure you have the right card before proceeding
+                </div>
                 <Select
                     options={cardNameOptions}
                     defaultValue={null}
@@ -495,13 +498,6 @@ function Scanner({ cardDatabase }) {
                     className="name-selector"
                     placeholder="Name not scanning? Select it manually"
                 />
-                <div className='select-name-manually-instructions'>
-                    Certain cards don't scan reliably:
-                    <ul>
-                        <li>Some reverse holos</li>
-                        <li>Some full arts</li>
-                    </ul>
-                </div>
             </div> : null
         }
         <div className='scans-feed-header'>
