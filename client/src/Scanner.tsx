@@ -391,8 +391,9 @@ function Scanner({ cardDatabase }) {
     return <div>
         <div className="subtitle">
             <small>
-                <span>Made with ♥</span> &bull;
-                <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank"> Source Code</a>
+                <span>Made with ♥</span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+                <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank">Source Code</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp; 
+                <a href="https://github.com/debkbanerji#contact-me" target="_blank">Contact</a>
             </small>
         </div>
         <div>{errorMessage} </div>
