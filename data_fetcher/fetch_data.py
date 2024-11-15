@@ -101,6 +101,28 @@ def get_cards(): # Returns dataframe
         total_downloaded_cards = total_downloaded_cards + len(processed_cards)
         print("Downloaded info for " + str(total_downloaded_cards) + " cards")
 
+    
+    # Lugia V from Crown Zenith is missing from the DB! Add it in manually:
+    manual_fixes_df = pd.DataFrame([
+        {
+            "id": 'swshp-SWSH301',
+            "name": "Lugia V",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Lugia V")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Lugia V"))),
+            "supertype": "Pokémon",
+            "set_id": "swshp",
+            "set_code": "PR",
+            "regulation_mark": "F",
+            "set_name": "SWSH Black Star Promos",
+            "number": "SWSH301",
+            "set_printed_total": 307, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/505996_in_1000x1000.jpg",
+            "types": ['Colorless'],
+            "national_pokedex_numbers": [249]
+        }
+    ])
+    dfs_list.append(manual_fixes_df)
+
     concatenated_df = pd.concat(dfs_list, ignore_index=True)
 
     print("Finished downloading info for " + str(concatenated_df.shape[0]) + " cards")
