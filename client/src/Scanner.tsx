@@ -4,6 +4,7 @@ import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM } from 'tesseract.js';
+import { motion } from "motion/react"
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -392,21 +393,21 @@ function Scanner({ cardDatabase }) {
         <div className="subtitle">
             <small>
                 <span>Made with ♥</span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-                <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank">Source Code</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp; 
+                <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank">Source Code</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
                 <a href="https://github.com/debkbanerji#contact-me" target="_blank">Contact</a>
             </small>
         </div>
         <div>{errorMessage} </div>
         <canvas ref={tesseractCanvasRef} hidden></canvas>
 
-        <div className="video-feed-container">
+        <motion.div className="video-feed-container" >
             <video className="video-feed" ref={videoRef}>Video stream not available.</video>
             {
                 currentDetectedCardName != null && currentDetectedCardID == null ?
-                    <div className='detected-card-name'>
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='detected-card-name'>
                         <button onClick={cancelScan} className='cancel-scan-button'>&#10006;</button>
                         {currentDetectedCardName}
-                    </div> :
+                    </motion.div> :
                     null
             }
             <div className="video-feed-viewport" style={{
@@ -417,8 +418,8 @@ function Scanner({ cardDatabase }) {
             }
             }></div>
             <div className='video-feed-instructions'>{
-                currentDetectedCardName == null ? 'Scan the card name' : (
-                    currentDetectedCardID == null ? 'Scan the card set number' : null
+                currentDetectedCardName == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="card-name-scan-instruction" >Scan the card name</motion.div> : (
+                    currentDetectedCardID == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="set-number-scan-instruction" >Scan the set number</motion.div> : null
                 )
             }</div>
             <div className='video-feed-sub-instructions'>{
@@ -431,7 +432,9 @@ function Scanner({ cardDatabase }) {
                 </div> : null
             }</div>
             {
-                currentDetectedCardID == null && showBasicEnergySelector ? <div className='video-feed-basic-energy-selector'>
+                currentDetectedCardID == null && showBasicEnergySelector ? <motion.div
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className='video-feed-basic-energy-selector'>
                     <button onClick={() => setShowBasicEnergySelector(false)} className='cancel-scan-button'>&#10006;</button>
                     &nbsp;
                     Is this basic energy?
@@ -443,13 +446,15 @@ function Scanner({ cardDatabase }) {
                         }
                         return <img key={energyInfo.name} onClick={onClick} src={energyInfo.iconUri} width={30} height={30}></img>
                     })}
-                </div> : null
+                </motion.div> : null
             }
             {currentDetectedCardID != null ? <div className='detected-card-in-feed filter-blur'>
-                <CardImageForID id={currentDetectedCardID} />
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                    <CardImageForID id={currentDetectedCardID} />
+                </motion.div>
             </div> : null
             }
-            {currentDetectedCardID != null ? <div className='card-count-selector'>
+            {currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='card-count-selector'>
                 <div className='card-count-selector-instructions'>
                     <button onClick={cancelScan} className='cancel-scan-button'>&#10006;</button>
                     &nbsp;
@@ -469,17 +474,26 @@ function Scanner({ cardDatabase }) {
                         })
                     }
                 </div>
-            </div> : null
+            </motion.div> : null
             }
-        </div>
+        </motion.div>
         {candidateCardIDs != null && currentDetectedCardID == null ? <div>
             <h3> Or, select the art directly:</h3>
             <div className='candidate-card-ids'>
-                {candidateCardIDs.map(id => {
+                {candidateCardIDs.map((id, index) => {
                     return <div onClick={() => {
                         setCurrentDetectedCardID(id);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }} key={id}><CardImageForID id={id} /></div>
+                    }} key={id}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 200, scale: 1.2 }}
+                            transition={{ duration: 0.6, type: "spring", delay: 0.03 * index }}
+                        >
+                            <CardImageForID id={id} />
+                        </motion.div>
+                    </div>
                 })}
             </div>
         </div> : null}
@@ -503,7 +517,12 @@ function Scanner({ cardDatabase }) {
         }
         <div className='scans-feed-header'>
             <div>
-                <button onClick={() => setIsExportModalOpen(true)} className={'export-modal-open-button' + (totalCards === 60 ? ' success-text' : '')} disabled={totalCards != 60 && false}>Export</button>
+                <button onClick={() => {
+                    setIsExportModalOpen(true);
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                }} className={'export-modal-open-button' + (totalCards === 60 ? ' success-text' : '')} disabled={totalCards != 60 && false}>Export</button>
             </div>
             <h3>Scanned Cards: {totalCards}</h3>
         </div>
@@ -517,33 +536,37 @@ function Scanner({ cardDatabase }) {
                     }));
                 }
 
-                return <div className="scan-row" key={index}>
-                    <>
-                        <div className='scan-row-image'>
-                            <CardImageForID id={id} />
+                return <motion.div className="scan-row" key={index}
+                    initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 200, scale: 1.2 }}
+                    transition={{ duration: 0.6, type: "spring" }}>
+                    <div className='scan-row-image'>
+                        <CardImageForID id={id} />
+                    </div>
+                    <div className='scan-row-input'>
+                        <div>{name}</div>
+                        {supertype === 'Pokémon' ?
+                            <div>
+                                <div className='set-info'><b>{set_code}</b> {number}</div>
+                            </div> : null}
+                        <div className='delete-and-count-button'>
+                            <button onClick={deleteCard} className='delete-button'>&#128465;</button>
+                            <div><b>{count}&times;</b></div>
                         </div>
-                        <div className='scan-row-input'>
-                            <div>{name}</div>
-                            {supertype === 'Pokémon' ?
-                                <div>
-                                    <div className='set-info'><b>{set_code}</b> {number}</div>
-                                </div> : null}
-                            <div className='delete-and-count-button'>
-                                <button onClick={deleteCard} className='delete-button'>&#128465;</button>
-                                <div><b>{count}&times;</b></div>
-                            </div>
-                        </div>
-                    </>
-
-                </div>
+                    </div>
+                </motion.div>
             })}</div>
         {
-            isExportModalOpen ? <div ref={exportModalRef} className="export-modal">
-                <div className="export-modal-content">
-                    <ExportModal cardDatabase={cardDatabase}
-                        undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })} />
-                </div>
-            </div> : null
+            isExportModalOpen ?
+                <div ref={exportModalRef} className="export-modal">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <div className="export-modal-content">
+                            <ExportModal cardDatabase={cardDatabase}
+                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })} />
+                        </div>
+                    </motion.div>
+                </div> : null
         }
     </div >;
 }
