@@ -3,6 +3,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
+import { seralizeDecklist, deserializeDecklist } from './StorageManager';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -84,6 +85,16 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
 
 
 function ExportModal({ undeletedCardData, cardDatabase }) {
+    const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
+    useEffect(() => {
+        if (!hasTriedDBWrite) {
+            const serializedDecklist = seralizeDecklist(undeletedCardData);
+            const deserializedDecklist = deserializeDecklist(serializedDecklist, cardDatabase);
+            // TODO: Actually write to DB! Feature not yet implemented
+            setHasTriedDBWrite(true);
+        }
+    }, [undeletedCardData, cardDatabase]);
+
     const pokemonDict = {};
     const trainerDict = {};
     const energyDict = {};
