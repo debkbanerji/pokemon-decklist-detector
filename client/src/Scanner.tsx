@@ -160,7 +160,7 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     }
 }
 
-function Scanner({ cardDatabase }) {
+function Scanner({ cardDatabase, startingDecklist }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
@@ -168,7 +168,7 @@ function Scanner({ cardDatabase }) {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
-    const [cardInfoList, setCardInfoList] = useState([]); // the result
+    const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
     const cardInfoListNonNull = cardInfoList.filter(item => item != null);
     const totalCards = cardInfoListNonNull.reduce((a, b) => a + (b.count), 0);
 

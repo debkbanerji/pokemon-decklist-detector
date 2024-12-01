@@ -3,7 +3,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import { seralizeDecklist, deserializeDecklist } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, storageEnabled } from './StorageManager';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -86,14 +86,20 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
 
 function ExportModal({ undeletedCardData, cardDatabase }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
+    const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     useEffect(() => {
-        if (!hasTriedDBWrite) {
-            const serializedDecklist = seralizeDecklist(undeletedCardData);
-            const deserializedDecklist = deserializeDecklist(serializedDecklist, cardDatabase);
-            // TODO: Actually write to DB! Feature not yet implemented
-            setHasTriedDBWrite(true);
+        if (modalOpenedTimestamp == null) {
+            setModalOpenedTimestamp(Date.now());
         }
-    }, [undeletedCardData, cardDatabase]);
+    }, [modalOpenedTimestamp, setModalOpenedTimestamp]);
+
+    async function saveDecklistToStorage() {
+        if (!storageEnabled()) {
+            return;
+        }
+        const serializedDecklist = seralizeDecklist(undeletedCardData);
+        addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon]);
+    }
 
     const pokemonDict = {};
     const trainerDict = {};
@@ -158,7 +164,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         return `${count} ${name}`
     }).join('\n')}`;
     const decklistText = [pokemonText, trainerText, energyText].join('\n\n');
-    function onCopyToClipboard() {
+    async function onCopyToClipboard() {
         navigator.clipboard
             .writeText(
                 decklistText
@@ -167,6 +173,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 setTimeout(() =>
                     setClipboardButtonText('Copy to Clipboard'), 1000)
             });
+        await saveDecklistToStorage();
     }
 
     const [playerName, setPlayerName] = useState('');
@@ -216,6 +223,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     function onDownloadPDF() {
         setIsDownloadingPDF(true);
         setTimeout(async () => { // Wait a few ms for the UI to update before triggering pdf generation
+            await saveDecklistToStorage();
             const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
                 const id = row[0];
                 const count = row[1];
@@ -418,7 +426,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 </button>
             </div>
             <h2>Or</h2>
-            <a href={emailLink} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
+            <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
                 Email Decklist
             </button></a>
         </div>
