@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Scanner from './Scanner.tsx';
 import ErrorBoundary from './ErrorBoundary.tsx';
 import './App.css';
-import { deserializeDecklist, getDecklists, storageEnabled } from './StorageManager';
+import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 
 
@@ -72,6 +72,7 @@ function App() {
             <img src={coverPokemonSpriteUrl}></img>
             <div>{name}</div>
             <button onClick={() => { loadInDecklist(serializedDecklist) }}>Load</button>
+            <button onClick={() => { deleteDecklist(createdTimestamp) }}>Delete</button>
           </div>;
         })}
       </div> : null}

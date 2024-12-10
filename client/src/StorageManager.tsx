@@ -30,6 +30,10 @@ async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklis
     );
 }
 
+async function deleteDecklist(createdTimestamp) {
+    await db.decklists.delete(createdTimestamp);
+}
+
 function getDecklists() {
     return db.decklists.toArray();
 }
@@ -38,4 +42,4 @@ function storageEnabled() {
     return false;
 }
 
-export { seralizeDecklist, deserializeDecklist, addDecklistToDB, getDecklists, storageEnabled };
+export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, storageEnabled };
