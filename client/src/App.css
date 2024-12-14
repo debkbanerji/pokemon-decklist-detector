@@ -51,10 +51,30 @@ h3 {
   margin-top: 8px;
 }
 
-.decklist-row {
+.saved-decklists-heading {
+  margin-top: 16px;
+}
+
+.saved-decklists {
   width: 100%;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.decklist-row {
   margin-top: 8px;
-  border-top: #4caf50 1px;
+  padding-top: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
+}
+
+.decklist-row button {
+  margin-left: 8px;
 }

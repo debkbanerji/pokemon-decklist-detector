@@ -61,20 +61,31 @@ function App() {
       </video>
       <button onClick={() => setHasStarted(true)}>Start Scanning</button>
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null && storageEnabled() ? <div>
-        <h3>Previously Scanned Lists</h3>
-        {(savedDecklists).map(({
-          serializedDecklist,
-          name,
-          createdTimestamp,
-          coverPokemonSpriteUrl
-        }) => {
-          return <div className="decklist-row" key={createdTimestamp}>
-            <img src={coverPokemonSpriteUrl}></img>
-            <div>{name}</div>
-            <button onClick={() => { loadInDecklist(serializedDecklist) }}>Load</button>
-            <button onClick={() => { deleteDecklist(createdTimestamp) }}>Delete</button>
-          </div>;
-        })}
+        <h3 className='saved-decklists-heading'>Previously Scanned Lists</h3>
+        <div className='saved-decklists'>
+          {(savedDecklists).map(({
+            serializedDecklist,
+            name,
+            createdTimestamp,
+            coverPokemonSpriteUrl
+          }) => {
+            return <div className="decklist-row" key={createdTimestamp}>
+              <img src={coverPokemonSpriteUrl}></img>
+              <div className='decklist-name-timestamp-container'>
+                <div>
+                  {name}
+                </div>
+                <div>
+                  {new Date(createdTimestamp).toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <button onClick={() => { loadInDecklist(serializedDecklist) }}>Load</button>
+                <button onClick={() => { deleteDecklist(createdTimestamp) }}>Delete</button>
+              </div>
+            </div>;
+          })}
+        </div>
       </div> : null}
     </div >}
   </>
