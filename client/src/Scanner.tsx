@@ -523,6 +523,9 @@ function Scanner({ cardDatabase, startingDecklist }) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }, 100);
                 }} className={'export-modal-open-button' + (totalCards === 60 ? ' success-text' : '')} disabled={totalCards != 60 && false}>Export</button>
+                <div className='storage-info'>
+                    Exported decklists are also saved to your browser
+                </div>
             </div>
             <h3>Scanned Cards: {totalCards}</h3>
         </div>

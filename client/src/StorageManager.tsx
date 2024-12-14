@@ -39,7 +39,7 @@ function getDecklists() {
 }
 
 function storageEnabled() {
-    return false;
+    return true;
 }
 
 export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, storageEnabled };
