@@ -13,6 +13,8 @@ const EDGE_CASE_REGEXES = [
     [/(boss.*order)/i, 'Boss\'s Orders'],
     [/(professor turo)/i, 'Professor Turo\'s Scenario'],
     [/(professor sada)/i, 'Professor Sada\'s Vitality'],
+    [/(ancient booster)/i, 'Ancient Booster Energy Capsule'],
+    [/(future booster)/i, 'Future Booster Energy Capsule'],
     [/(ciphermaniac)/i, 'Ciphermaniac\'s Codebreaking'],
     [/(lono)/i, 'Iono']
 ]
