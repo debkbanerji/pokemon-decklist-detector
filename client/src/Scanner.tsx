@@ -20,7 +20,7 @@ const EDGE_CASE_REGEXES = [
 ]
 
 function doesCaseSensitiveTextContainEri(text) {
-    // Hack to detext Eri
+    // Hack to detect Eri
     // Eri is a common substring when the check is case sensitive
     // An uppercase 'E', however, is rare enough that we can use it to help us find Eri
     // while reducing the odds of false positives
@@ -324,8 +324,13 @@ function Scanner({ cardDatabase, startingDecklist }) {
             // trying to detect the set number
             candidateCardIDs.forEach(id => {
                 const card = cardDatabase[id];
-                const { number, set_printed_total, set_code } = card;
+                const { number, set_printed_total, set_code, hp } = card;
                 const includeSetNameInString = /[a-zA-Z]+/.test(number) || ['PR', 'SVP'].includes(set_code);
+                if (includeSetNameInString && hp === number) {
+                    // Weird edge case - for a promo Squawkabilly, the card's hp is exactly equal to it's promo number
+                    // Return immediately to prevent a false detection - the user will have to select it manually :(includeSetNameInString
+                    return;
+                }
                 const setInfoRegex = new RegExp('.*' + (includeSetNameInString ? `${number}` : `${number}.*${set_printed_total}`) + '.*', 'gi');
                 if (lowercaseText.match(setInfoRegex)) {
                     setShowBasicEnergySelector(false); // clear this

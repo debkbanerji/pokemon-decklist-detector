@@ -369,9 +369,11 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         <hr />
         {totalCountValid ?
             <>
-                <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding!</b></div>
+                <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
+                    <b className='error-text'>especially for Pokémon versions</b></div>
                 <br />
-                <div><b className='error-text'>Especially for Pokémon versions</b></div>
+                <b />
+                <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
             </> :
             <b>
                 <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
