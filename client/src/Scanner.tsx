@@ -20,6 +20,17 @@ const EDGE_CASE_REGEXES = [
     [/(lono)/i, 'Iono']
 ]
 
+function getCardTypeSortWeight(card) {
+    if (card.supertype === 'Pokémon') {
+        return 0;
+    } else if (card.supertype === 'Trainer') {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+
 function doesCaseSensitiveTextContainEri(text) {
     // Hack to detect Eri
     // Eri is a common substring when the check is case sensitive
@@ -172,7 +183,16 @@ function Scanner({ cardDatabase, startingDecklist }) {
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
     const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
-    const cardInfoListNonNull = cardInfoList.filter(item => item != null);
+    const cardInfoListNonNull = cardInfoList.filter(item => item != null).sort((a, b) => {
+        let result = getCardTypeSortWeight(a) - getCardTypeSortWeight(b);
+        if (result === 0) {
+            result = b.count - a.count;
+        }
+        if (result === 0) {
+            result = a.name.localeCompare(b.name);
+        }
+        return result;
+    });
     const totalCards = cardInfoListNonNull.reduce((a, b) => a + (b.count), 0);
 
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);

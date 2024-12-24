@@ -387,6 +387,9 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 <button type="button" onClick={onCopyToClipboard}>
                     {clipboardButtonText}
                 </button>
+                <div className='clipboard-button-subtext'>
+                   Copied lists can be imported to TCG Live, etc.
+                </div>
             </div>
             <h2>Or</h2>
             <div>

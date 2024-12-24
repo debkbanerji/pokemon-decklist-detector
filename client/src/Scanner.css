@@ -184,6 +184,13 @@ h3 {
     margin-bottom: 2px;
 }
 
+.clipboard-button-subtext {
+    font-size: small;
+    color: grey;
+    margin-top: 4px;  
+    margin-bottom: 0;
+}
+
 .export-modal-open-button {
     font-size: larger;
     width: 95%;
@@ -226,7 +233,7 @@ h3 {
 .scans-feed {
     width: 100%;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
 }
 
 .scan-row {
