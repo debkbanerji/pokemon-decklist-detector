@@ -1,0 +1,40 @@
+.decklist-image {
+    width: 100%;
+    margin: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: black;
+    border-radius: 4px;
+}
+
+.decklist-image-card-container {
+    width: 16.66%;
+    position: relative;
+}
+
+.decklist-image-card {
+    width: calc(100% - 4px);
+    z-index: 1;
+    padding: 2px;
+}
+
+.decklist-image-card-count {
+    position: absolute;
+    bottom: 0;
+    z-index: 0.5;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.number-circle {
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 0, 0, 0.699);
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}

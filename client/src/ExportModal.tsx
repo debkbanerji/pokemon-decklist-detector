@@ -4,6 +4,7 @@ import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, storageEnabled } from './StorageManager';
+import DecklistImage from './DecklistImage.tsx';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -379,6 +380,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
             </b>
         }
+        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <hr />
         <div>
             <div>

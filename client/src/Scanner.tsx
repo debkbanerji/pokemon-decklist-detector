@@ -5,6 +5,7 @@ import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM } from 'tesseract.js';
 import { motion } from "motion/react"
+import DecklistImage from './DecklistImage.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -536,6 +537,13 @@ function Scanner({ cardDatabase, startingDecklist }) {
             </div>
             <h3>Scanned Cards: {totalCards}</h3>
         </div>
+        {totalCards > 0 ?
+            <div>
+                <DecklistImage decklist={cardInfoListNonNull} cardDatabase={cardDatabase} />
+                <hr style={{ marginTop: 20, marginBottom: 5 }} />
+                <h3 style={{ marginBottom: 7 }}>Card List</h3>
+            </div> : null
+        }
         <div className='scans-feed'>
             {cardInfoListNonNull.map((cardInfo, index) => {
                 const { id, name, number, set_code, set_id, set_name, name_without_prefix_and_postfix, supertype, count, originalIndex } = cardInfo;
