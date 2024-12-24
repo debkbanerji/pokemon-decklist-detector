@@ -352,7 +352,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
 
                 // Watermark the page
-                doc.setGState(new doc.GState({ opacity: 0.05 }));
+                doc.setGState(new doc.GState({ opacity: 0.08 }));
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 const bigHeight = pageHeight / 3;
