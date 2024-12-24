@@ -27,6 +27,21 @@ function App() {
     }
   }, [startingDecklist, setHasStarted]);
 
+  useEffect(() => {
+    if (cardDatabase != null) {
+      try {
+        const match = window.location.href.match('[?&]' + 'decklist' + '=([^&]+)');
+        if (match) {
+          const deserializedDecklist = deserializeDecklist(match[1], cardDatabase);
+          setStartingDecklist(deserializedDecklist.map(card => card.cardInfo));
+        }
+      } catch (e) {
+        console.error(e)
+        alert('Could not read decklist from url')
+      }
+    }
+  }, [cardDatabase, setStartingDecklist]);
+
   const titleAdjective = useMemo(() => {
     return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
   }, [TITLE_ADJECTIVES]);
