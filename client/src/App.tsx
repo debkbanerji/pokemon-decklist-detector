@@ -33,7 +33,13 @@ function App() {
         const match = window.location.href.match('[?&]' + 'decklist' + '=([^&]+)');
         if (match) {
           const deserializedDecklist = deserializeDecklist(match[1], cardDatabase);
-          setStartingDecklist(deserializedDecklist.map(card => card.cardInfo));
+          setStartingDecklist(deserializedDecklist.map((card, index) => {
+            return {
+              originalIndex: index,
+              ...card.cardInfo,
+              ...cardDatabase[card.cardInfo.id]
+            }
+          }));
         }
       } catch (e) {
         console.error(e)
