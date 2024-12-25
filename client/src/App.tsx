@@ -77,6 +77,7 @@ function App() {
       // close modal contents if background is clicked
       if (event.target === exportModalRef.current) {
         setDecklistForModal(null);
+        window.history.pushState({}, document.title, window.location.origin );
       }
     }
   },
@@ -127,7 +128,7 @@ function App() {
       </div> : null}
     </div >}
     {
-     decklistForModal != null && cardDatabase != null ?
+      decklistForModal != null && cardDatabase != null ?
         <div ref={exportModalRef} className="export-modal">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
             <div className="export-modal-content">
