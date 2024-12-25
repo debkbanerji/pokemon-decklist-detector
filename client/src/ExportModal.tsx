@@ -147,7 +147,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
         + numEnergies;
     const totalCountValid = totalCount === 60;
 
-    const [clipboardButtonText, setClipboardButtonText] = useState('Copy to Clipboard');
+    const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
     const pokemonText = `Pokemon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
@@ -172,9 +172,15 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             ).then(() => {
                 setClipboardButtonText('Copied!');
                 setTimeout(() =>
-                    setClipboardButtonText('Copy to Clipboard'), 1000)
+                    setClipboardButtonText('Copy List to Clipboard'), 1000)
             });
         await saveDecklistToStorage();
+    }
+
+    const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
+    const canshareUrl = navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000);
+    async function onShareUrl() {
+        navigator.share({ url: shareableUrl });
     }
 
     const [playerName, setPlayerName] = useState('');
@@ -380,15 +386,19 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
                 <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
             </b>
         }
+        <br />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <hr />
         <div>
-            <div>
+            <div className='share-buttons-row'>
                 <button type="button" onClick={onCopyToClipboard}>
                     {clipboardButtonText}
                 </button>
+                {canshareUrl ? <button type="button" onClick={onShareUrl}>
+                    Share Link
+                </button> : null}
                 <div className='clipboard-button-subtext'>
-                   Copied lists can be imported to TCG Live, etc.
+                    Copied lists can be imported to TCG Live, etc.
                 </div>
             </div>
             <h2>Or</h2>

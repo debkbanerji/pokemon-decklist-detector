@@ -316,6 +316,11 @@ h3 {
     border-radius: 12px;
 }
 
+.share-buttons-row button {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 .export-pdf-field {
     margin-top: 3px;
 }
