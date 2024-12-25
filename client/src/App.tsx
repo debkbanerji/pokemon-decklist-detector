@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Scanner from './Scanner.tsx';
 import ErrorBoundary from './ErrorBoundary.tsx';
+import ExportModal from './ExportModal.tsx';
 import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
+import { motion } from "motion/react"
 
 
 const TITLE_ADJECTIVES = [
@@ -13,6 +15,9 @@ const TITLE_ADJECTIVES = [
 function App() {
   const [cardDatabase, setCardDatabase] = useState(null);
   const savedDecklists = useLiveQuery(() => getDecklists());
+
+  const exportModalRef = useRef(null);
+  const [decklistForModal, setDecklistForModal] = useState(null);
 
   useEffect(() => {
     fetch("/card_database.json").then(r => r.json())
@@ -33,11 +38,13 @@ function App() {
         const match = window.location.href.match('[?&]' + 'decklist' + '=([^&]+)');
         if (match) {
           const deserializedDecklist = deserializeDecklist(match[1], cardDatabase);
-          setStartingDecklist(deserializedDecklist.map((card, index) => {
+          setDecklistForModal(deserializedDecklist.map((card, index) => {
             return {
-              originalIndex: index,
-              ...card.cardInfo,
-              ...cardDatabase[card.cardInfo.id]
+              cardInfo: {
+                originalIndex: index,
+                ...card.cardInfo,
+                ...cardDatabase[card.cardInfo.id]
+              }
             }
           }));
         }
@@ -64,6 +71,16 @@ function App() {
       }
     }));
   }
+
+  useEffect(() => {
+    window.onclick = function (event) {
+      // close modal contents if background is clicked
+      if (event.target === exportModalRef.current) {
+        setDecklistForModal(null);
+      }
+    }
+  },
+    [exportModalRef, setDecklistForModal]);
 
 
   return <>
@@ -109,6 +126,17 @@ function App() {
         </div>
       </div> : null}
     </div >}
+    {
+     decklistForModal != null && cardDatabase != null ?
+        <div ref={exportModalRef} className="export-modal">
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+            <div className="export-modal-content">
+              <ExportModal cardDatabase={cardDatabase}
+                undeletedCardData={decklistForModal} />
+            </div>
+          </motion.div>
+        </div> : null
+    }
   </>
 }
 

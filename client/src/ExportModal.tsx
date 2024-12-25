@@ -180,6 +180,7 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
     const canshareUrl = navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000);
     async function onShareUrl() {
+        await saveDecklistToStorage();
         navigator.share({ url: shareableUrl });
     }
 
@@ -373,7 +374,10 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     }
     return <div>
         <h2>Export Decklist</h2>
-        <hr />
+        <div className='storage-info'>
+            When you export a decklist, it is also saved to your browser's local storage
+        </div>
+        <hr style={{ marginTop: 5 }} />
         {totalCountValid ?
             <>
                 <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
