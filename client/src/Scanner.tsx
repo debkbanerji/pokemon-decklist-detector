@@ -179,6 +179,9 @@ function Scanner({ cardDatabase, startingDecklist }) {
     const tesseractCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const [coverPokemon, setCoverPokemon] = useState('');
+    const [deckName, setDeckName] = useState('');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
@@ -606,7 +609,12 @@ function Scanner({ cardDatabase, startingDecklist }) {
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                         <div className="export-modal-content">
                             <ExportModal cardDatabase={cardDatabase}
-                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })} />
+                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })} 
+                                coverPokemon={coverPokemon}
+                                setCoverPokemon={setCoverPokemon}
+                                deckName={deckName}
+                                setDeckName={setDeckName}
+                                />
                         </div>
                     </motion.div>
                 </div> : null

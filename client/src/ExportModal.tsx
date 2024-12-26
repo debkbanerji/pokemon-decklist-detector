@@ -85,7 +85,7 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
 }
 
 
-function ExportModal({ undeletedCardData, cardDatabase }) {
+function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     useEffect(() => {
@@ -189,8 +189,6 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
     const [playerDOB, setPlayerDOB] = useState();
     const [ageDivision, setAgeDivision] = useState('Masters Division');
     const [format, setFormat] = useState('Standard');
-    const [coverPokemon, setCoverPokemon] = useState('');
-    const [deckName, setDeckName] = useState('');
     const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
     function setCoverPokemonWrapped(name) {
@@ -352,20 +350,22 @@ function ExportModal({ undeletedCardData, cardDatabase }) {
             if (coverPokemon.length > 0) {
                 const coverPokemonImg = new Image();
                 const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
-                const imgProps = doc.getImageProperties(coverPokemonUrl);
-                const height = 8;
-                const width = (imgProps.width * height) / imgProps.height;
-                coverPokemonImg.src = coverPokemonUrl;
-                doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
+                if (coverPokemonUrl && coverPokemonUrl.length > 0) {
+                    const imgProps = doc.getImageProperties(coverPokemonUrl);
+                    const height = 8;
+                    const width = (imgProps.width * height) / imgProps.height;
+                    coverPokemonImg.src = coverPokemonUrl;
+                    doc.addImage(coverPokemonUrl, 'png', 188, 5, width, height);
 
-                // Watermark the page
-                doc.setGState(new doc.GState({ opacity: 0.08 }));
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const bigHeight = pageHeight / 3;
-                const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
-                doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
-                doc.setGState(new doc.GState({ opacity: 1 }));
+                    // Watermark the page
+                    doc.setGState(new doc.GState({ opacity: 0.08 }));
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const bigHeight = pageHeight / 3;
+                    const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
+                    doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
+                    doc.setGState(new doc.GState({ opacity: 1 }));
+                }
             }
 
             const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
