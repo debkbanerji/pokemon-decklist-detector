@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Scanner from './Scanner.tsx';
 import ErrorBoundary from './ErrorBoundary.tsx';
 import ExportModal from './ExportModal.tsx';
+import DecklistRow from './DecklistRow.tsx';
 import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
@@ -77,7 +78,7 @@ function App() {
       // close modal contents if background is clicked
       if (event.target === exportModalRef.current) {
         setDecklistForModal(null);
-        window.history.pushState({}, document.title, window.location.origin );
+        window.history.pushState({}, document.title, window.location.origin);
       }
     }
   },
@@ -108,21 +109,16 @@ function App() {
             createdTimestamp,
             coverPokemonSpriteUrl
           }) => {
-            return <div className="decklist-row" key={createdTimestamp}>
-              <img height={38} src={coverPokemonSpriteUrl}></img>
-              <div className='decklist-name-timestamp-container'>
-                <div>
-                  {name}
-                </div>
-                <div className='decklist-timestamp'>
-                  {new Date(createdTimestamp).toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <button onClick={() => { loadInDecklist(serializedDecklist) }}>Load</button>
-                <button onClick={() => { deleteDecklist(createdTimestamp) }}>Delete</button>
-              </div>
-            </div>;
+            return <DecklistRow
+              key={createdTimestamp}
+              cardDatabase={cardDatabase}
+              loadInDecklist={loadInDecklist}
+              deleteDecklist={deleteDecklist}
+              createdTimestamp={createdTimestamp}
+              coverPokemonSpriteUrl={coverPokemonSpriteUrl}
+              name={name}
+              serializedDecklist={serializedDecklist}
+            />;
           })}
         </div>
       </div> : null}
