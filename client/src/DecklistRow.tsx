@@ -4,7 +4,7 @@ import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
 import { motion } from "motion/react"
 
-function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemonSpriteUrl, name, serializedDecklist }) {
+function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon, coverPokemonSpriteUrl, name, serializedDecklist }) {
     return <div className="decklist-row">
         <img height={38} src={coverPokemonSpriteUrl}></img>
         <div className='decklist-name-timestamp-container'>
@@ -16,7 +16,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
             </div>
         </div>
         <div>
-            <button onClick={() => { loadInDecklist(serializedDecklist) }}>Load</button>
+            <button onClick={() => { loadInDecklist(serializedDecklist, name, coverPokemon) }}>Load</button>
             <button onClick={() => { deleteDecklist(createdTimestamp) }}>Delete</button>
         </div>
     </div>;

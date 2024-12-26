@@ -174,14 +174,14 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     }
 }
 
-function Scanner({ cardDatabase, startingDecklist }) {
+function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
-    const [coverPokemon, setCoverPokemon] = useState('');
-    const [deckName, setDeckName] = useState('');
+    const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon);
+    const [deckName, setDeckName] = useState(startingDeckName);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 

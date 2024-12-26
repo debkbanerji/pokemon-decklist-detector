@@ -26,6 +26,8 @@ function App() {
   }, [setCardDatabase]);
 
   const [hasStarted, setHasStarted] = useState(false);
+  const [startingDeckName, setStartingDeckName] = useState('');
+  const [startingCoverPokemon, setStartingCoverPokemon] = useState('');
   const [startingDecklist, setStartingDecklist] = useState([]);
   useEffect(() => {
     if (startingDecklist.length > 0) { // if the starting decklist is set, move to scanner screen
@@ -60,17 +62,21 @@ function App() {
     return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
   }, [TITLE_ADJECTIVES]);
 
-  function loadInDecklist(serializedDecklist) {
+  function loadInDecklist(serializedDecklist, deckName, coverPokemon) {
     const deserializedDecklist = deserializeDecklist(serializedDecklist, cardDatabase);
-    setStartingDecklist(deserializedDecklist.map(({ cardInfo }, index) => {
-      const { id, count } = cardInfo;
-      return {
-        originalIndex: index,
-        count,
-        id,
-        ...cardDatabase[id]
-      }
-    }));
+    setStartingCoverPokemon(coverPokemon || '');
+    setStartingDeckName(deckName || '');
+    setTimeout(() => {
+      setStartingDecklist(deserializedDecklist.map(({ cardInfo }, index) => {
+        const { id, count } = cardInfo;
+        return {
+          originalIndex: index,
+          count,
+          id,
+          ...cardDatabase[id]
+        }
+      }));
+    }, 10);
   }
 
   useEffect(() => {
@@ -88,7 +94,7 @@ function App() {
   return <>
     <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     {hasStarted ? <ErrorBoundary>
-      {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} /> : 'Loading...'}
+      {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
         Easily scan in your decklist,
@@ -107,7 +113,8 @@ function App() {
             serializedDecklist,
             name,
             createdTimestamp,
-            coverPokemonSpriteUrl
+            coverPokemonSpriteUrl, 
+            coverPokemon
           }) => {
             return <DecklistRow
               key={createdTimestamp}
@@ -115,6 +122,7 @@ function App() {
               loadInDecklist={loadInDecklist}
               deleteDecklist={deleteDecklist}
               createdTimestamp={createdTimestamp}
+              coverPokemon={coverPokemon}
               coverPokemonSpriteUrl={coverPokemonSpriteUrl}
               name={name}
               serializedDecklist={serializedDecklist}

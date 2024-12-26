@@ -99,7 +99,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
-        addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon]);
+        addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
     }
 
     const pokemonDict = {};

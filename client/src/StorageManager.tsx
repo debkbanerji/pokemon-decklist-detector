@@ -17,7 +17,7 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
     });
 }
 
-async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl) {
+async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl, coverPokemon) {
     const nonEmptyDeckName = deckName || 'Unnamed Deck';
     // TODO: Prevent adding of duplicates
     await db.decklists.add(
@@ -25,7 +25,8 @@ async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklis
             serializedDecklist,
             name: nonEmptyDeckName,
             createdTimestamp: modalOpenedTimestamp,
-            coverPokemonSpriteUrl
+            coverPokemonSpriteUrl,
+            coverPokemon
         }
     );
 }
