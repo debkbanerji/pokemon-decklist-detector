@@ -316,6 +316,17 @@ h3 {
     border-radius: 12px;
 }
 
+/* Modal Content/Box */
+.delete-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    margin-top: 50%;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 12px;
+}
+
 .share-buttons-row button {
     margin-left: 4px;
     margin-right: 4px;

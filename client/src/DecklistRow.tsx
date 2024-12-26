@@ -20,6 +20,20 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
         });
     },
         [exportModalRef, setIsExportModalOpen]);
+
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const deleteModalRef = useRef(null);
+    useEffect(() => {
+        window.addEventListener("click", function (event) {
+            // close modal contents if background is clicked
+            if (event.target === deleteModalRef.current) {
+                setIsDeleteModalOpen(false);
+            }
+        });
+    },
+        [deleteModalRef, setIsDeleteModalOpen]);
+
     return <div className="decklist-row">
         <img height={38} src={coverPokemonSpriteUrl}></img>
         <div className='decklist-name-timestamp-container'>
@@ -38,7 +52,12 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                 }, 100);
             }}><MdIosShare /></button>
             <button onClick={() => { loadInDecklist(serializedDecklist, deckName, coverPokemon) }}><MdOutlineEdit /></button>
-            <button onClick={() => { deleteDecklist(createdTimestamp) }}><MdOutlineDelete /></button>
+            <button onClick={() => {
+                setIsDeleteModalOpen(true);
+                setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+            }}><MdOutlineDelete /></button>
         </div>
         {
             isExportModalOpen ?
@@ -53,6 +72,18 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                 deckName={deckName}
                                 setDeckName={setDeckName}
                             />
+                        </div>
+                    </motion.div>
+                </div> : null
+        }
+        {
+            isDeleteModalOpen ?
+                <div ref={deleteModalRef} className="export-modal">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <div className="delete-modal-content">
+                            <b>Delete this decklist?</b>
+                            <button onClick={() => { deleteDecklist(createdTimestamp) }}>Yes</button>
+                            <button onClick={() => { setIsDeleteModalOpen(false) }}>No</button>
                         </div>
                     </motion.div>
                 </div> : null
