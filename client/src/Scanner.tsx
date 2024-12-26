@@ -183,6 +183,7 @@ function Scanner({ cardDatabase, startingDecklist }) {
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
     const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
+    const latestCard = cardInfoList.length > 0 ? cardInfoList[cardInfoList.length - 1] : null;
     const cardInfoListNonNull = cardInfoList.filter(item => item != null).sort((a, b) => {
         let result = getCardTypeSortWeight(a) - getCardTypeSortWeight(b);
         if (result === 0) {
@@ -332,7 +333,6 @@ function Scanner({ cardDatabase, startingDecklist }) {
                 validCardNames.push('Eri')
             }
             if (validCardNames.length > 0) {
-                const latestCard = cardInfoListNonNull.length > 0 ? cardInfoListNonNull[cardInfoListNonNull.length - 1] : null;
                 // test against the latest scanned card
                 // if the latest scanned card is not a pokemon, and its name matches this one, don't scan again
                 // this protects against accident duplicate scans of trainer cards
@@ -359,8 +359,16 @@ function Scanner({ cardDatabase, startingDecklist }) {
                 }
             });
         }
-    }, [tesseractOutput, currentDetectedCardID, setCurrentDetectedCardID,
-        currentDetectedCardName, setCurrentDetectedCardName, cardNames, cardNameToIDs]);
+    }, [
+        tesseractOutput,
+        currentDetectedCardID,
+        setCurrentDetectedCardID,
+        currentDetectedCardName,
+        setCurrentDetectedCardName,
+        cardNames,
+        cardNameToIDs,
+        latestCard
+    ]);
 
     async function tesseractTick() {
         const canvas = tesseractCanvasRef.current;
