@@ -243,12 +243,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     }
 
     useEffect(() => {
-        window.onclick = function (event) {
+        window.addEventListener("click", function (event) {
             // close modal contents if background is clicked
             if (event.target === exportModalRef.current) {
                 setIsExportModalOpen(false);
             }
-        }
+        });
     },
         [exportModalRef, setIsExportModalOpen]);
 
@@ -614,6 +614,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 setCoverPokemon={setCoverPokemon}
                                 deckName={deckName}
                                 setDeckName={setDeckName}
+                                enableSaving={true}
                                 />
                         </div>
                     </motion.div>

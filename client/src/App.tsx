@@ -113,7 +113,7 @@ function App() {
             serializedDecklist,
             name,
             createdTimestamp,
-            coverPokemonSpriteUrl, 
+            coverPokemonSpriteUrl,
             coverPokemon
           }) => {
             return <DecklistRow
@@ -137,7 +137,8 @@ function App() {
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
             <div className="export-modal-content">
               <ExportModal cardDatabase={cardDatabase}
-                undeletedCardData={decklistForModal} />
+                undeletedCardData={decklistForModal}
+                enableSaving={true} />
             </div>
           </motion.div>
         </div> : null

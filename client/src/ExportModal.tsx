@@ -85,7 +85,7 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
 }
 
 
-function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName }) {
+function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     useEffect(() => {
@@ -95,7 +95,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }, [modalOpenedTimestamp, setModalOpenedTimestamp]);
 
     async function saveDecklistToStorage() {
-        if (!storageEnabled()) {
+        if (!enableSaving || !storageEnabled()) {
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
@@ -374,9 +374,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }
     return <div>
         <h2>Export Decklist</h2>
-        <div className='storage-info'>
+        {enableSaving ? <div className='storage-info'>
             When you export a decklist, it is also saved to your browser's local storage
-        </div>
+        </div> : null}
         <hr style={{ marginTop: 5 }} />
         {totalCountValid ?
             <>
