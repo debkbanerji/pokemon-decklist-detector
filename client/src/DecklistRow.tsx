@@ -6,8 +6,8 @@ import { motion } from "motion/react"
 import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 
 function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist }) {
-    const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon);
-    const [deckName, setDeckName] = useState(startingDeckName);
+    const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon || '');
+    const [deckName, setDeckName] = useState(startingDeckName || '');
 
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const exportModalRef = useRef(null);
