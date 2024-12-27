@@ -66,7 +66,18 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                         <div className="export-modal-content">
                             <ExportModal
                                 cardDatabase={cardDatabase}
-                                undeletedCardData={deserializeDecklist(serializedDecklist, cardDatabase)}
+                                undeletedCardData={deserializeDecklist(serializedDecklist, cardDatabase)
+                                    .map(({ cardInfo }, index) => {
+                                        const { id, count } = cardInfo;
+                                        return {
+                                            cardInfo: {
+                                                originalIndex: index,
+                                                count,
+                                                id,
+                                                ...cardDatabase[id]
+                                            }
+                                        };
+                                    })}
                                 coverPokemon={coverPokemon}
                                 setCoverPokemon={setCoverPokemon}
                                 deckName={deckName}
