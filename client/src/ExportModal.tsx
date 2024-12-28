@@ -158,10 +158,10 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         + numEnergies;
     const totalCountValid = totalCount === 60;
 
-    const cardNameToIDs = useMemo(() => {
+    const fullCardNameToIDs = useMemo(() => {
         const result = {};
         Object.keys(cardDatabase).forEach(id => {
-            const name = cardDatabase[id].name_without_prefix_and_postfix;
+            const name = cardDatabase[id].name;
             result[name] = (result[name] ?? []).concat([id]);
         });
         for (const key of Object.keys(result)) {
@@ -182,7 +182,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const trainerText = `Trainer: ${numTrainers}\n${trainers.filter(row => row[1] > 0).map(row => {
         const name = row[0];
         const count = row[1];
-        const cardSample = cardDatabase[cardNameToIDs[name][0]];
+        const cardSample = cardDatabase[fullCardNameToIDs[name][0]];
         const setCode = getDisplaySetCode(cardSample);
         const setCodeForTCGLive = TCG_LIVE_SET_OVERRIDE[setCode] ?? setCode;
         return `${count} ${name} ${setCodeForTCGLive} ${maybeProcessGalleryCardNumber(cardSample['number'])}`
@@ -190,7 +190,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const energyText = `Energy: ${numEnergies}\n${energies.filter(row => row[1] > 0).map(row => {
         const name = row[0];
         const count = row[1];
-        const cardSample = cardDatabase[cardNameToIDs[name][0]];
+        const cardSample = cardDatabase[fullCardNameToIDs[name][0]];
         const setCode = getDisplaySetCode(cardSample);
         const setCodeForTCGLive = TCG_LIVE_SET_OVERRIDE[setCode] ?? setCode;
         return `${count} ${name} ${setCodeForTCGLive} ${maybeProcessGalleryCardNumber(cardSample['number'])}`
