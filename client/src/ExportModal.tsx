@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
@@ -55,6 +55,11 @@ const TYPE_TO_ENERGY_SYMBOL_URL = {
     'Darkness': 'darkness-energy-symbol.png',
     'Metal': 'metal-energy-symbol.png',
     'Colorless': 'colorless-energy-symbol.png',
+}
+
+const TCG_LIVE_SET_OVERRIDE = {
+    'SVP': 'PR-SV',
+    'PR': 'PR-SW'
 }
 
 function hexToRgb(hex) {
@@ -147,22 +152,39 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         + numEnergies;
     const totalCountValid = totalCount === 60;
 
+    const cardNameToIDs = useMemo(() => {
+        const result = {};
+        Object.keys(cardDatabase).forEach(id => {
+            const name = cardDatabase[id].name_without_prefix_and_postfix;
+            result[name] = (result[name] ?? []).concat([id]);
+        });
+        return result;
+    }, [cardDatabase]);
+
     const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
     const pokemonText = `Pokemon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
         const card = cardDatabase[id];
-        return `${count} ${card['name']} ${getDisplaySetCode(card)} ${maybeProcessGalleryCardNumber(card['number'])}`
+        const setCode = getDisplaySetCode(card);
+        const setCodeForTCGLive = TCG_LIVE_SET_OVERRIDE[setCode] ?? setCode;
+        return `${count} ${card['name']} ${setCodeForTCGLive} ${maybeProcessGalleryCardNumber(card['number']).replace('SWSH', '')}`
     }).join('\n')}`;
     const trainerText = `Trainer: ${numTrainers}\n${trainers.filter(row => row[1] > 0).map(row => {
         const name = row[0];
         const count = row[1];
-        return `${count} ${name}`
+        const cardSample = cardDatabase[cardNameToIDs[name][0]];
+        const setCode = getDisplaySetCode(cardSample);
+        const setCodeForTCGLive = TCG_LIVE_SET_OVERRIDE[setCode] ?? setCode;
+        return `${count} ${name} ${setCodeForTCGLive} ${maybeProcessGalleryCardNumber(cardSample['number'])}`
     }).join('\n')}`;
     const energyText = `Energy: ${numEnergies}\n${energies.filter(row => row[1] > 0).map(row => {
         const name = row[0];
         const count = row[1];
-        return `${count} ${name}`
+        const cardSample = cardDatabase[cardNameToIDs[name][0]];
+        const setCode = getDisplaySetCode(cardSample);
+        const setCodeForTCGLive = TCG_LIVE_SET_OVERRIDE[setCode] ?? setCode;
+        return `${count} ${name} ${setCodeForTCGLive} ${maybeProcessGalleryCardNumber(cardSample['number'])}`
     }).join('\n')}`;
     const decklistText = [pokemonText, trainerText, energyText].join('\n\n');
     async function onCopyToClipboard() {
