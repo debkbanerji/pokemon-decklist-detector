@@ -30,6 +30,11 @@ function getCardTypeSortWeight(card) {
     }
 }
 
+function isCardSecretRare(card) {
+    const number = parseInt(card.number) || 0;
+    const setTotal = parseInt(card.set_printed_total) || 0;
+    return setTotal > 1 && number > setTotal;
+}
 
 function doesCaseSensitiveTextContainEri(text) {
     // Hack to detect Eri
@@ -218,6 +223,9 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             const name = cardDatabase[id].name_without_prefix_and_postfix;
             result[name] = (result[name] ?? []).concat([id]);
         });
+        for (const key of Object.keys(result)) {
+            result[key].sort((a, b) => isCardSecretRare(cardDatabase[a]) - isCardSecretRare(cardDatabase[b]));
+        }
         return result;
     }, [cardDatabase]);
     const candidateCardIDs = cardNameToIDs[currentDetectedCardName];
@@ -609,13 +617,13 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                         <div className="export-modal-content">
                             <ExportModal cardDatabase={cardDatabase}
-                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })} 
+                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })}
                                 coverPokemon={coverPokemon}
                                 setCoverPokemon={setCoverPokemon}
                                 deckName={deckName}
                                 setDeckName={setDeckName}
                                 enableSaving={true}
-                                />
+                            />
                         </div>
                     </motion.div>
                 </div> : null
