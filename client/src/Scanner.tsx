@@ -497,6 +497,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             }
             {currentDetectedCardID != null ? <div className='detected-card-in-feed filter-blur'>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                    {cardDatabase[currentDetectedCardID].supertype === 'Pokémon' ?
+                        <>
+                            {cardDatabase[currentDetectedCardID].set_code}&nbsp;
+                            {cardDatabase[currentDetectedCardID].number}
+                        </> : null}
+                    <br />
                     <CardImageForID id={currentDetectedCardID} />
                 </motion.div>
             </div> : null

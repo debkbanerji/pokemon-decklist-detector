@@ -51,7 +51,7 @@ h3 {
 }
 
 .detected-card-in-feed {
-    top: 16%;
+    top: 15%;
     position: absolute;
     left: 0;
     right: 0;
@@ -60,6 +60,9 @@ h3 {
     z-index: 1;
     margin-bottom: 0;
     border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 12;
 }
 
 
