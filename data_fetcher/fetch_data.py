@@ -121,6 +121,40 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/505996_in_1000x1000.jpg",
             "types": ['Colorless'],
             "national_pokedex_numbers": [249]
+        },
+        {
+            "id": 'svp-166',
+            "name": "Teal Mask Ogerpon ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex"))),
+            "supertype": "Pokémon",
+            "hp": "210",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "H",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "166",
+            "set_printed_total": 177, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/596439_in_1000x1000.jpg",
+            "types": ['Grass'],
+            "national_pokedex_numbers": [1017]
+        },
+        {
+            "id": 'svp-177',
+            "name": "Bloodmoon Ursaluna ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex"))),
+            "supertype": "Pokémon",
+            "hp": "260",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "H",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "177",
+            "set_printed_total": 177, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/595473_in_1000x1000.jpg",
+            "types": ['Colorless'],
+            "national_pokedex_numbers": [901]
         }
     ])
     dfs_list.append(manual_fixes_df)
