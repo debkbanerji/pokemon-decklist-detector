@@ -65,7 +65,8 @@ const TYPE_TO_ENERGY_SYMBOL_URL = {
 
 const TCG_LIVE_SET_OVERRIDE = {
     'SVP': 'PR-SV',
-    'PR': 'PR-SW'
+    'PR': 'PR-SW',
+    'sve': 'Energy'
 }
 
 function hexToRgb(hex) {
