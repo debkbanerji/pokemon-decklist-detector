@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
@@ -377,7 +377,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 columnStyles,
                 headStyles,
                 didParseCell,
-            })
+            });
+
+            doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 15, doc.lastAutoTable.finalY + 6)
 
             if (coverPokemon.length > 0) {
                 const coverPokemonImg = new Image();
