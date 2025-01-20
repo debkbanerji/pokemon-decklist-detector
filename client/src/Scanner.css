@@ -62,7 +62,8 @@ h3 {
     border-radius: 10px;
     color: white;
     font-weight: bold;
-    font-size: 12;
+    font-size: 16;
+    text-shadow: black 1px 0 10px;
 }
 
 
