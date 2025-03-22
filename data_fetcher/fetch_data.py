@@ -39,6 +39,16 @@ basic_energy_replacement_regex = re.compile(r"^basic ", re.IGNORECASE)
 sprite_url_replacement_regex = re.compile(r"(\'|\.)", re.IGNORECASE)
 
 
+owner_replacement_regex = re.compile(r"^((N|Iono|Lillie|Hop|Marnie|Steven|Arven|Misty|Ethan|Cynthia|Team Rocket)'s )*", re.IGNORECASE)
+
+# If the card is a pokemon, remove the owner name from the beginning
+# Leave in owner names for trainers
+# Note that the owner name is part of the card name for decklist purposes, so should not always be stripped out
+def get_maybe_trainer_removed_name(name, supertype):
+    return re.sub(owner_replacement_regex, '', name) if supertype == 'Pokémon' else name
+
+
+# Does basic name processing, but does not remove prefix/postfixes that should be part of the core name
 def get_processed_name(name):
     if professors_research_named_regex.match(name):
         return "Professor's Research"
@@ -63,6 +73,7 @@ set_id_to_official_code_overrides = {
   "sv7": "SCR",
   "sv8": "SSP",
   "sv8pt5": "PRE",
+  "sv9": "JTG",
 }
 
 
@@ -83,8 +94,8 @@ def get_cards(): # Returns dataframe
             {
                 "id": card.id,
                 "name": get_processed_name(card.name),
-                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name(card.name)),
-                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name(card.name))),
+                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype)),
+                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype))),
                 "supertype": card.supertype,
                 "hp": card.hp,
                 "set_id": card.set.id,
