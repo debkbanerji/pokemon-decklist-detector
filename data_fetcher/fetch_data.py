@@ -85,7 +85,7 @@ def get_cards(): # Returns dataframe
     processed_cards = None
     while processed_cards is None or len(processed_cards) > 0:
         query = 'legalities.standard:legal'
-        query = '(regulationMark:f OR regulationMark:g OR regulationMark:h OR name:basic) ' + query
+        query = '(regulationMark:g OR regulationMark:h OR regulationMark:i OR name:basic) ' + query
         # query = 'set.id:swsh9 ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         # query = '(name:dialga OR name:greninja OR name:basculin OR name:beldum OR name:metang) ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
         full_card_objects = Card.where(page=page_number, pageSize=PAGE_SIZE, q=query) # All standard legal cards
@@ -117,23 +117,6 @@ def get_cards(): # Returns dataframe
     
     # Lugia V from Crown Zenith is missing from the DB! Add it in manually:
     manual_fixes_df = pd.DataFrame([
-        {
-            "id": 'swshp-SWSH301',
-            "name": "Lugia V",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Lugia V")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Lugia V"))),
-            "supertype": "Pokémon",
-            "hp": "220",
-            "set_id": "swshp",
-            "set_code": "PR",
-            "regulation_mark": "F",
-            "set_name": "SWSH Black Star Promos",
-            "number": "SWSH301",
-            "set_printed_total": 307, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/505996_in_1000x1000.jpg",
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [249]
-        },
         {
             "id": 'svp-166',
             "name": "Teal Mask Ogerpon ex",
@@ -167,6 +150,23 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/595473_in_1000x1000.jpg",
             "types": ['Colorless'],
             "national_pokedex_numbers": [901]
+        },
+        {
+            "id": 'svp-193',
+            "name": "Hop's Zacian ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "230",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "193",
+            "set_printed_total": 193, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/625631_in_1000x1000.jpg",
+            "types": ['Metal'],
+            "national_pokedex_numbers": [888]
         }
     ])
     dfs_list.append(manual_fixes_df)
