@@ -164,9 +164,26 @@ def get_cards(): # Returns dataframe
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "193",
             "set_printed_total": 193, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/625631_in_1000x1000.jpg",
+            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_193_std.jpg",
             "types": ['Metal'],
             "national_pokedex_numbers": [888]
+        },
+        {
+            "id": 'svp-194',
+            "name": "Iono's Bellibolt ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "280",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "194",
+            "set_printed_total": 194, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_194_std.jpg",
+            "types": ['Electric'],
+            "national_pokedex_numbers": [939]
         }
     ])
     dfs_list.append(manual_fixes_df)
