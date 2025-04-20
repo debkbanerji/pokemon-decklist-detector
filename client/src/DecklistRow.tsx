@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ExportModal from './ExportModal.tsx';
 import './App.css';
-import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
+import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } from './StorageManager';
 import { motion } from "motion/react"
 import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 

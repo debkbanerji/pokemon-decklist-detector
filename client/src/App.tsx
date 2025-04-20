@@ -4,7 +4,7 @@ import ErrorBoundary from './ErrorBoundary.tsx';
 import ExportModal from './ExportModal.tsx';
 import DecklistRow from './DecklistRow.tsx';
 import './App.css';
-import { deserializeDecklist, deleteDecklist, getDecklists, storageEnabled } from './StorageManager';
+import { deserializeDecklist, deleteDecklist, getDecklists } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "motion/react"
 
@@ -106,7 +106,7 @@ function App() {
         <source src="demo-video.mp4" type="video/mp4" />
       </video>
       <button onClick={() => setHasStarted(true)}>Start Scanning</button>
-      {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null && storageEnabled() ? <div>
+      {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
         <h3 className='saved-decklists-heading'>Previously Scanned Lists</h3>
         <div className='saved-decklists'>
           {(savedDecklists).map(({

@@ -39,8 +39,16 @@ function getDecklists() {
     return db.decklists.toArray();
 }
 
-function storageEnabled() {
-    return true;
+async function getLatestPlayer() {
+    return await db.players.orderBy('lastUsedTimestamp').last();
 }
 
-export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, storageEnabled };
+async function overWriteLatestPlayer(newPlayer) {
+    const latestPlayer = await getLatestPlayer();
+    if (latestPlayer != null) {
+        await db.players.delete(latestPlayer.playerName);
+    }
+    return await db.players.add(newPlayer);
+}
+
+export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer };

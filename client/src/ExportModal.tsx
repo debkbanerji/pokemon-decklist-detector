@@ -3,7 +3,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import { seralizeDecklist, addDecklistToDB, storageEnabled } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 
 function getDisplaySetCode(card) {
@@ -107,11 +107,20 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }, [modalOpenedTimestamp, setModalOpenedTimestamp]);
 
     async function saveDecklistToStorage() {
-        if (!enableSaving || !storageEnabled()) {
+        // Also save the user to storage
+        await overWriteLatestPlayer({
+            playerName,
+            playerID,
+            playerDOB,
+            ageDivision,
+            lastUsedTimestamp: modalOpenedTimestamp
+        });
+
+        if (!enableSaving) {
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
-        addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
+        await addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
     }
 
     const pokemonDict = {};
@@ -220,6 +229,27 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const [playerID, setPlayerID] = useState('');
     const [playerDOB, setPlayerDOB] = useState();
     const [ageDivision, setAgeDivision] = useState('Masters Division');
+
+
+    useEffect(() => {
+        async function populatePlayerInfoFromDB() {
+            const latestPlayer = await getLatestPlayer();
+            if (latestPlayer != null) {
+                setPlayerName(latestPlayer.playerName);
+                setPlayerID(latestPlayer.playerID);
+                setPlayerDOB(latestPlayer.playerDOB);
+                setAgeDivision(latestPlayer.ageDivision);
+            }
+        }
+        populatePlayerInfoFromDB();
+    }, [
+        setPlayerName,
+        setPlayerID,
+        setPlayerDOB,
+        setAgeDivision,
+        getLatestPlayer
+    ]);
+
     const [format, setFormat] = useState('Standard');
     const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
