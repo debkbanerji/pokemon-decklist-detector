@@ -220,6 +220,10 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const cardNameToIDs = useMemo(() => {
         const result = {};
         Object.keys(cardDatabase).forEach(id => {
+            if (!['G','H','I'].includes(cardDatabase[id].regulation_mark)) {
+                // Don't allow for scanning of old regulation marks
+                return;
+            }
             const name = cardDatabase[id].name_without_prefix_and_postfix;
             result[name] = (result[name] ?? []).concat([id]);
         });
