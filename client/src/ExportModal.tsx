@@ -440,6 +440,25 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 columnStyles,
                 headStyles,
                 didParseCell,
+                didDrawCell: function (data) {
+                    try {
+                        if (data.column.index === 1 && data.row.section === 'body') {
+                            const spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy','')];
+                            const dim = data.cell.height - data.cell.padding('vertical');
+                            const textPos = data.cell.textPos;
+                            if (spriteUrl != null && spriteUrl.length > 0) {
+                                const img = new Image();
+                                const imgProps = doc.getImageProperties(spriteUrl);
+                                const height = dim;
+                                const width = (imgProps.width * height) / imgProps.height;
+                                img.src = spriteUrl;
+                                doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
+                            }
+                        }
+                    } catch (e) {
+                        // do nothing
+                    }
+                }
             });
 
             doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 15, doc.lastAutoTable.finalY + 6)
