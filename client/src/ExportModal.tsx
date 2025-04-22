@@ -5,6 +5,7 @@ import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
+import Select, { components, OptionProps } from 'react-select';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -96,6 +97,29 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
     'Colorless': ['#000000', '#E0E0E0'],
 }
 
+// TODO: Remove the animated ones!
+const playerSpriteFilenames = [
+    '', // '(none)'
+    'alder.png',
+    'bianca.png',
+    'blue.png',
+    'brock.png',
+    'cynthia.png',
+    'erika.png',
+    'giovanni.png',
+    'hilbert.png',
+    'hilda.png',
+    'janine.png',
+    'jasmine.png',
+    'lucas.png',
+    'misty.png',
+    'nate.png',
+    'red.png',
+    'rosa.png',
+    'steven.png',
+    'volkner.png',
+]
+
 
 function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
@@ -120,6 +144,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
+        console.log({ modalOpenedTimestamp, deckName, serializedDecklist, url: pokemonNameToSpriteUrl[coverPokemon], coverPokemon })
         await addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
     }
 
@@ -228,6 +253,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const [playerName, setPlayerName] = useState('');
     const [playerID, setPlayerID] = useState('');
     const [playerDOB, setPlayerDOB] = useState();
+    const [playerSpriteFile, setPlayerSpriteFile] = useState('');
     const [ageDivision, setAgeDivision] = useState('Masters Division');
 
 
@@ -324,6 +350,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
             doc.setFontSize(13);
             doc.setFont(undefined, 'bold').text('Player Name:', 15, 10).setFont(undefined, 'normal').text(playerName, 45, 10);
+            if (playerSpriteFile != null && playerSpriteFile.length > 0) {
+                const playerSpriteImage = new Image();
+                playerSpriteImage.src = 'customization_sprites/' + playerSpriteFile;
+                doc.addImage(playerSpriteImage, 'png', 45.5 + doc.getTextWidth(playerName), 6, 5, 5); // TODO: Place correctly
+            }
             doc.setFont(undefined, 'bold').text('Player ID:', 15, 15).setFont(undefined, 'normal').text(playerID, 37, 15);
             doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 20).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 20);
             doc.setFont(undefined, 'bold').text('Age Division:', 15, 25).setFont(undefined, 'normal').text(ageDivision, 45, 25);
@@ -493,7 +524,32 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                         <option>Expanded</option>
                     </select>
                 </div>
-                <br />
+                <div className='export-pdf-field' style={{
+                    display: 'flex', 'alignItems': 'center'
+                }}>
+                    Player sprite (optional): &nbsp;{
+                        playerSpriteFile === '' ? <Select
+                            options={playerSpriteFilenames.map(sprite => { return { label: sprite, value: sprite }; })}
+                            value={playerSpriteFile}
+                            defaultValue={playerSpriteFile}
+                            onChange={({ value }) => {
+                                setPlayerSpriteFile(value);
+                            }}
+                            formatOptionLabel={sprite => {
+                                if (sprite.value === '') {
+                                    return '(None)'
+                                }
+                                return <img src={"customization_sprites/" + sprite.value}></img>;
+                            }}
+                            placeholder="(none)"
+                            className='sprite-selector'
+                        /> : <div>
+                            <img src={"customization_sprites/" + playerSpriteFile}></img>&nbsp;
+                            <button onClick={() => setPlayerSpriteFile('')}>✖</button>
+                        </div>
+                    }
+                </div>
+                <hr />
                 <div className='export-pdf-field'>
                     Cover Pokemon (Optional): <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
                         <option value={''} key="unset">(none)</option>

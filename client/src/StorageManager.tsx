@@ -19,7 +19,8 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
 
 async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl, coverPokemon) {
     const nonEmptyDeckName = deckName || 'Unnamed Deck';
-    // TODO: Prevent adding of duplicates
+    // Prevent adding of duplicates
+    await deleteDecklist(modalOpenedTimestamp);
     await db.decklists.add(
         {
             serializedDecklist,

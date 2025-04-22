@@ -83,3 +83,7 @@ h3 {
   color: grey;
   font-size: small;
 }
+
+.sprite-selector {
+  width: 40%;
+}
