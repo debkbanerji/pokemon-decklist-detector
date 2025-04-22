@@ -136,6 +136,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             playerName,
             playerID,
             playerDOB,
+            playerSpriteFile,
             ageDivision,
             lastUsedTimestamp: modalOpenedTimestamp
         });
@@ -264,6 +265,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 setPlayerName(latestPlayer.playerName);
                 setPlayerID(latestPlayer.playerID);
                 setPlayerDOB(latestPlayer.playerDOB);
+                setPlayerSpriteFile(latestPlayer.playerSpriteFile??'');
                 setAgeDivision(latestPlayer.ageDivision);
             }
         }
