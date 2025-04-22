@@ -29,7 +29,7 @@ PokemonTCGSDKRestClient.configure(api_key)
 
 PAGE_SIZE = 250
 
-prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost|black|white) )*", re.IGNORECASE)
+prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost|white) )*", re.IGNORECASE)
 postfix_replacement_regex = re.compile(r" (ex|v|vstar|vmax|v-union|sunny form|rainy form|snowy form|with grey felt hat)$", re.IGNORECASE)
 
 professors_research_named_regex = re.compile(r"professor's research \(.*\)$", re.IGNORECASE)
@@ -185,6 +185,23 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_194_std.jpg",
             "types": ['Electric'],
             "national_pokedex_numbers": [939]
+        },
+        {
+            "id": 'svp-195',
+            "name": "Lillie's Clefairy ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "190",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "195",
+            "set_printed_total": 195, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_195_std.jpg",
+            "types": ['Psychic'],
+            "national_pokedex_numbers": [35]
         }
     ])
     dfs_list.append(manual_fixes_df)
