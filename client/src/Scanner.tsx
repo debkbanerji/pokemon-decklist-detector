@@ -4,7 +4,7 @@ import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM } from 'tesseract.js';
-import { motion } from "motion/react"
+import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -417,12 +417,24 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
 
     const addCard = (cardInfo, count) => {
         setShowBasicEnergySelector(false); // clear this
-        const augmentedCardInfo = {
-            count,
-            ...cardInfo,
-            originalIndex: cardInfoList.length, // track this for easier deletions
-        };
-        setCardInfoList(cardInfoList.concat([augmentedCardInfo]));
+
+        const existingCardInfoIndex = cardInfoList.findIndex(existingCard => existingCard?.id === cardInfo.id);
+
+        if (existingCardInfoIndex < 0) { // add a new card
+            const augmentedCardInfo = {
+                count,
+                ...cardInfo,
+                originalIndex: cardInfoList.length, // track this for easier deletions
+            };
+            setCardInfoList(cardInfoList.concat([augmentedCardInfo]));
+        } else {
+            setCardInfoList(cardInfoList.map((info, index) => {
+                if (index === existingCardInfoIndex) {
+                    info.count = info.count + count;
+                }
+                return info;
+            }))
+        }
         setCurrentDetectedCardID(null);
         setCurrentDetectedCardName(null);
     }
@@ -591,62 +603,68 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             </div> : null
         }
         <div className='scans-feed'>
-            {cardInfoListNonNull.map((cardInfo, index) => {
-                const { id, name, number, set_code, set_id, set_name, name_without_prefix_and_postfix, supertype, count, originalIndex } = cardInfo;
+            <motion.div>
+                {cardInfoListNonNull.map((cardInfo, index) => {
+                    const { id, name, number, set_code, set_id, set_name, name_without_prefix_and_postfix, supertype, count, originalIndex } = cardInfo;
 
-                const deleteCard = () => {
-                    setCardInfoList(cardInfoList.map((item, index) => {
-                        return index === originalIndex ? null : item
-                    }));
-                }
+                    const deleteCard = () => {
+                        setCardInfoList(cardInfoList.map((item, index) => {
+                            return index === originalIndex ? null : item
+                        }));
+                    }
 
-                const increaseCardCount = () => {
-                    setCardInfoList(cardInfoList.map((item, index) => {
-                        if (index === originalIndex) {
-                            item.count = item.count + 1;
-                        }
-                        return item;
-                    }));
-                }
-
-                const decreaseCardCount = () => {
-                    setCardInfoList(cardInfoList.map((item, index) => {
-                        if (index === originalIndex) {
-                            item.count = item.count - 1;
-                            if (item.count === 0) {
-                                item = null;
+                    const increaseCardCount = () => {
+                        setCardInfoList(cardInfoList.map((item, index) => {
+                            if (index === originalIndex) {
+                                item.count = item.count + 1;
                             }
-                        }
-                        return item;
-                    }));
-                }
+                            return item;
+                        }));
+                    }
+
+                    const decreaseCardCount = () => {
+                        setCardInfoList(cardInfoList.map((item, index) => {
+                            if (index === originalIndex) {
+                                item.count = item.count - 1;
+                                if (item.count === 0) {
+                                    item = null;
+                                }
+                            }
+                            return item;
+                        }));
+                    }
 
 
-                return <motion.div className="scan-row" key={index}
-                    initial={{ opacity: 0, x: -400, scale: 0.5 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: 200, scale: 1.2 }}
-                    transition={{ duration: 0.6, type: "spring" }}>
-                    <div className='scan-row-image'>
-                        <CardImageForID id={id} />
-                    </div>
-                    <div className='scan-row-input'>
-                        <div>{name}</div>
-                        {supertype === 'Pokémon' ?
-                            <div>
-                                <div className='set-info'><b>{set_code}</b> {number}</div>
-                            </div> : null}
-                        <div className='update-count-row'>
-                            <span>
-                                <button onClick={deleteCard} className='update-count-button'>&#128465;</button>
-                                <button onClick={decreaseCardCount} disabled={count === 1} className='update-count-button'>-</button>
-                                <button onClick={increaseCardCount} disabled={count === 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
-                            </span>
-                            <div><b>{count}&times;</b></div>
+                    return <motion.div
+                        layout="position"
+                        key={id} // uhhh... hope for no duplicate ids - that will mess up animations, but logic should still be fine
+                        className="scan-row"
+                        initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 200, scale: 1.2 }}
+                        transition={{ duration: 0.6, type: "spring" }}>
+                        <div className='scan-row-image'>
+                            <CardImageForID id={id} />
                         </div>
-                    </div>
-                </motion.div>
-            })}</div>
+                        <div className='scan-row-input'>
+                            <div>{name}</div>
+                            {supertype === 'Pokémon' ?
+                                <div>
+                                    <div className='set-info'><b>{set_code}</b> {number}</div>
+                                </div> : null}
+                            <div className='update-count-row'>
+                                <span>
+                                    <button onClick={deleteCard} className='update-count-button'>&#128465;</button>
+                                    <button onClick={decreaseCardCount} disabled={count <= 1} className='update-count-button'>-</button>
+                                    <button onClick={increaseCardCount} disabled={count >= 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
+                                </span>
+                                <div><b>{count}&times;</b></div>
+                            </div>
+                        </div>
+                    </motion.div>
+                })}
+            </motion.div></div>
+
         {
             isExportModalOpen ?
                 <div ref={exportModalRef} className="export-modal">

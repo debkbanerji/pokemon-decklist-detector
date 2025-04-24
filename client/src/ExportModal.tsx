@@ -145,7 +145,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
-        console.log({ modalOpenedTimestamp, deckName, serializedDecklist, url: pokemonNameToSpriteUrl[coverPokemon], coverPokemon })
         await addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
     }
 
