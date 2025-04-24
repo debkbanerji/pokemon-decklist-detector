@@ -639,8 +639,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                         <div className='update-count-row'>
                             <span>
                                 <button onClick={deleteCard} className='update-count-button'>&#128465;</button>
-                                <button onClick={decreaseCardCount} className='update-count-button'>-</button>
-                                <button onClick={increaseCardCount} className='update-count-button'>+</button>
+                                <button onClick={decreaseCardCount} disabled={count === 1} className='update-count-button'>-</button>
+                                <button onClick={increaseCardCount} disabled={count === 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
                             </span>
                             <div><b>{count}&times;</b></div>
                         </div>
