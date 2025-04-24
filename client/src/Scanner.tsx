@@ -600,6 +600,28 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                     }));
                 }
 
+                const increaseCardCount = () => {
+                    setCardInfoList(cardInfoList.map((item, index) => {
+                        if (index === originalIndex) {
+                            item.count = item.count + 1;
+                        }
+                        return item;
+                    }));
+                }
+
+                const decreaseCardCount = () => {
+                    setCardInfoList(cardInfoList.map((item, index) => {
+                        if (index === originalIndex) {
+                            item.count = item.count - 1;
+                            if (item.count === 0) {
+                                item = null;
+                            }
+                        }
+                        return item;
+                    }));
+                }
+
+
                 return <motion.div className="scan-row" key={index}
                     initial={{ opacity: 0, x: -400, scale: 0.5 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -614,8 +636,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                             <div>
                                 <div className='set-info'><b>{set_code}</b> {number}</div>
                             </div> : null}
-                        <div className='delete-and-count-button'>
-                            <button onClick={deleteCard} className='delete-button'>&#128465;</button>
+                        <div className='update-count-row'>
+                            <span>
+                                <button onClick={deleteCard} className='update-count-button'>&#128465;</button>
+                                <button onClick={decreaseCardCount} className='update-count-button'>-</button>
+                                <button onClick={increaseCardCount} className='update-count-button'>+</button>
+                            </span>
                             <div><b>{count}&times;</b></div>
                         </div>
                     </div>

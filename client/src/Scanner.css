@@ -270,7 +270,7 @@ h3 {
     text-align: left;
 }
 
-.delete-and-count-button {
+.update-count-row {
     border-top: 0.5px solid;
     display: flex;
     flex-direction: row;
@@ -278,12 +278,13 @@ h3 {
     font-size: large;
 }
 
-.delete-button {
+.update-count-button {
     padding-right: 12px;
     padding-left: 12px;
     height: 30px;
     padding-top: 2px;
     padding-bottom: 2px;
+    margin-right: 4px;
 }
 
 .set-info {
