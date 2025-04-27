@@ -13,6 +13,24 @@ const TITLE_ADJECTIVES = [
   'Dubious', 'Dazzling', 'Dope', 'Decent', 'Deluxe', 'Distinguished', 'Divine', 'Dynamic', 'Dastardly', 'Diabolical', 'Demure', 'Duplicitous', 'Dilapidated', 'Distinctive'
 ];
 
+function getNestedSavedDecklists(savedDecklists) {
+  // For each saved decklist, squish the previous version into a 'previousDecklistInfo' field
+  const createdTimestampToDecklist = {};
+  savedDecklists.forEach(decklist => {
+    decklist.previousDecklistInfo = [];
+    createdTimestampToDecklist[decklist.createdTimestamp] = decklist;
+  });
+  const result = [];
+  savedDecklists.forEach(decklist => {
+    if (decklist.successorCreatedTimestamp) {
+      createdTimestampToDecklist[decklist.successorCreatedTimestamp].previousDecklistInfo.push(decklist);
+    } else {
+      result.push(decklist);
+    }
+  });
+  return result;
+}
+
 function App() {
   const [cardDatabase, setCardDatabase] = useState(null);
   const savedDecklists = useLiveQuery(() => getDecklists());
@@ -28,6 +46,7 @@ function App() {
   const [hasStarted, setHasStarted] = useState(false);
   const [startingDeckName, setStartingDeckName] = useState('');
   const [startingCoverPokemon, setStartingCoverPokemon] = useState('');
+  const [startingDecklistTimestamp, setStartingDecklistTimestamp] = useState(null);
   const [startingDecklist, setStartingDecklist] = useState([]);
   useEffect(() => {
     if (startingDecklist.length > 0) { // if the starting decklist is set, move to scanner screen
@@ -62,10 +81,11 @@ function App() {
     return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
   }, [TITLE_ADJECTIVES]);
 
-  function loadInDecklist(serializedDecklist, deckName, coverPokemon) {
+  function loadInDecklist(serializedDecklist, deckName, coverPokemon, createdTimestamp) {
     const deserializedDecklist = deserializeDecklist(serializedDecklist, cardDatabase);
     setStartingCoverPokemon(coverPokemon || '');
     setStartingDeckName(deckName || '');
+    setStartingDecklistTimestamp(createdTimestamp)
     setTimeout(() => {
       setStartingDecklist(deserializedDecklist.map(({ cardInfo }, index) => {
         const { id, count } = cardInfo;
@@ -94,7 +114,7 @@ function App() {
   return <>
     <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     {hasStarted ? <ErrorBoundary>
-      {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} /> : 'Loading...'}
+      {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
         Easily scan in your decklist,
@@ -109,12 +129,14 @@ function App() {
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
         <h3 className='saved-decklists-heading'>Previously Scanned Lists</h3>
         <div className='saved-decklists'>
-          {(savedDecklists).map(({
+          {getNestedSavedDecklists(savedDecklists).map(({
             serializedDecklist,
             name,
             createdTimestamp,
             coverPokemonSpriteUrl,
-            coverPokemon
+            coverPokemon,
+            successorCreatedTimestamp,
+            previousDecklistInfo
           }) => {
             return <DecklistRow
               key={createdTimestamp}
@@ -126,6 +148,8 @@ function App() {
               coverPokemonSpriteUrl={coverPokemonSpriteUrl}
               name={name}
               serializedDecklist={serializedDecklist}
+              successorCreatedTimestamp={successorCreatedTimestamp}
+              previousDecklistInfo={previousDecklistInfo}
             />;
           })}
         </div>
@@ -138,7 +162,9 @@ function App() {
             <div className="export-modal-content">
               <ExportModal cardDatabase={cardDatabase}
                 undeletedCardData={decklistForModal}
-                enableSaving={true} />
+                enableSaving={true}
+                previousDecklistTimestamp={startingDecklistTimestamp}
+              />
             </div>
           </motion.div>
         </div> : null

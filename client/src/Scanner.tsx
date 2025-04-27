@@ -179,7 +179,7 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     }
 }
 
-function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon }) {
+function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
@@ -677,6 +677,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 deckName={deckName}
                                 setDeckName={setDeckName}
                                 enableSaving={true}
+                                previousDecklistTimestamp={startingDecklistTimestamp}
                             />
                         </div>
                     </motion.div>

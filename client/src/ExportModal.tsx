@@ -121,7 +121,7 @@ const playerSpriteFilenames = [
 ]
 
 
-function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving }) {
+function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     useEffect(() => {
@@ -145,7 +145,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             return;
         }
         const serializedDecklist = seralizeDecklist(undeletedCardData);
-        await addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon);
+        await addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, pokemonNameToSpriteUrl[coverPokemon], coverPokemon, previousDecklistTimestamp);
     }
 
     const pokemonDict = {};
@@ -264,7 +264,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 setPlayerName(latestPlayer.playerName);
                 setPlayerID(latestPlayer.playerID);
                 setPlayerDOB(latestPlayer.playerDOB);
-                setPlayerSpriteFile(latestPlayer.playerSpriteFile??'');
+                setPlayerSpriteFile(latestPlayer.playerSpriteFile ?? '');
                 setAgeDivision(latestPlayer.ageDivision);
             }
         }
@@ -442,7 +442,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 didDrawCell: function (data) {
                     try {
                         if (data.column.index === 1 && data.row.section === 'body') {
-                            const spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy','')];
+                            const spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy', '')];
                             const dim = data.cell.height - data.cell.padding('vertical');
                             const textPos = data.cell.textPos;
                             if (spriteUrl != null && spriteUrl.length > 0) {

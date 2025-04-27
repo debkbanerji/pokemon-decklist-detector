@@ -5,7 +5,7 @@ import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } fr
 import { motion } from "motion/react"
 import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 
-function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist }) {
+function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist, successorCreatedTimestamp, previousDecklistInfo }) {
     const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon || '');
     const [deckName, setDeckName] = useState(startingDeckName || '');
 
@@ -34,31 +34,53 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
     },
         [deleteModalRef, setIsDeleteModalOpen]);
 
-    return <div className="decklist-row">
-        <img height={38} src={coverPokemonSpriteUrl}></img>
-        <div className='decklist-name-timestamp-container'>
+    return <div>
+        <div className="decklist-row">
+            <img height={38} src={coverPokemonSpriteUrl}></img>
+            <div className='decklist-name-timestamp-container'>
+                <div>
+                    {startingDeckName}
+                </div>
+                <div className='decklist-timestamp'>
+                    {new Date(createdTimestamp).toLocaleString()}
+                </div>
+            </div>
             <div>
-                {startingDeckName}
-            </div>
-            <div className='decklist-timestamp'>
-                {new Date(createdTimestamp).toLocaleString()}
+                <button onClick={() => {
+                    setIsExportModalOpen(true);
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                }}><MdIosShare /></button>
+                <button onClick={() => { loadInDecklist(serializedDecklist, deckName, coverPokemon, successorCreatedTimestamp || createdTimestamp) }}><MdOutlineEdit /></button>
+                <button onClick={() => {
+                    setIsDeleteModalOpen(true);
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                }}><MdOutlineDelete /></button>
             </div>
         </div>
-        <div>
-            <button onClick={() => {
-                setIsExportModalOpen(true);
-                setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
-            }}><MdIosShare /></button>
-            <button onClick={() => { loadInDecklist(serializedDecklist, deckName, coverPokemon) }}><MdOutlineEdit /></button>
-            <button onClick={() => {
-                setIsDeleteModalOpen(true);
-                setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
-            }}><MdOutlineDelete /></button>
-        </div>
+        {previousDecklistInfo && previousDecklistInfo.length > 0 ?
+            <div className='previous-decklist-rows-container'>
+                {
+                    previousDecklistInfo.map(({ createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name, serializedDecklist, successorCreatedTimestamp }) =>
+                        <div key={createdTimestamp} className='previous-decklist-row'>
+                            <DecklistRow
+                                cardDatabase={cardDatabase}
+                                loadInDecklist={loadInDecklist}
+                                deleteDecklist={deleteDecklist}
+                                createdTimestamp={createdTimestamp}
+                                coverPokemon={coverPokemon}
+                                coverPokemonSpriteUrl={coverPokemonSpriteUrl}
+                                name={name}
+                                serializedDecklist={serializedDecklist}
+                                successorCreatedTimestamp={successorCreatedTimestamp}
+                            />
+                        </div>)
+                }
+            </div>
+            : null}
         {
             isExportModalOpen ?
                 <div ref={exportModalRef} className="export-modal">

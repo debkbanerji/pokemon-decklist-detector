@@ -17,23 +17,63 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
     });
 }
 
-async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl, coverPokemon) {
+// The created timestamp is the source of truth
+async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl, coverPokemon, previousDecklistTimestamp) {
     const nonEmptyDeckName = deckName || 'Unnamed Deck';
     // Prevent adding of duplicates
     await deleteDecklist(modalOpenedTimestamp);
+
+
+    if (previousDecklistTimestamp != null) {
+        // each decklist points to its latest 'successor'
+
+        // if a previous decklist timestamp is provided, we update every declklist
+        // that points to that decklist to point to its newly added 'successor' instead
+        const previousDecklists = await db.decklists.where({ 'successorCreatedTimestamp': previousDecklistTimestamp }).toArray();
+        await db.decklists.bulkUpdate(
+            previousDecklists.map(({ createdTimestamp }) => {
+                return {
+                    key: createdTimestamp,
+                    changes: {
+                        successorCreatedTimestamp: modalOpenedTimestamp
+                    }
+                };
+            }).concat([
+                // Also update the current 'successor'
+                {
+                    key: previousDecklistTimestamp,
+                    changes: {
+                        successorCreatedTimestamp: modalOpenedTimestamp
+                    }
+                }
+            ])
+        );
+
+        // if the newest previous decklist is exactly the same as the current one, delete it
+        const newestPreviousDecklist = await db.decklists.get(previousDecklistTimestamp);
+        if (newestPreviousDecklist.serializedDecklist=== serializedDecklist) {
+            await db.decklists.delete(previousDecklistTimestamp);
+        }
+    }
     await db.decklists.add(
         {
             serializedDecklist,
             name: nonEmptyDeckName,
             createdTimestamp: modalOpenedTimestamp,
             coverPokemonSpriteUrl,
-            coverPokemon
+            coverPokemon,
+            previousDecklistTimestamp
         }
     );
 }
 
 async function deleteDecklist(createdTimestamp) {
-    await db.decklists.delete(createdTimestamp);
+    const previousDecklists = await db.decklists.where({ 'successorCreatedTimestamp': createdTimestamp }).toArray();
+    // Delete this decklist, and all previous versions
+    await db.decklists.bulkDelete(
+        [createdTimestamp].concat(previousDecklists.map(decklist => decklist.createdTimestamp))
+    );
+
 }
 
 function getDecklists() {
