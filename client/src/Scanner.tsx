@@ -591,7 +591,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }, 100);
-                }} className={'export-modal-open-button' + (totalCards === 60 ? ' success-text' : '')} disabled={totalCards != 60 && false}>Export</button>
+                }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export</button>
             </div>
             <h3>Scanned Cards: {totalCards}</h3>
         </div>
@@ -678,6 +678,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 setDeckName={setDeckName}
                                 enableSaving={true}
                                 previousDecklistTimestamp={startingDecklistTimestamp}
+                                onClose={()=>setIsExportModalOpen(false)}
                             />
                         </div>
                     </motion.div>

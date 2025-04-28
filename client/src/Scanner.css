@@ -203,6 +203,12 @@ h3 {
     margin-bottom: 2px;
 }
 
+.export-modal-open-button-success {
+    background-color: rgb(15, 149, 0);
+    color: white;
+    font-weight: bold;
+}
+
 .candidate-card-ids {
     display: flex;
     flex-direction: row;

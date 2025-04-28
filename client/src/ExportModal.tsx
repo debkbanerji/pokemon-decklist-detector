@@ -121,7 +121,7 @@ const playerSpriteFilenames = [
 ]
 
 
-function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp }) {
+function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, onClose }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     useEffect(() => {
@@ -488,7 +488,10 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }, 30);
     }
     return <div>
-        <h2>Export Decklist</h2>
+        <div className='modal-header-row'>
+            <h2>Export Decklist</h2>&nbsp;
+            <button onClick={onClose}>✖</button>
+        </div>
         {enableSaving ? <div className='storage-info'>
             When you export a decklist, it is also saved to your browser's local storage
         </div> : null}
@@ -508,6 +511,62 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <br />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <hr />
+        <h4>Deck Info</h4>
+        <div className='export-pdf-field'>
+            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
+                <option value={''} key="unset">(none)</option>
+                {Object.keys(pokemonNameToSpriteUrl).map(name =>
+                    <option value={name} key={name}>{name}</option>
+                )}
+            </select>
+        </div>
+        <div className='export-pdf-field'>
+            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
+        </div>
+        <hr />
+        <h4>Player Info</h4>
+        <div className='export-pdf-field'>
+            Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
+        </div>
+        <div className='export-pdf-field'>
+            Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
+        </div>
+        <div className='export-pdf-field'>
+            Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
+        </div>
+        <div className='export-pdf-field'>
+            Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
+                <option>Junior Division</option>
+                <option>Senior Division</option>
+                <option>Masters Division</option>
+            </select>
+        </div>
+        <div className='export-pdf-field' style={{
+            display: 'flex', 'alignItems': 'center'
+        }}>
+            Player sprite: &nbsp;{
+                playerSpriteFile === '' ? <Select
+                    options={playerSpriteFilenames.map(sprite => { return { label: sprite, value: sprite }; })}
+                    value={playerSpriteFile}
+                    defaultValue={playerSpriteFile}
+                    onChange={({ value }) => {
+                        setPlayerSpriteFile(value);
+                    }}
+                    formatOptionLabel={sprite => {
+                        if (sprite.value === '') {
+                            return '(None)'
+                        }
+                        return <img src={"customization_sprites/" + sprite.value}></img>;
+                    }}
+                    placeholder="(none)"
+                    className='sprite-selector'
+                /> : <div>
+                    <img src={"customization_sprites/" + playerSpriteFile}></img>&nbsp;
+                    <button onClick={() => setPlayerSpriteFile('')}>✖</button>
+                </div>
+            }
+        </div>
+        <hr />
         <div>
             <div className='share-buttons-row'>
                 <button type="button" onClick={onCopyToClipboard}>
@@ -522,69 +581,16 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             </div>
             <h2>Or</h2>
             <div>
-                <div className='export-pdf-field'>
-                    Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
-                </div>
-                <div className='export-pdf-field'>
-                    Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
-                </div>
-                <div className='export-pdf-field'>
-                    Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
-                </div>
-                <div className='export-pdf-field'>
-                    Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
-                        <option>Junior Division</option>
-                        <option>Senior Division</option>
-                        <option>Masters Division</option>
-                    </select>
-                </div>
+                <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
+                    {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
+                </button>
+                <br />
                 <div className='export-pdf-field'>
                     Format: <select onChange={e => setFormat(e.target.value)} value={format}>
                         <option>Standard</option>
                         <option>Expanded</option>
                     </select>
                 </div>
-                <div className='export-pdf-field' style={{
-                    display: 'flex', 'alignItems': 'center'
-                }}>
-                    Player sprite (optional): &nbsp;{
-                        playerSpriteFile === '' ? <Select
-                            options={playerSpriteFilenames.map(sprite => { return { label: sprite, value: sprite }; })}
-                            value={playerSpriteFile}
-                            defaultValue={playerSpriteFile}
-                            onChange={({ value }) => {
-                                setPlayerSpriteFile(value);
-                            }}
-                            formatOptionLabel={sprite => {
-                                if (sprite.value === '') {
-                                    return '(None)'
-                                }
-                                return <img src={"customization_sprites/" + sprite.value}></img>;
-                            }}
-                            placeholder="(none)"
-                            className='sprite-selector'
-                        /> : <div>
-                            <img src={"customization_sprites/" + playerSpriteFile}></img>&nbsp;
-                            <button onClick={() => setPlayerSpriteFile('')}>✖</button>
-                        </div>
-                    }
-                </div>
-                <hr />
-                <div className='export-pdf-field'>
-                    Cover Pokemon (Optional): <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
-                        <option value={''} key="unset">(none)</option>
-                        {Object.keys(pokemonNameToSpriteUrl).map(name =>
-                            <option value={name} key={name}>{name}</option>
-                        )}
-                    </select>
-                </div>
-                <div className='export-pdf-field'>
-                    Deck Name (Optional): <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
-                </div>
-                <br />
-                <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
-                    {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
-                </button>
             </div>
             <h2>Or</h2>
             <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>

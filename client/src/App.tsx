@@ -125,9 +125,9 @@ function App() {
       <video className='demo-video' autoPlay loop muted playsInline>
         <source src="demo-video.mp4" type="video/mp4" />
       </video>
-      <button onClick={() => setHasStarted(true)}>Start Scanning</button>
+      <button onClick={() => setHasStarted(true)}>Start Scanning!</button>
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
-        <h3 className='saved-decklists-heading'>Previously Scanned Lists</h3>
+        <h3 className='saved-decklists-heading'>Previous Lists</h3>
         <div className='saved-decklists'>
           {getNestedSavedDecklists(savedDecklists).map(({
             serializedDecklist,
