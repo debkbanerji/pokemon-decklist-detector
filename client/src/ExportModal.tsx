@@ -491,7 +491,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <div className='modal-header-row'>
             <div>
                 <h2>Export Decklist</h2>&nbsp;
-                <button onClick={onClose} className='modal-header-row-button'>✖</button>
+                <div onClick={onClose} className='modal-header-row-button'>
+                </div>
             </div>
         </div>
         {enableSaving ? <div className='storage-info'>

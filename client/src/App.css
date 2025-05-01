@@ -145,12 +145,16 @@ h3 {
   flex-direction: row;
 }
 
+
 .modal-header-row-button {
+  margin-left: 8px;
+  margin-top: 1px;
+}
+
+.modal-header-row-button:after {
   color: red;
-  padding-bottom: 0px;
-  padding-top: 0px;
-  padding-left: 8px;
-  padding-right: 8px;
-  margin-left: 10px;
-  line-height: 8px;
+  font-size: 50px;
+  content: "\00d7";
+  height: 30px;
+  line-height: 45px;
 }
