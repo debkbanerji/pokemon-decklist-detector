@@ -202,6 +202,23 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_195_std.jpg",
             "types": ['Psychic'],
             "national_pokedex_numbers": [35]
+        },
+        {
+            "id": 'svp-189',
+            "name": "N's Zorua",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "70",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "189",
+            "set_printed_total": 189, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_189_std.jpg",
+            "types": ['Darkness'],
+            "national_pokedex_numbers": [189]
         }
     ])
     dfs_list.append(manual_fixes_df)
