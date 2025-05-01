@@ -489,8 +489,10 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }
     return <div>
         <div className='modal-header-row'>
-            <h2>Export Decklist</h2>&nbsp;
-            <button onClick={onClose}>✖</button>
+            <div>
+                <h2>Export Decklist</h2>&nbsp;
+                <button onClick={onClose} className='modal-header-row-button'>✖</button>
+            </div>
         </div>
         {enableSaving ? <div className='storage-info'>
             When you export a decklist, it is also saved to your browser's local storage

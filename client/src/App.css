@@ -133,12 +133,24 @@ h3 {
 }
 
 .modal-header-row {
+  width: 100%;
+  text-align: center;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-.modal-header-row>button {
+.modal-header-row>div {
+  display: flex;
+  flex-direction: row;
+}
+
+.modal-header-row-button {
   color: red;
-  padding: 12px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-left: 10px;
+  line-height: 8px;
 }

@@ -338,6 +338,10 @@ h3 {
     border-radius: 12px;
 }
 
+.delete-modal-content > button {
+    margin-left: 10px;
+}
+
 .share-buttons-row button {
     margin-left: 4px;
     margin-right: 4px;
