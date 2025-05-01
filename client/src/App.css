@@ -97,7 +97,7 @@ h3 {
   flex-direction: column-reverse;
 }
 
-.previous-decklist-row * button {
+.previous-decklist-row-button {
   padding: 6px;
   padding-bottom: 4px;
 }

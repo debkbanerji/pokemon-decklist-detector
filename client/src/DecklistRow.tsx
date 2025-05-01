@@ -5,7 +5,7 @@ import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } fr
 import { motion } from "motion/react"
 import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 
-function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist, successorCreatedTimestamp, previousDecklistInfo }) {
+function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist, successorCreatedTimestamp, previousDecklistInfo, isNested }) {
     const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon || '');
     const [deckName, setDeckName] = useState(startingDeckName || '');
 
@@ -48,19 +48,25 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                         </div>
                     </div>
                     <div>
-                        <button onClick={() => {
-                            setIsExportModalOpen(true);
-                            setTimeout(() => {
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }, 100);
-                        }}><MdIosShare /></button>
-                        <button onClick={() => { loadInDecklist(serializedDecklist, deckName, coverPokemon, successorCreatedTimestamp || createdTimestamp) }}><MdOutlineEdit /></button>
-                        <button onClick={() => {
-                            setIsDeleteModalOpen(true);
-                            setTimeout(() => {
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }, 100);
-                        }}><MdOutlineDelete /></button>
+                        <button
+                            className={isNested ? 'previous-decklist-row-button ' : ''}
+                            onClick={() => {
+                                setIsExportModalOpen(true);
+                                setTimeout(() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 100);
+                            }}><MdIosShare /></button>
+                        <button
+                            className={isNested ? 'previous-decklist-row-button ' : ''}
+                            onClick={() => { loadInDecklist(serializedDecklist, deckName, coverPokemon, successorCreatedTimestamp || createdTimestamp) }}><MdOutlineEdit /></button>
+                        <button
+                            className={isNested ? 'previous-decklist-row-button ' : ''}
+                            onClick={() => {
+                                setIsDeleteModalOpen(true);
+                                setTimeout(() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 100);
+                            }}><MdOutlineDelete /></button>
                     </div>
                 </div>
                 {previousDecklistInfo && previousDecklistInfo.length > 0 ?
@@ -80,6 +86,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                             name={name}
                                             serializedDecklist={serializedDecklist}
                                             successorCreatedTimestamp={successorCreatedTimestamp}
+                                            isNested={true}
                                         />
                                     </div>)
                             }

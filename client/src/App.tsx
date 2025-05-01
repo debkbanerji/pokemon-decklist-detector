@@ -150,6 +150,7 @@ function App() {
               serializedDecklist={serializedDecklist}
               successorCreatedTimestamp={successorCreatedTimestamp}
               previousDecklistInfo={previousDecklistInfo}
+              isNested={false}
             />;
           })}
         </div>
