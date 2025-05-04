@@ -165,3 +165,12 @@ hr {
   background-color: grey;
   height: 1px;
 }
+
+.start-scanning-button {
+  font-size: 20px;
+  width: 95%;
+  margin-bottom: 10px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  height: 56px;
+}
