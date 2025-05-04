@@ -205,7 +205,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         return result;
     }, [cardDatabase]);
 
-    const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
+    const [clipboardButtonText, setClipboardButtonText] = useState('Copy to Clipboard');
     const pokemonText = `Pokemon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
@@ -238,9 +238,17 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             ).then(() => {
                 setClipboardButtonText('Copied!');
                 setTimeout(() =>
-                    setClipboardButtonText('Copy List to Clipboard'), 1000)
+                    setClipboardButtonText('Copy to Clipboard'), 1000)
             });
         await saveDecklistToStorage();
+    }
+
+    const [saveChangesButtonManuallyText, setSaveChangesButtonManuallyText] = useState('Save Changes');
+    async function onSaveChangesManually() {
+        await saveDecklistToStorage();
+        setSaveChangesButtonManuallyText('Saved!');
+        setTimeout(() =>
+            setSaveChangesButtonManuallyText('Save Changes'), 1000);
     }
 
     const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
@@ -498,7 +506,23 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         {enableSaving ? <div className='storage-info'>
             When you export a decklist, it is also saved to your browser's local storage
         </div> : null}
-        <hr style={{ marginTop: 5 }} />
+        {enableSaving ? <div className='storage-info'>
+            <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>
+        </div> : null}
+        <hr style={{ marginTop: 16 }} />
+        <h4>Deck Info</h4>
+        <div className='export-pdf-field'>
+            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
+                <option value={''} key="unset">(none)</option>
+                {Object.keys(pokemonNameToSpriteUrl).map(name =>
+                    <option value={name} key={name}>{name}</option>
+                )}
+            </select>
+        </div>
+        <div className='export-pdf-field'>
+            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
+        </div>
+        <hr />
         {totalCountValid ?
             <>
                 <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
@@ -513,19 +537,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }
         <br />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
-        <hr />
-        <h4>Deck Info</h4>
-        <div className='export-pdf-field'>
-            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
-                <option value={''} key="unset">(none)</option>
-                {Object.keys(pokemonNameToSpriteUrl).map(name =>
-                    <option value={name} key={name}>{name}</option>
-                )}
-            </select>
-        </div>
-        <div className='export-pdf-field'>
-            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
-        </div>
         <hr />
         <h4>Player Info</h4>
         <div className='export-pdf-field'>

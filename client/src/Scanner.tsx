@@ -584,22 +584,18 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 />
             </div> : null
         }
-        <div className='scans-feed-header'>
-            <div>
-                <button onClick={() => {
-                    setIsExportModalOpen(true);
-                    setTimeout(() => {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 100);
-                }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export</button>
-            </div>
-            <h3>Scanned Cards: {totalCards}</h3>
-        </div>
+        <hr />
+        <button onClick={() => {
+            setIsExportModalOpen(true);
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export / Save</button>
+        <h3>Scanned Cards: {totalCards}</h3>
         {totalCards > 0 ?
             <div>
                 <DecklistImage decklist={cardInfoListNonNull} cardDatabase={cardDatabase} />
-                <hr style={{ marginTop: 20, marginBottom: 5 }} />
-                <h3 style={{ marginBottom: 7 }}>Card List</h3>
+                <h4 style={{ marginBottom: 7, marginTop: 14 }}>Edit</h4>
             </div> : null
         }
         <div className='scans-feed'>
@@ -678,7 +674,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 setDeckName={setDeckName}
                                 enableSaving={true}
                                 previousDecklistTimestamp={startingDecklistTimestamp}
-                                onClose={()=>setIsExportModalOpen(false)}
+                                onClose={() => setIsExportModalOpen(false)}
                             />
                         </div>
                     </motion.div>

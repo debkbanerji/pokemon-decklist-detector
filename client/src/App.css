@@ -138,6 +138,7 @@ h3 {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  margin-top: 8px;
 }
 
 .modal-header-row>div {
@@ -157,4 +158,10 @@ h3 {
   content: "\00d7";
   height: 30px;
   line-height: 45px;
+}
+
+hr {
+  border: none;
+  background-color: grey;
+  height: 1px;
 }

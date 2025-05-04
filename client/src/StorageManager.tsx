@@ -51,7 +51,7 @@ async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklis
 
         // if the newest previous decklist is exactly the same as the current one, delete it
         const newestPreviousDecklist = await db.decklists.get(previousDecklistTimestamp);
-        if (newestPreviousDecklist.serializedDecklist=== serializedDecklist) {
+        if (newestPreviousDecklist != null && newestPreviousDecklist.serializedDecklist === serializedDecklist) {
             await db.decklists.delete(previousDecklistTimestamp);
         }
     }

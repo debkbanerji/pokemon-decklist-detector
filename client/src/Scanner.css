@@ -199,8 +199,9 @@ h3 {
     font-size: larger;
     width: 95%;
     margin-bottom: 10px;
-    margin-top: 10px;
-    margin-bottom: 2px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    height: 56px;
 }
 
 .export-modal-open-button-success {
@@ -234,10 +235,6 @@ h3 {
     margin-top: 8px;
     margin-bottom: 6px;
     text-align: center;
-}
-
-.scans-feed-header {
-    border-top: 0.5px solid;
 }
 
 .scans-feed {
