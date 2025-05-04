@@ -518,22 +518,24 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     <option value={name} key={name}>{name}</option>
                 )}
             </select>
+            {coverPokemon != null && coverPokemon.length > 0 ? <img style={{ marginLeft: 5 }} src={pokemonNameToSpriteUrl[coverPokemon]}></img> : null}
         </div>
         <div className='export-pdf-field'>
             Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
         <hr />
-        {totalCountValid ?
-            <>
-                <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
-                    <b className='error-text'>especially for Pokémon versions</b></div>
-                <br />
-                <b />
-                <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
-            </> :
-            <b>
-                <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
-            </b>
+        {
+            totalCountValid ?
+                <>
+                    <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
+                        <b className='error-text'>especially for Pokémon versions</b></div>
+                    <br />
+                    <b />
+                    <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
+                </> :
+                <b>
+                    <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
+                </b>
         }
         <br />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
