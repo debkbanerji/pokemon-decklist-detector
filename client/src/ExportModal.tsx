@@ -532,6 +532,22 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>
         </div> : null}
         <hr style={{ marginTop: 16 }} />
+        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
+        <br />
+        {
+            totalCountValid ?
+                <>
+                    <div><b className='warning-text'>Ensure the cards and counts are correct, </b>
+                        <b className='error-text'>especially for Pokémon versions</b></div>
+                    <br />
+                    <b />
+                    <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
+                </> :
+                <b>
+                    <div><b className='error-text'>WARNING: Your list doesn't have exactly 60 cards</b></div>
+                </b>
+        }
+        <hr />
         <h3>Deck Info</h3>
         <div className='export-pdf-field'>
             Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
@@ -545,22 +561,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <div className='export-pdf-field'>
             Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
-        <hr />
-        {
-            totalCountValid ?
-                <>
-                    <div><b className='warning-text'>Ensure the cards and counts are correct before proceeding, </b>
-                        <b className='error-text'>especially for Pokémon versions</b></div>
-                    <br />
-                    <b />
-                    <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
-                </> :
-                <b>
-                    <div><b className='error-text'>WARNING: Your decklist doesn't have exactly 60 cards</b></div>
-                </b>
-        }
-        <br />
-        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <hr />
         <h3>Player Info</h3>
         <div className='export-pdf-field'>
