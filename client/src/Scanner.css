@@ -191,7 +191,7 @@ h3 {
 .clipboard-button-subtext {
     font-size: small;
     color: grey;
-    margin-top: 4px;  
+    margin-top: 4px;
     margin-bottom: 0;
 }
 
@@ -335,13 +335,19 @@ h3 {
     border-radius: 12px;
 }
 
-.delete-modal-content > button {
+.delete-modal-content>button {
     margin-left: 10px;
+}
+
+.share-buttons-row {
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .share-buttons-row button {
     margin-left: 4px;
     margin-right: 4px;
+    margin-bottom: 8px;
 }
 
 .export-pdf-field {

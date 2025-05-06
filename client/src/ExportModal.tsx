@@ -6,6 +6,7 @@ import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import Select, { components, OptionProps } from 'react-select';
+import QRCode from "react-qr-code";
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -205,7 +206,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         return result;
     }, [cardDatabase]);
 
-    const [clipboardButtonText, setClipboardButtonText] = useState('Copy to Clipboard');
+    const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
     const pokemonText = `Pokemon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
@@ -238,7 +239,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             ).then(() => {
                 setClipboardButtonText('Copied!');
                 setTimeout(() =>
-                    setClipboardButtonText('Copy to Clipboard'), 1000)
+                    setClipboardButtonText('Copy List to Clipboard'), 1000)
             });
         await saveDecklistToStorage();
     }
@@ -495,6 +496,27 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
         }, 30);
     }
+
+    const [showQRCode, setShowQRCode] = useState(false);
+
+    if (showQRCode) {
+        return <div>
+            <div className='modal-header-row'>
+                <div>
+                    <h2>List QR Code</h2>&nbsp;
+                    <div onClick={onClose} className='modal-header-row-button'>
+                    </div>
+                </div>
+            </div>
+            <QRCode
+                size={256}
+                style={{ height: "auto", maxWidth: "100%", width: "100%", marginTop: '12px' }}
+                value={shareableUrl}
+                viewBox={`0 0 256 256`}
+            />
+        </div>
+    }
+
     return <div>
         <div className='modal-header-row'>
             <div>
@@ -510,7 +532,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>
         </div> : null}
         <hr style={{ marginTop: 16 }} />
-        <h4>Deck Info</h4>
+        <h3>Deck Info</h3>
         <div className='export-pdf-field'>
             Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
                 <option value={''} key="unset">(none)</option>
@@ -540,7 +562,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <br />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <hr />
-        <h4>Player Info</h4>
+        <h3>Player Info</h3>
         <div className='export-pdf-field'>
             Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
         </div>
@@ -584,34 +606,35 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         </div>
         <hr />
         <div>
+            <h3>Export Options</h3>
             <div className='share-buttons-row'>
-                <button type="button" onClick={onCopyToClipboard}>
-                    {clipboardButtonText}
-                </button>
-                {canshareUrl ? <button type="button" onClick={onShareUrl}>
-                    Share Link
-                </button> : null}
-                <div className='clipboard-button-subtext'>
-                    Copied lists can be imported to TCG Live, etc.
-                </div>
-            </div>
-            <h2>Or</h2>
-            <div>
                 <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
                     {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
-                <br />
-                <div className='export-pdf-field'>
-                    Format: <select onChange={e => setFormat(e.target.value)} value={format}>
-                        <option>Standard</option>
-                        <option>Expanded</option>
-                    </select>
-                </div>
+                <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
+                    Email List
+                </button></a>
+                {canshareUrl ? <>
+                    <button type="button" onClick={onShareUrl}>
+                        Share Link
+                    </button>
+                    <button type="button" onClick={async () => {
+                        await saveDecklistToStorage();
+                        setShowQRCode(true);
+                    }}>
+                        View QR Code
+                    </button>
+                </> : null}
+                <button type="button" onClick={onCopyToClipboard}>
+                    {clipboardButtonText}
+                </button>
             </div>
-            <h2>Or</h2>
-            <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
-                Email Decklist
-            </button></a>
+            <div className='export-pdf-field'>
+                Format: <select onChange={e => setFormat(e.target.value)} value={format}>
+                    <option>Standard</option>
+                    <option>Expanded</option>
+                </select>
+            </div>
         </div>
     </div >;
 }

@@ -165,6 +165,7 @@ function App() {
                 undeletedCardData={decklistForModal}
                 enableSaving={true}
                 previousDecklistTimestamp={startingDecklistTimestamp}
+                onClose={() => setDecklistForModal(null)}
               />
             </div>
           </motion.div>
