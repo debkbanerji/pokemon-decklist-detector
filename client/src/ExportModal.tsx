@@ -353,7 +353,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 return [count, name]
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-            const doc = new jsPDF();
+            const doc = new jsPDF({ format: 'letter' });
 
             const tableStyles = { cellPadding: 0.2 };
             const columnStyles = { 0: { cellWidth: 16 } };
@@ -388,8 +388,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 decklistQRObject.addData(shareableUrl);
                 decklistQRObject.make();
                 const decklistQRCodeImage = new Image();
-                decklistQRCodeImage.src = decklistQRObject.createDataURL();
-                doc.addImage(decklistQRCodeImage, 'png', 152.5, 2, 46, 46);
+                decklistQRCodeImage.src = decklistQRObject.createDataURL(null, 0);
+                doc.addImage(decklistQRCodeImage, 'png', 161.5, 5, 40, 40);
             }
 
 
