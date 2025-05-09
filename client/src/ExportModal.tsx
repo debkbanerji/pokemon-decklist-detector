@@ -339,13 +339,13 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 const spriteUrl = getSpriteUrlForCard(card);
 
                 return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
-            }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
             const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
                 const name = row[0];
                 const count = row[1];
                 return [count, name]
-            }).concat([...Array(2)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
             const energyTable = energies.filter(row => row[1] > 0).map(row => {
                 const name = row[0];
