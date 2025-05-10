@@ -254,7 +254,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }
 
     const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
-    const canshareUrl = true || (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
+    const canshareUrl = (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
     async function onShareUrl() {
         await saveDecklistToStorage();
         navigator.share({ url: shareableUrl });

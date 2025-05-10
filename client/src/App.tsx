@@ -165,7 +165,12 @@ function App() {
                 undeletedCardData={decklistForModal}
                 enableSaving={true}
                 previousDecklistTimestamp={startingDecklistTimestamp}
-                onClose={() => setDecklistForModal(null)}
+                onClose={() => {
+                  setDecklistForModal(null);
+                  
+                  // clear query params if they're present, so a refresh doesn't cause the modal to show up again
+                  window.location.href = window.location.origin + window.location.pathname
+                }}
               />
             </div>
           </motion.div>
