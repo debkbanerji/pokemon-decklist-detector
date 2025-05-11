@@ -20,14 +20,11 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
 // The created timestamp is the source of truth
 async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklist, coverPokemonSpriteUrl, coverPokemon, previousDecklistTimestamp) {
     const nonEmptyDeckName = deckName || 'Unnamed Deck';
-    // Prevent adding of duplicates
-    await deleteDecklist(modalOpenedTimestamp);
-
 
     if (previousDecklistTimestamp != null) {
         // each decklist points to its latest 'successor'
 
-        // if a previous decklist timestamp is provided, we update every declklist
+        // if a previous decklist timestamp is provided, we update every decklist
         // that points to that decklist to point to its newly added 'successor' instead
         const previousDecklists = await db.decklists.where({ 'successorCreatedTimestamp': previousDecklistTimestamp }).toArray();
         await db.decklists.bulkUpdate(
@@ -55,6 +52,12 @@ async function addDecklistToDB(modalOpenedTimestamp, deckName, serializedDecklis
             await db.decklists.delete(previousDecklistTimestamp);
         }
     }
+
+    // Prevent adding of duplicates
+    // manually delete *just* this one decklist to prevent adding of duplicates
+    // Don't use the deleteDecklist to avoid cascading deletes during add
+    await db.decklists.delete(modalOpenedTimestamp)
+
     await db.decklists.add(
         {
             serializedDecklist,
@@ -73,6 +76,9 @@ async function deleteDecklist(createdTimestamp) {
     await db.decklists.bulkDelete(
         [createdTimestamp].concat(previousDecklists.map(decklist => decklist.createdTimestamp))
     );
+
+    console.log('deleting');
+    console.log( [createdTimestamp].concat(previousDecklists.map(decklist => decklist.createdTimestamp)));
 
 }
 
