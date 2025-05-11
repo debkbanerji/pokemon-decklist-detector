@@ -245,12 +245,12 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         await saveDecklistToStorage();
     }
 
-    const [saveChangesButtonManuallyText, setSaveChangesButtonManuallyText] = useState('Save Changes');
+    const [saveChangesButtonManuallyText, setSaveChangesButtonManuallyText] = useState(previousDecklistTimestamp == null ? 'Save to My Decks' : 'Save Changes');
     async function onSaveChangesManually() {
         await saveDecklistToStorage();
         setSaveChangesButtonManuallyText('Saved!');
         setTimeout(() =>
-            setSaveChangesButtonManuallyText('Save Changes'), 1000);
+            setSaveChangesButtonManuallyText(previousDecklistTimestamp == null ? 'Save to My Decks' : 'Save Changes'), 1000);
     }
 
     const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
