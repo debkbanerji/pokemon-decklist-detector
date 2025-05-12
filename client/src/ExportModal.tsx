@@ -253,7 +253,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             setSaveChangesButtonManuallyText(previousDecklistTimestamp == null ? 'Save to My Decks' : 'Save Changes'), 1000);
     }
 
-    const shareableUrl = window.location.origin + '?decklist=' + seralizeDecklist(undeletedCardData);
+    const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(undeletedCardData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + coverPokemon) : ''}`;
     const canshareUrl = (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
     async function onShareUrl() {
         await saveDecklistToStorage();
@@ -490,7 +490,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     doc.addImage(coverPokemonUrl, 'png', 15 + doc.getTextWidth(playerName), 5, width, height);
 
                     // Watermark the page
-                    doc.setGState(new doc.GState({ opacity: 0.08 }));
+                    doc.setGState(new doc.GState({ opacity: 0.10 }));
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
                     const bigHeight = pageHeight / 3;

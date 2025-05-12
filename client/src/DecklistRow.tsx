@@ -115,8 +115,8 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                             };
                                         })}
                                     coverPokemon={coverPokemon}
-                                    setCoverPokemon={setCoverPokemon}
-                                    deckName={deckName}
+                                    setCoverPokemon={setCoverPokemon ?? ''}
+                                    deckName={deckName ?? ''}
                                     setDeckName={setDeckName}
                                     onClose={() => setIsExportModalOpen(false)}
                                 />

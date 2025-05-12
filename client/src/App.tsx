@@ -37,6 +37,8 @@ function App() {
 
   const exportModalRef = useRef(null);
   const [decklistForModal, setDecklistForModal] = useState(null);
+  const [coverPokemonForModal, setCoverPokemonForModal] = useState('');
+  const [deckNameForModal, setDeckNameForModal] = useState('');
 
   useEffect(() => {
     fetch("/card_database.json").then(r => r.json())
@@ -57,9 +59,15 @@ function App() {
   useEffect(() => {
     if (cardDatabase != null) {
       try {
-        const match = window.location.href.match('[?&]' + 'decklist' + '=([^&]+)');
-        if (match) {
-          const deserializedDecklist = deserializeDecklist(match[1], cardDatabase);
+        const decklistMatch = window.location.href.match('[?&]' + 'decklist' + '=([^&]+)');
+        if (decklistMatch) {
+          const deserializedDecklist = deserializeDecklist(decklistMatch[1], cardDatabase);
+
+          const coverPokemonMatch = window.location.href.match('[?&]' + 'cover_pokemon' + '=([^&]+)') ?? ['',''];
+          const deckNameMatch = window.location.href.match('[?&]' + 'deck_name' + '=([^&]+)') ?? ['',''];
+
+          setCoverPokemonForModal(coverPokemonMatch[1]);
+          setDeckNameForModal(deckNameMatch[1]);
           setDecklistForModal(deserializedDecklist.map((card, index) => {
             return {
               cardInfo: {
@@ -163,11 +171,15 @@ function App() {
             <div className="export-modal-content">
               <ExportModal cardDatabase={cardDatabase}
                 undeletedCardData={decklistForModal}
+                coverPokemon={coverPokemonForModal}
+                setCoverPokemon={setCoverPokemonForModal}
+                deckName={deckNameForModal}
+                setDeckName={setDeckNameForModal}
                 enableSaving={true}
                 previousDecklistTimestamp={startingDecklistTimestamp}
                 onClose={() => {
                   setDecklistForModal(null);
-                  
+
                   // clear query params if they're present, so a refresh doesn't cause the modal to show up again
                   window.location.href = window.location.origin + window.location.pathname
                 }}
