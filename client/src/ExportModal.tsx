@@ -487,7 +487,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     const height = 6;
                     const width = (imgProps.width * height) / imgProps.height;
                     coverPokemonImg.src = coverPokemonUrl;
-                    doc.addImage(coverPokemonUrl, 'png', 15 + doc.getTextWidth(playerName), 5, width, height);
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold')
+                    doc.addImage(coverPokemonUrl, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
 
                     // Watermark the page
                     doc.setGState(new doc.GState({ opacity: 0.10 }));
