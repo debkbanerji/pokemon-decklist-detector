@@ -63,11 +63,11 @@ function App() {
         if (decklistMatch) {
           const deserializedDecklist = deserializeDecklist(decklistMatch[1], cardDatabase);
 
-          const coverPokemonMatch = window.location.href.match('[?&]' + 'cover_pokemon' + '=([^&]+)') ?? ['',''];
-          const deckNameMatch = window.location.href.match('[?&]' + 'deck_name' + '=([^&]+)') ?? ['',''];
+          const coverPokemonMatch = window.location.href.match('[?&]' + 'cover_pokemon' + '=([^&]+)') ?? ['', ''];
+          const deckNameMatch = window.location.href.match('[?&]' + 'deck_name' + '=([^&]+)') ?? ['', ''];
 
-          setCoverPokemonForModal(coverPokemonMatch[1]);
-          setDeckNameForModal(deckNameMatch[1]);
+          setCoverPokemonForModal(decodeURI(coverPokemonMatch[1]));
+          setDeckNameForModal(decodeURI(deckNameMatch[1]));
           setDecklistForModal(deserializedDecklist.map((card, index) => {
             return {
               cardInfo: {
