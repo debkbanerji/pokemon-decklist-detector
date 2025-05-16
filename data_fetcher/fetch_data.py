@@ -219,6 +219,23 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_189_std.jpg",
             "types": ['Darkness'],
             "national_pokedex_numbers": [189]
+        },
+        {
+            "id": 'svp-174',
+            "name": "Eevee ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "200",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "H",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "174",
+            "set_printed_total": 174, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/632083_in_1000x1000.jpg",
+            "types": ['Colorless'],
+            "national_pokedex_numbers": [174]
         }
     ])
     dfs_list.append(manual_fixes_df)
