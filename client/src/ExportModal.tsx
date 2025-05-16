@@ -24,9 +24,29 @@ function maybeProcessGalleryCardNumber(cardNumber) {
     return cardNumber.replace(regex, '');
 }
 
+const POKEMON_NAME_TO_MANUAL_FORM_SPRITE = {
+    'Cornerstone Mask Ogerpon': 'cornerstone-mask-ogerpon.png',
+    'Hearthflame Mask Ogerpon': 'hearthflame-mask-ogerpon.png',
+    'Teal Mask Ogerpon': 'teal-mask-ogerpon.png',
+    'Wellspring Mask Ogerpon': 'wellspring-mask-ogerpon.png',
+    'Bloodmoon Ursaluna': 'bloodmoon-ursaluna.png',
+}
+
+// We have specific, manually mantained sprites for some common alternate formes
 function getSpriteUrlForCard(card) {
-    const nameForSpriteUrl = card.name_without_prefix_and_postfix.toLowerCase().replaceAll(' ', '-').replaceAll(/(\'|\.)/gi, '').replaceAll('é', 'e').replace('♀', 'f').replace('♂', 'm')
-    return 'sprites/' + nameForSpriteUrl + '.png';
+    let selectedOverrideUrl = null;
+    Object.keys(POKEMON_NAME_TO_MANUAL_FORM_SPRITE).forEach((override) => {
+        if (card.name.toLowerCase().includes(override.toLowerCase())) {
+            selectedOverrideUrl = 'manual_form_sprites/' + POKEMON_NAME_TO_MANUAL_FORM_SPRITE[override];
+        }
+    })
+
+    if (selectedOverrideUrl != null) {
+        return selectedOverrideUrl;
+    } else {
+        const nameForSpriteUrl = card.name_without_prefix_and_postfix.toLowerCase().replaceAll(' ', '-').replaceAll(/(\'|\.)/gi, '').replaceAll('é', 'e').replace('♀', 'f').replace('♂', 'm')
+        return 'sprites/' + nameForSpriteUrl + '.png';
+    }
 }
 
 const AGE_DIVISION_TO_POKE_BALL_FILE = {
@@ -168,22 +188,24 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const trainers = Object.keys(trainerDict).map(id => [id, trainerDict[id]]);
     const energies = Object.keys(energyDict).map(id => [id, energyDict[id]]);
 
+    pokemon.sort((a, b) => {
+        const card1 = cardDatabase[a[0]];
+        const card2 = cardDatabase[b[0]];
+        return (b[1] - a[1]) || card1.name.localeCompare(card2.name);
+    });
+
     const pokemonNameToSpriteUrl = {};
     pokemon.forEach((pair) => {
         const card = cardDatabase[pair[0]];
-        pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix] = getSpriteUrlForCard(card);
+        if (!pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix]) {
+            pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix] = getSpriteUrlForCard(card);
+        }
     });
 
     [trainers, energies].map(pairList => {
         pairList.sort((a, b) => {
             return (b[1] - a[1]) || a[0].localeCompare(b[0]);
         })
-    });
-
-    pokemon.sort((a, b) => {
-        const card1 = cardDatabase[a[0]];
-        const card2 = cardDatabase[b[0]];
-        return (b[1] - a[1]) || card1.name.localeCompare(card2.name);
     });
 
     const numPokemon = pokemon.reduce((a, b) => a + b[1], 0);
