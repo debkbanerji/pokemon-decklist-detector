@@ -264,9 +264,9 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
 
         if card["supertype"] == 'Pokémon':
             name_without_prefix_and_postfix = card["name_without_prefix_and_postfix"]
-            sprite_file_name = re.sub(sprite_url_replacement_regex, '', name_without_prefix_and_postfix.lower().replace(" ", "-").replace("'", "").replace("é", "e").replace("♀", "f").replace("♂", "m")) + ".png"
+            sprite_file_name = re.sub(sprite_url_replacement_regex, '', name_without_prefix_and_postfix.lower().replace(" ", "-").replace("'", "").replace("é", "e").replace("-♀", "-f").replace("-♂", "-m").replace("♀", "-f").replace("♂", "-m")) + ".png"
             sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
-            sprite_url = 'https://limitlesstcg.s3.us-east-2.amazonaws.com/pokemon/gen9/' + sprite_file_name
+            sprite_url = 'https://r2.limitlesstcg.net/pokemon/gen9/' + sprite_file_name
             if not os.path.isfile(sprite_path):
                 print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
                 urllib.request.urlretrieve(sprite_url, sprite_path)
