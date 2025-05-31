@@ -4,7 +4,7 @@ import ErrorBoundary from './ErrorBoundary.tsx';
 import ExportModal from './ExportModal.tsx';
 import DecklistRow from './DecklistRow.tsx';
 import './App.css';
-import { deserializeDecklist, deleteDecklist, getDecklists } from './StorageManager';
+import { deserializeDecklist, deleteDecklist, getDecklists, parseFormattedDecklist } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "motion/react"
 
@@ -85,6 +85,36 @@ function App() {
     }
   }, [cardDatabase, setStartingDecklist]);
 
+
+  const [clipboardButtonText, setClipboardButtonText] = useState('Import from Clipboard');
+
+  async function importFromClipboard() {
+    setClipboardButtonText('Importing...');
+    setTimeout(async () => {
+      try {
+        const clipboardContents = await navigator.clipboard.readText();
+        const decklist = parseFormattedDecklist(clipboardContents, cardDatabase);
+        if (decklist.length < 1) {
+          throw new Error("Empty decklist");
+        }
+        setDecklistForModal(decklist.map((card, index) => {
+            return {
+              cardInfo: {
+                originalIndex: index,
+                ...card.cardInfo,
+                ...cardDatabase[card.cardInfo.id]
+              }
+            }
+          }));
+        setClipboardButtonText('Import from Clipboard');
+      } catch (e) {
+        console.error(e);
+        alert('Unable to read deck contents :/'); // TODO: Fancier error message?
+        setClipboardButtonText('Import from Clipboard');
+      }
+    }, 100);
+  }
+
   const titleAdjective = useMemo(() => {
     return TITLE_ADJECTIVES[Math.floor(Math.random() * TITLE_ADJECTIVES.length)];
   }, [TITLE_ADJECTIVES]);
@@ -134,6 +164,8 @@ function App() {
         <source src="demo-video.mp4" type="video/mp4" />
       </video>
       <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Start Scanning!</button>
+      <br />
+      {cardDatabase != null ? <button onClick={importFromClipboard}>{clipboardButtonText}</button> : null}
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
         <h3 className='saved-decklists-heading'>Previous Lists</h3>
         <div className='saved-decklists'>

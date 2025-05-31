@@ -3,6 +3,24 @@ import { db } from './db';
 const SERIALIZED_COUNT_SEPERATOR = '__';
 const SERIALIZED_ENTRY_SEPARATOR = '___';
 
+const TCG_LIVE_REVERSE_SET_OVERRIDE = {
+    'PR-SV': 'SVP',
+    'PR-SW': 'PR',
+    'Energy': 'sve'
+}
+
+const TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE = {
+    'Basic {P} Energy': 'Psychic Energy',
+    'Basic {F} Energy': 'Fighting Energy',
+    'Basic {W} Energy': 'Water Energy',
+    'Basic {L} Energy': 'Lightning Energy',
+    'Basic {G} Energy': 'Grass Energy',
+    'Basic {D} Energy': 'Darkness Energy',
+    'Basic {M} Energy': 'Metal Energy',
+    'Basic {R} Energy': 'Fire Energy',
+}
+
+
 function seralizeDecklist(cardData) {
     return cardData.map(({ cardInfo }) => `${cardInfo['id']}${SERIALIZED_COUNT_SEPERATOR}${cardInfo['count']}`).join(SERIALIZED_ENTRY_SEPARATOR);
 }
@@ -76,10 +94,6 @@ async function deleteDecklist(createdTimestamp) {
     await db.decklists.bulkDelete(
         [createdTimestamp].concat(previousDecklists.map(decklist => decklist.createdTimestamp))
     );
-
-    console.log('deleting');
-    console.log( [createdTimestamp].concat(previousDecklists.map(decklist => decklist.createdTimestamp)));
-
 }
 
 function getDecklists() {
@@ -98,4 +112,48 @@ async function overWriteLatestPlayer(newPlayer) {
     return await db.players.add(newPlayer);
 }
 
-export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer };
+// Attempts to parse decklist from TCGLive, RK9, etc.
+function parseFormattedDecklist(formattedDecklist, cardDatabase) {
+    const allCards = Object.values(cardDatabase);
+    const rows = formattedDecklist.split(/[\r\n]/);
+    return rows.map(row => {
+        const countMatch = row.match(/^\d+/);
+        if (!countMatch) {
+            return null;
+        }
+        const count = parseInt(countMatch[0], 10);
+        row = row.replace(/^\d+ /, '');
+
+        const setNumberMatch = row.match(/[a-zA-Z0-9]+$/);
+        if (!setNumberMatch) {
+            return null;
+        }
+        const setNumber = setNumberMatch[0]
+        row = row.replace(/ [a-zA-Z0-9]+$/, '');
+
+        const setCodeMatch = row.match(/[A-Za-z-]+$/);
+        if (!setCodeMatch) {
+            return null;
+        }
+        const setCode = TCG_LIVE_REVERSE_SET_OVERRIDE[setCodeMatch[0]] ?? setCodeMatch[0];
+        row = row.replace(/ [A-Za-z-]+$/, '');
+
+        const cardName = TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE[row] ?? row;
+
+        const result = allCards.find((card) => {
+            if (card.name !== cardName) {
+                return false;
+            }
+
+            return card.supertype !== 'Pokémon' || (card.set_code === setCode && card.number === setNumber);
+        });
+
+        if (result != null) {
+            result.count = count;
+        }
+
+        return result;
+    }).filter(card => card != null).map(card => { return { cardInfo: card } });
+}
+
+export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist };
