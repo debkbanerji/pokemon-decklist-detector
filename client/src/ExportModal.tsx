@@ -230,7 +230,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }, [cardDatabase]);
 
     const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
-    const pokemonText = `Pokemon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
+    const pokemonText = `Pokémon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
         const card = cardDatabase[id];
