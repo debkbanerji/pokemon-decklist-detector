@@ -218,7 +218,7 @@ def get_cards(): # Returns dataframe
             "set_printed_total": 189, # The total printed on the card - excludes secret rares
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_189_std.jpg",
             "types": ['Darkness'],
-            "national_pokedex_numbers": [189]
+            "national_pokedex_numbers": [570]
         },
         {
             "id": 'svp-174',
@@ -235,8 +235,93 @@ def get_cards(): # Returns dataframe
             "set_printed_total": 174, # The total printed on the card - excludes secret rares
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/632083_in_1000x1000.jpg",
             "types": ['Colorless'],
-            "national_pokedex_numbers": [174]
+            "national_pokedex_numbers": [133]
+        },
+        {
+            "id": 'svp-198',
+            "name": "Zacian ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "220",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "H",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "198",
+            "set_printed_total": 198, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/3/34/ZacianexSVPPromo198.jpg/270px-ZacianexSVPPromo198.jpg",
+            "types": ['Metal'],
+            "national_pokedex_numbers": [888]
+        },
+        {
+            "id": 'svp-203',
+            "name": "Team Rocket's Wobbuffet",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "110",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "203",
+            "set_printed_total": 203, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://bulbapedia.bulbagarden.net/wiki/File:TeamRocketWobbuffetSVPPromo203.jpg",
+            "types": ['Psychic'],
+            "national_pokedex_numbers": [202]
+        },
+        {
+            "id": 'svp-204',
+            "name": "Cynthia's Garchomp ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "330",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "204",
+            "set_printed_total": 204, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://www.cardtrader.com/uploads/blueprints/image/327135/show_cynthia-s-garchomp-204-sv-p-sv-black-star-promos(2).jpg",
+            "types": ['Fighting'],
+            "national_pokedex_numbers": [445]
+        },
+        {
+            "id": 'svp-205',
+            "name": "Team Rocket's Mewtwo ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "hp": "280",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "205",
+            "set_printed_total": 205, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/SVP/SVP_EN_205.png",
+            "types": ['Psychic'],
+            "national_pokedex_numbers": [150]
         }
+        # {
+        #     "id": '???',
+        #     "name": "???",
+        #     "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("???"), "Pokémon")),
+        #     "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("???"), "Pokémon"))),
+        #     "supertype": "Pokémon",
+        #     "hp": "???",
+        #     "set_id": "svp",
+        #     "set_code": "SVP",
+        #     "regulation_mark": "???",
+        #     "set_name": "Scarlet & Violet Black Star Promos",
+        #     "number": "???"",
+        #     "set_printed_total": ???, # The total printed on the card - excludes secret rares
+        #     "small_image_url": "???",
+        #     "types": ['???'],
+        #     "national_pokedex_numbers": [???]
+        # }
     ])
     dfs_list.append(manual_fixes_df)
 
