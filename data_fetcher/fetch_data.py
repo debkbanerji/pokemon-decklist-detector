@@ -330,6 +330,42 @@ def get_cards(): # Returns dataframe
     print("Finished downloading info for " + str(concatenated_df.shape[0]) + " cards")
     return concatenated_df
 
+def compute_detection_keywords_for_name(target_name, all_names):
+    # look at all possible prefixes and postfixes for target_name
+    # for each of these that are not a substring present within all_names, add them to the result list
+
+    result = []
+    target_name = target_name.strip()
+    words = target_name.split()
+    n = len(words)
+
+    # Remove exact matches to the target name
+    filtered_names = [name.strip() for name in all_names if name.strip() != target_name]
+
+    # Word-based prefixes
+    for i in range(1, n + 1):
+        prefix = ' '.join(words[:i])
+        if not any(prefix in name for name in filtered_names):
+            result.append(prefix)
+
+    # Word-based postfixes
+    for i in range(n):
+        postfix = ' '.join(words[i:])
+        if not any(postfix in name for name in filtered_names):
+            result.append(postfix)
+
+    return result
+
+def add_detection_keywords_to_df(cards_df):
+    # function that adds a column to the df to help speed up detection
+    all_names = cards_df['name'].to_list()
+    cards_df = cards_df.assign(
+        detection_keywords = cards_df['name'].apply(
+            lambda x: compute_detection_keywords_for_name(x, cards_df['name'].tolist())
+    ))
+    return cards_df
+
+
 def download_missing_card_images_and_sprites_for_df(cards_df):
     print("Downloading image data")
     # Downloads images of cards for which the image does not already exist in CARD_IMAGES_DIRECTORY
@@ -376,6 +412,8 @@ if __name__ == '__main__':
 
     # cards_df.to_csv('data/temp_cards.csv')
     # cards_df = pd.read_csv('data/temp_cards.csv')
+
+    cards_df = add_detection_keywords_to_df(cards_df)
 
     download_missing_card_images_and_sprites_for_df(cards_df)
 
