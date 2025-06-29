@@ -345,13 +345,13 @@ def compute_detection_keywords_for_name(target_name, all_names):
     # Word-based prefixes
     for i in range(1, n + 1):
         prefix = ' '.join(words[:i])
-        if not any(prefix in name for name in filtered_names):
+        if not any(prefix in name for name in filtered_names) and len(prefix) > 4:
             result.append(prefix)
 
     # Word-based postfixes
     for i in range(n):
         postfix = ' '.join(words[i:])
-        if not any(postfix in name for name in filtered_names):
+        if not any(postfix in name for name in filtered_names) and len(postfix) > 4:
             result.append(postfix)
 
     return result

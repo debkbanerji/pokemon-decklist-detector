@@ -232,9 +232,29 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         }
         return result;
     }, [cardDatabase]);
+
+    // keywordsToCardNames is a detection optimization
+    // We try to detect unique keyword substrings that tell us if we've detected a certain card
+    // ex: 'Research' within 'Professor\'s Reasearch'
+    // This is designed to improve detection speed
+    const keywordsToCardNames = useMemo(() => {
+        const result = {};
+        const cardNames = Object.keys(cardNameToIDs);
+        cardNames.forEach(cardName => {
+            result[cardName] = cardName; // each full card name should also map to itself
+            // Assume that detection_keywords are the same given the same name
+            cardDatabase[cardNameToIDs[cardName][0]].detection_keywords.forEach(keyword => {
+                result[keyword] = cardName;
+            });
+        });
+        return result;
+    }, [cardNameToIDs, cardDatabase]);
+    
+    // const candidateCardIDs = cardNameToIDs[keywordsToCardNames[currentDetectedCardName]];
     const candidateCardIDs = cardNameToIDs[currentDetectedCardName];
 
     const cardNames = Object.keys(cardNameToIDs);
+    const detectionKeywords = Object.keys(keywordsToCardNames);
     const cardNameOptions = useMemo(() => cardNames.map(name => { return { label: name, value: name } }), [cardNameToIDs]);
 
     function setCardNameWrapped(cardName) {
@@ -327,11 +347,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         if (currentDetectedCardName == null) {
             // trying to detect the card name
             let validCardNames = [];
-            cardNames.forEach(cardName => {
+
+            detectionKeywords.forEach(keyword => {
                 if (lowercaseText.includes(
-                    cardName.toLocaleLowerCase().replace(DETECTION_REPLACE_REGEX, '')
+                    keyword.toLocaleLowerCase().replace(DETECTION_REPLACE_REGEX, '')
                 )) {
-                    validCardNames.push(cardName);
+                    validCardNames.push(keywordsToCardNames[keyword]);
                 }
             });
             EDGE_CASE_REGEXES.forEach(edgeCase => {
@@ -380,6 +401,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         setCurrentDetectedCardID,
         currentDetectedCardName,
         setCurrentDetectedCardName,
+        detectionKeywords,
+        keywordsToCardNames,
         cardNames,
         cardNameToIDs,
         latestCard
