@@ -427,7 +427,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         // const debugContext = debugCanvas.getContext("2d", { willReadFrequently: true });
         // debugCanvas.width = canvas.width;
         // debugCanvas.height = canvas.height;
-        
+
 
         setTimeout(async () => {
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -582,6 +582,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             </motion.div> : null
             }
         </motion.div>
+        <div className="progress-bar">
+            <motion.div layout className={totalCards === 60 ? 'progress-bar-green' : 'progress-bar-blue'}
+                style={{ 'width': `${100 * Math.min(totalCards, 60) / 60}%` }}
+                >
+            </motion.div>
+        </div>
         {/* <canvas ref={tesseractDebugCanvasRef}></canvas> */}
 
         {candidateCardIDs != null && currentDetectedCardID == null ? <div>

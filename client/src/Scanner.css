@@ -354,6 +354,28 @@ h3 {
     margin-top: 3px;
 }
 
+.progress-bar {
+    background-color: lightgrey;
+    height: 6px;
+    border-radius: 3px;
+    width: 88%;
+    margin-left: 6%;
+    margin-right: 6%;
+}
+
+.progress-bar>div {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.progress-bar-green {
+    background-color: rgb(15, 149, 0);
+}
+
+.progress-bar-blue {
+    background-color: rgb(33, 150, 240);
+}
+
 .card-image-loading-spinner-container {
     width: 100%;
     position: relative;
