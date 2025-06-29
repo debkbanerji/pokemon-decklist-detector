@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
+const TESSERACT_TICK_TIME = 70;
 
 const EDGE_CASE_REGEXES = [
     [/(professor.*research)/i, 'Professor\'s Research'],
@@ -182,6 +183,7 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
 function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
+    // const tesseractDebugCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -249,8 +251,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         });
         return result;
     }, [cardNameToIDs, cardDatabase]);
-    
-    // const candidateCardIDs = cardNameToIDs[keywordsToCardNames[currentDetectedCardName]];
+
     const candidateCardIDs = cardNameToIDs[currentDetectedCardName];
 
     const cardNames = Object.keys(cardNameToIDs);
@@ -422,10 +423,22 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             0, 0,
             canvas.width, canvas.height);
 
+        // const debugCanvas = tesseractDebugCanvasRef.current;
+        // const debugContext = debugCanvas.getContext("2d", { willReadFrequently: true });
+        // debugCanvas.width = canvas.width;
+        // debugCanvas.height = canvas.height;
+        
+
         setTimeout(async () => {
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = normalizeImage(imageData, 100);
+            let pixels = normalizeImage(imageData, 100);
+            if (Date.now() % TESSERACT_TICK_TIME > (TESSERACT_TICK_TIME / 2)) {
+                // around half of the time, we contrast the picture
+                // this gives us another shot to detect text correctly
+                pixels = contrastImage(pixels, 100)
+            }
             context.putImageData(pixels, 0, 0);
+            // debugContext.putImageData(pixels, 0, 0);
 
             setTimeout(async () => {
                 const imageUrl = canvas.toDataURL("image/png");
@@ -434,8 +447,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 setTesseractOutput(text);
 
                 requestAnimationFrame(tesseractTick);
-            }, 70);
-        }, 70);
+            }, TESSERACT_TICK_TIME);
+        }, TESSERACT_TICK_TIME);
     }
 
     const addCard = (cardInfo, count) => {
@@ -569,6 +582,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             </motion.div> : null
             }
         </motion.div>
+        {/* <canvas ref={tesseractDebugCanvasRef}></canvas> */}
+
         {candidateCardIDs != null && currentDetectedCardID == null ? <div>
             <h3> Or, select the art directly:</h3>
             <div className='candidate-card-ids'>
