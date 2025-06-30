@@ -104,6 +104,30 @@ function contrastImage(imgData, contrast) {  //input range [-100..100]
     return imgData;
 }
 
+function adjustImageBrightness(imgData, brightnessFactor) {  //input range [-1..1]
+    let d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
+        d[i] = Math.min(Math.round(d[i] * brightnessFactor), 255);
+        d[i + 1] = Math.min(Math.round(d[i + 1] * brightnessFactor), 255);
+        d[i + 2] = Math.min(Math.round(d[i + 2] * brightnessFactor), 255);
+    }
+    return imgData;
+}
+
+function getThresholdedBlack(imgData, threshold) {
+    let d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
+        let avg = d[i] + d[i + 1] + d[i + 2];
+        if (avg > threshold) {
+            avg = 255; // blow out anything that's not super dark
+        }
+        d[i] = avg;
+        d[i + 1] = avg;
+        d[i + 2] = avg;
+    }
+    return imgData;
+}
+
 function greyscaleImage(imgData, contrast) {
     let d = imgData.data;
     for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
@@ -184,6 +208,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     // const tesseractDebugCanvasRef = useRef(null);
+    const tesseractPreProcessingTypeNum = useRef(0);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -432,11 +457,18 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         setTimeout(async () => {
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             let pixels = normalizeImage(imageData, 100);
-            if (Date.now() % TESSERACT_TICK_TIME > (TESSERACT_TICK_TIME / 2)) {
-                // around half of the time, we contrast the picture
-                // this gives us another shot to detect text correctly
-                pixels = contrastImage(pixels, 100)
+
+            // depending on the value of tesseractPreProcessingTypeNum, apply a different type of preprocessing
+            // This lets us hedge our bets and increase the chance of detecting something
+            if (tesseractPreProcessingTypeNum.current === 1) {
+                pixels = contrastImage(pixels, 100);
+            } else if (tesseractPreProcessingTypeNum.current === 2) {
+                pixels = getThresholdedBlack(pixels,200);
+            } else {
+                // tesseractPreProcessingTypeNum.current = 0
+                // Do nothing
             }
+            tesseractPreProcessingTypeNum.current = (tesseractPreProcessingTypeNum.current + 1) % 3
             context.putImageData(pixels, 0, 0);
             // debugContext.putImageData(pixels, 0, 0);
 
@@ -585,7 +617,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         <div className="progress-bar">
             <motion.div layout className={totalCards === 60 ? 'progress-bar-green' : 'progress-bar-blue'}
                 style={{ 'width': `${100 * Math.min(totalCards, 60) / 60}%` }}
-                >
+            >
             </motion.div>
         </div>
         {/* <canvas ref={tesseractDebugCanvasRef}></canvas> */}
