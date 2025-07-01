@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
-const TESSERACT_TICK_TIME = 70;
+const TESSERACT_TICK_TIME_FREQUENT = 60;
+const TESSERACT_TICK_TIME_INFREQUENT = 500;
 
 const EDGE_CASE_REGEXES = [
     [/(professor.*research)/i, 'Professor\'s Research'],
@@ -209,6 +210,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const tesseractCanvasRef = useRef(null);
     // const tesseractDebugCanvasRef = useRef(null);
     const tesseractPreProcessingTypeNum = useRef(0);
+    const tesseractTickrateRef = useRef(TESSERACT_TICK_TIME_FREQUENT);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -434,6 +436,11 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         latestCard
     ]);
 
+    useEffect(() => {
+        // dynamically reduce tesseract tick rate to save CPU if we're not actively searching for something
+        tesseractTickrateRef.current = (currentDetectedCardID != null || totalCards >= 60 ? TESSERACT_TICK_TIME_INFREQUENT : TESSERACT_TICK_TIME_FREQUENT);
+    }, [currentDetectedCardID, totalCards, tesseractTickrateRef]);
+
     async function tesseractTick() {
         const canvas = tesseractCanvasRef.current;
         const video = videoRef.current;
@@ -463,7 +470,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             if (tesseractPreProcessingTypeNum.current === 1) {
                 pixels = contrastImage(pixels, 100);
             } else if (tesseractPreProcessingTypeNum.current === 2) {
-                pixels = getThresholdedBlack(pixels,200);
+                pixels = getThresholdedBlack(pixels, 200);
             } else {
                 // tesseractPreProcessingTypeNum.current = 0
                 // Do nothing
@@ -479,8 +486,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 setTesseractOutput(text);
 
                 requestAnimationFrame(tesseractTick);
-            }, TESSERACT_TICK_TIME);
-        }, TESSERACT_TICK_TIME);
+            }, tesseractTickrateRef.current);
+        }, tesseractTickrateRef.current);
     }
 
     const addCard = (cardInfo, count) => {
