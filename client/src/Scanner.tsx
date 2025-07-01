@@ -3,13 +3,11 @@ import './Scanner.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import Select, { components, OptionProps } from 'react-select';
-import { createWorker, PSM } from 'tesseract.js';
+import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
-const TESSERACT_TICK_TIME_FREQUENT = 60;
-const TESSERACT_TICK_TIME_INFREQUENT = 500;
 
 const EDGE_CASE_REGEXES = [
     [/(professor.*research)/i, 'Professor\'s Research'],
@@ -167,9 +165,10 @@ function normalizeImage(imgData, contrast) {
 
 const tesseractWorker = await createWorker('eng', 1, {
     // logger: m => console.log(m),
+    tessedit_ocr_engine_mode: OEM.TESSERACT_LSTM_COMBINED
 });
 await tesseractWorker.setParameters({
-    tessedit_pageseg_mode: PSM.SPARSE_TEXT
+    tessedit_pageseg_mode: PSM.SPARSE_TEXT,
 });
 
 function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
@@ -210,7 +209,6 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const tesseractCanvasRef = useRef(null);
     // const tesseractDebugCanvasRef = useRef(null);
     const tesseractPreProcessingTypeNum = useRef(0);
-    const tesseractTickrateRef = useRef(TESSERACT_TICK_TIME_FREQUENT);
     const exportModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -436,10 +434,49 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         latestCard
     ]);
 
+
+    const [pressureData, setPressureData] = useState(null);
+
+    useEffect(() => {
+        if ('PressureObserver' in window) {
+            const observer = new PressureObserver((records) => {
+                for (const record of records) {
+                    if (record.source === 'cpu') {
+                        setPressureData(record);
+                    }
+                }
+            });
+
+            observer.observe('cpu', {
+                sampleInterval: 3000, // ms
+            }).catch((err) => {
+                console.error('Failed to observe CPU pressure:', err);
+            });
+
+            return () => {
+                observer.disconnect();
+            };
+        } else {
+            console.warn('PressureObserver is not supported in this browser.');
+        }
+    }, []);
+
+    const tesseractTickrateRef = useRef(70); // in ms - this is the default
+
     useEffect(() => {
         // dynamically reduce tesseract tick rate to save CPU if we're not actively searching for something
-        tesseractTickrateRef.current = (currentDetectedCardID != null || totalCards >= 60 ? TESSERACT_TICK_TIME_INFREQUENT : TESSERACT_TICK_TIME_FREQUENT);
-    }, [currentDetectedCardID, totalCards, tesseractTickrateRef]);
+        // if we have cpu pressure data, and the system is behaving normally, go with a higher tick rate
+        if (currentDetectedCardID != null || totalCards >= 60) {
+            // scan not required
+            tesseractTickrateRef.current = 500;
+        } else if (pressureData?.state === 'nominal' || pressureData?.state === 'fair') {
+            // we have access to pressure data, and the CPU is behaving fine
+            // go with a higher tick rate
+            tesseractTickrateRef.current = 10;
+        } else {
+            tesseractTickrateRef.current = 70;
+        }
+    }, [currentDetectedCardID, totalCards, tesseractTickrateRef, pressureData]);
 
     async function tesseractTick() {
         const canvas = tesseractCanvasRef.current;
