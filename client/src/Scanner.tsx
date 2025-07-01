@@ -592,6 +592,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 width: (viewportWidth * 100) + '%',
             }
             }></div>
+            {currentDetectedCardID == null ? <div className="video-feed-viewport-line" style={{
+                top: ((viewportTop + viewportHeight * 0.8) * 100) + '%',
+                left: ((viewportLeft + viewportWidth * 0.1) * 100) + '%',
+                width: (viewportWidth * 80) + '%',
+            }
+            }></div> : null}
             <div className='video-feed-instructions'>{
                 currentDetectedCardName == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="card-name-scan-instruction" >Scan the card name</motion.div> : (
                     currentDetectedCardID == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="set-number-scan-instruction" >Scan the set number</motion.div> : null

@@ -26,6 +26,13 @@ h3 {
     background-size: cover;
 }
 
+.video-feed-viewport-line {
+    content: '';
+    height: 0.5px;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
 .cancel-scan-button {
     padding: 0.3em 0.6em;
     font-size: 0.6em;
