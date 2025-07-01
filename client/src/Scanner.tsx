@@ -472,7 +472,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         } else if (pressureData?.state === 'nominal' || pressureData?.state === 'fair') {
             // we have access to pressure data, and the CPU is behaving fine
             // go with a higher tick rate
-            tesseractTickrateRef.current = 10;
+            tesseractTickrateRef.current = 7;
         } else {
             tesseractTickrateRef.current = 70;
         }
@@ -519,7 +519,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             setTimeout(async () => {
                 const imageUrl = canvas.toDataURL("image/png");
 
-                const { data: { text } } = await tesseractWorker.recognize(imageUrl);
+                const { data: { text } } = await tesseractWorker.recognize(imageUrl, { rotateAuto: true });
                 setTesseractOutput(text);
 
                 requestAnimationFrame(tesseractTick);
