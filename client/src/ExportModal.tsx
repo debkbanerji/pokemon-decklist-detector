@@ -33,7 +33,7 @@ const POKEMON_NAME_TO_MANUAL_FORM_SPRITE = {
 }
 
 // We have specific, manually mantained sprites for some common alternate formes
-function getSpriteUrlForCard(card) {
+function getPokemonSpriteUrlForCard(card) {
     let selectedOverrideUrl = null;
     Object.keys(POKEMON_NAME_TO_MANUAL_FORM_SPRITE).forEach((override) => {
         if (card.name.toLowerCase().includes(override.toLowerCase())) {
@@ -47,6 +47,25 @@ function getSpriteUrlForCard(card) {
         const nameForSpriteUrl = card.name_without_prefix_and_postfix.toLowerCase().replaceAll(' ', '-').replaceAll(/(\'|\.)/gi, '').replaceAll('é', 'e').replace('♀', 'f').replace('♂', 'm')
         return 'sprites/' + nameForSpriteUrl + '.png';
     }
+}
+
+
+function warmupSpriteURLs(cards) {
+    cards.forEach(card => {
+        if (card.supertype === 'Pokémon') {
+            fetch(getPokemonSpriteUrlForCard(card));
+        } else if (card.supertype === 'Trainer') {
+            const spriteUrl = 'trainer-symbols/' + card.name.replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+            fetch(spriteUrl);
+        } else if (card.supertype === 'Energy') {
+            let spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.name.replace(' Energy', '')];
+            if (spriteUrl == null) {
+                // special energy
+                spriteUrl = 'special-energy-symbols/' + card.name.replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+            }
+            fetch(spriteUrl);
+        }
+    });
 }
 
 const AGE_DIVISION_TO_POKE_BALL_FILE = {
@@ -151,6 +170,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             setModalOpenedTimestamp(Date.now());
         }
     }, [modalOpenedTimestamp, setModalOpenedTimestamp]);
+    useEffect(() => {
+        if (undeletedCardData.length) {
+            warmupSpriteURLs(undeletedCardData.map(card => card.cardInfo));
+        }
+    }, [undeletedCardData]);
 
     async function saveDecklistToStorage() {
         // Also save the user to storage
@@ -198,7 +222,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     pokemon.forEach((pair) => {
         const card = cardDatabase[pair[0]];
         if (!pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix]) {
-            pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix] = getSpriteUrlForCard(card);
+            pokemonNameToSpriteUrl[card.name_without_prefix_and_postfix] = getPokemonSpriteUrlForCard(card);
         }
     });
 
@@ -358,7 +382,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
                 // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
                 // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
-                const spriteUrl = getSpriteUrlForCard(card);
+                const spriteUrl = getPokemonSpriteUrlForCard(card);
 
                 return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
