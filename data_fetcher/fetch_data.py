@@ -19,6 +19,9 @@ if not os.path.exists(CLIENT_CARD_IMAGES_DIRECTORY):
 CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY = './../client/public/special-energy-symbols'
 if not os.path.exists(CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY):
     os.makedirs(CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY)
+CLIENT_TRAINER_SYMBOLS_DIRECTORY = './../client/public/trainer-symbols'
+if not os.path.exists(CLIENT_TRAINER_SYMBOLS_DIRECTORY):
+    os.makedirs(CLIENT_TRAINER_SYMBOLS_DIRECTORY)
 
 SPRITES_DIRECTORY = DATA_DIRECTORY + '/sprites'
 if not os.path.exists(SPRITES_DIRECTORY):
@@ -41,7 +44,7 @@ professors_research_named_regex = re.compile(r"professor's research \(.*\)$", re
 boss_orders_named_regex = re.compile(r"^boss's orders \(.*\)$", re.IGNORECASE)
 basic_energy_regex = re.compile(r"^basic .* energy$", re.IGNORECASE)
 basic_energy_replacement_regex = re.compile(r"^basic ", re.IGNORECASE)
-sprite_url_replacement_regex = re.compile(r"(\'|\.)", re.IGNORECASE)
+sprite_url_replacement_regex = re.compile(r"(\'|\.|:)", re.IGNORECASE)
 
 
 owner_replacement_regex = re.compile(r"^((N|Iono|Lillie|Hop|Marnie|Steven|Arven|Misty|Ethan|Cynthia|Team Rocket)'s )*", re.IGNORECASE)
@@ -418,10 +421,10 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
                 print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
             shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
-        energy_symbol_file_name = re.sub(' ', '-', card['name']).lower() + ".png"
-        energy_symbol_path = CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY + "/" + energy_symbol_file_name
         if card["supertype"] == 'Energy' and card['name'] not in BASIC_ENERGY_NAMES and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
-            # Download the energy symbol
+            energy_symbol_file_name = re.sub(' ', '-', card['name']).lower()
+            energy_symbol_file_name = re.sub(sprite_url_replacement_regex, '', energy_symbol_file_name) + ".png"
+            energy_symbol_path = CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY + "/" + energy_symbol_file_name
             img = Image.open(img_path)
             width, height = img.size
             left = width * 0.71
@@ -430,6 +433,19 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             lower = height * 0.135
             cropped = img.crop((left, upper, right, lower)) 
             cropped.save(energy_symbol_path)
+
+        if card["supertype"] == 'Trainer' and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
+            trainer_symbol_file_name = re.sub(' ', '-', card['name']).lower()
+            trainer_symbol_file_name = re.sub(sprite_url_replacement_regex, '', trainer_symbol_file_name) + ".png"
+            trainer_symbol_path = CLIENT_TRAINER_SYMBOLS_DIRECTORY + "/" + trainer_symbol_file_name
+            img = Image.open(img_path)
+            width, height = img.size
+            left = width * 0.075
+            upper = height * 0.14
+            right = width * 0.925
+            lower = height * 0.52
+            cropped = img.crop((left, upper, right, lower))
+            cropped.save(trainer_symbol_path)
 
     # for pokedex_number in range(0,1025 + 1): # Up to pecharunt
     #     sprite_file_name = str(pokedex_number) + ".png"
@@ -443,11 +459,11 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
     #     shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
 if __name__ == '__main__':
-    cards = get_cards()
-    cards_df = pd.DataFrame(cards)
+    # cards = get_cards()
+    # cards_df = pd.DataFrame(cards)
 
     # cards_df.to_csv('data/temp_cards.csv')
-    # cards_df = pd.read_csv('data/temp_cards.csv')
+    cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
 
