@@ -124,6 +124,8 @@ def get_cards(): # Returns dataframe
                 "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype)),
                 "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype))),
                 "supertype": card.supertype,
+                "subtypes": card.subtypes if hasattr(card, 'subtypes') else [],
+                "rarity": card.rarity,
                 "hp": card.hp,
                 "set_id": card.set.id,
                 "set_code": set_id_to_official_code_overrides[card.set.id]  if card.set.id in set_id_to_official_code_overrides else card.set.ptcgoCode,
@@ -150,6 +152,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'Tera', 'ex'],
+            "rarity": "Promo",
             "hp": "210",
             "set_id": "svp",
             "set_code": "SVP",
@@ -167,6 +171,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
             "hp": "260",
             "set_id": "svp",
             "set_code": "SVP",
@@ -184,6 +190,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
             "hp": "230",
             "set_id": "svp",
             "set_code": "SVP",
@@ -201,6 +209,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Stage 1', 'ex'],
+            "rarity": "Promo",
             "hp": "280",
             "set_id": "svp",
             "set_code": "SVP",
@@ -218,6 +228,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
             "hp": "190",
             "set_id": "svp",
             "set_code": "SVP",
@@ -235,6 +247,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic'],
+            "rarity": "Promo",
             "hp": "70",
             "set_id": "svp",
             "set_code": "SVP",
@@ -252,6 +266,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'Tera', 'ex'],
+            "rarity": "Promo",
             "hp": "200",
             "set_id": "svp",
             "set_code": "SVP",
@@ -269,6 +285,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
             "hp": "220",
             "set_id": "svp",
             "set_code": "SVP",
@@ -286,6 +304,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic'],
+            "rarity": "Promo",
             "hp": "110",
             "set_id": "svp",
             "set_code": "SVP",
@@ -303,6 +323,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Stage 2', 'ex'],
+            "rarity": "Promo",
             "hp": "330",
             "set_id": "svp",
             "set_code": "SVP",
@@ -320,6 +342,8 @@ def get_cards(): # Returns dataframe
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon")),
             "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon"))),
             "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
             "hp": "280",
             "set_id": "svp",
             "set_code": "SVP",
@@ -352,6 +376,18 @@ def get_cards(): # Returns dataframe
     dfs_list.append(manual_fixes_df)
 
     concatenated_df = pd.concat(dfs_list, ignore_index=True)
+
+    # Sort the concatenated dataframe so all common, uncommons, and rares are at the beginning
+    # Read the rarity from the 'rarity' column, and sort by that
+    # This makes certain types of postprocessing easier
+    rarity_order = {
+        'Common': 1,
+        'Uncommon': 2,
+        'Rare': 3,
+        'Rare Holo': 4,
+    }
+    concatenated_df['rarity_order'] = concatenated_df['rarity'].map(rarity_order).fillna(11)  # Fill unspecified rarities with a high number
+    concatenated_df = concatenated_df.sort_values(by=['rarity_order'])
 
     print("Finished downloading info for " + str(concatenated_df.shape[0]) + " cards")
     return concatenated_df
@@ -405,8 +441,8 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
         if not os.path.isfile(img_path):
             print("#" + str(index + 1) + ": Downloading " + card["small_image_url"] + " to " + img_path)
             urllib.request.urlretrieve(card["small_image_url"], img_path)
-        else:
-            print("#" + str(index + 1) + ": " + img_path + " already exists; skipping download")
+        # else:
+        #     print("#" + str(index + 1) + ": " + img_path + " already exists; skipping download")
         shutil.copy(img_path, CLIENT_CARD_IMAGES_DIRECTORY + "/" + file_name)
 
         if card["supertype"] == 'Pokémon':
@@ -417,8 +453,8 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             if not os.path.isfile(sprite_path):
                 print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
                 urllib.request.urlretrieve(sprite_url, sprite_path)
-            else:
-                print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
+            # else:
+            #     print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
             shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
         if card["supertype"] == 'Energy' and card['name'] not in BASIC_ENERGY_NAMES and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
@@ -446,7 +482,13 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
 
             cropped.save(energy_symbol_path)
 
-        if card["supertype"] == 'Trainer' and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
+        # Trainers for which we want to generate thumbnails
+        # Only generate thumbnails for trainers which aren't secret rares
+        # Unless they are supporters, in which case we want full arts where they are available
+        # This is because the character's face from a full art often looks better in thumbnail
+        # format as opposed to the upper body of the base rarity
+        if card["supertype"] == 'Trainer' and (convert_int_or_infinity(card['number']) <= card['set_printed_total'] 
+                                               or (card['rarity'] == 'Ultra Rare' and card['subtypes'] is not None and 'Supporter' in card['subtypes'])):
             trainer_symbol_file_name = re.sub(' ', '-', card['name']).lower()
             trainer_symbol_file_name = re.sub(sprite_url_replacement_regex, '', trainer_symbol_file_name) + ".png"
             trainer_symbol_path = CLIENT_TRAINER_SYMBOLS_DIRECTORY + "/" + trainer_symbol_file_name
