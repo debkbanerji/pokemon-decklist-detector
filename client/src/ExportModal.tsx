@@ -468,6 +468,23 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 columnStyles,
                 headStyles,
                 didParseCell,
+                didDrawCell: function (data) {
+                    try {
+                        if (data.column.index === 1 && data.row.section === 'body') {
+                            const spriteUrl = 'trainer-symbols/' + trainerTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                            const dim = data.cell.height - data.cell.padding('vertical');
+                            const textPos = data.cell.textPos;
+                            const img = new Image();
+                            const imgProps = doc.getImageProperties(spriteUrl);
+                            const height = dim;
+                            const width = (imgProps.width * height) / imgProps.height;
+                            img.src = spriteUrl;
+                            doc.addImage(img, 'png', data.cell.x - 8, data.cell.y, width, height);
+                        }
+                    } catch (e) {
+                        // do nothing
+                    }
+                }
             });
 
             doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
@@ -481,17 +498,19 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 didDrawCell: function (data) {
                     try {
                         if (data.column.index === 1 && data.row.section === 'body') {
-                            const spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy', '')];
+                            let spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy', '')];
+                            if (spriteUrl == null) {
+                                // special energy
+                                spriteUrl = 'special-energy-symbols/' + energyTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                            }
                             const dim = data.cell.height - data.cell.padding('vertical');
                             const textPos = data.cell.textPos;
-                            if (spriteUrl != null && spriteUrl.length > 0) {
-                                const img = new Image();
-                                const imgProps = doc.getImageProperties(spriteUrl);
-                                const height = dim;
-                                const width = (imgProps.width * height) / imgProps.height;
-                                img.src = spriteUrl;
-                                doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
-                            }
+                            const img = new Image();
+                            const imgProps = doc.getImageProperties(spriteUrl);
+                            const height = dim;
+                            const width = (imgProps.width * height) / imgProps.height;
+                            img.src = spriteUrl;
+                            doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
                         }
                     } catch (e) {
                         // do nothing

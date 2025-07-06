@@ -427,7 +427,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             energy_symbol_path = CLIENT_SPECIAL_ENERGY_SYMBOLS_DIRECTORY + "/" + energy_symbol_file_name
             img = Image.open(img_path)
             width, height = img.size
-            left = width * 0.71
+            left = width * 0.87
             upper = height * 0.07
             right = width * 0.96
             lower = height * 0.135
