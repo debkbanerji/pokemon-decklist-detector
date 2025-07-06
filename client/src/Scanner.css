@@ -69,8 +69,8 @@ h3 {
     border-radius: 10px;
     color: white;
     font-weight: bold;
-    font-size: 16;
-    text-shadow: black 1px 0 10px;
+    font-size: 24px;
+    text-shadow:  2px 2px 4px black;
 }
 
 
@@ -401,6 +401,23 @@ h3 {
     position: relative;
     border-radius: 10px;
     overflow: hidden;
+}
+
+.card-image-container {
+    width: 100%;
+}
+
+.card-set-info-text {
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    z-index: 4;
+    margin-bottom: 0;
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 2px;
+    line-height: 1.2;
 }
 
 .card-image-loading-spinner {

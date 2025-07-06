@@ -703,7 +703,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                             exit={{ opacity: 0, x: 200, scale: 1.2 }}
                             transition={{ duration: 0.6, type: "spring", delay: 0.03 * index }}
                         >
-                            <CardImageForID id={id} />
+                            <CardImageForID id={id} showSetInfo={true} cardDatabase={cardDatabase}/>
                         </motion.div>
                     </div>
                 })}
