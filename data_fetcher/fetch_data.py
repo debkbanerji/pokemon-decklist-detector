@@ -465,11 +465,11 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
     #     shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
 if __name__ == '__main__':
-    # cards = get_cards()
-    # cards_df = pd.DataFrame(cards)
+    cards = get_cards()
+    cards_df = pd.DataFrame(cards)
 
     # cards_df.to_csv('data/temp_cards.csv')
-    cards_df = pd.read_csv('data/temp_cards.csv')
+    # cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
 
