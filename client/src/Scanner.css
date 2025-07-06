@@ -87,6 +87,19 @@ h3 {
     z-index: 1;
 }
 
+.successfully-added-card-text {
+    bottom: 8%;
+    font-size: medium;
+    font-weight: bolder;
+    color: rgb(23, 227, 0);
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 1;
+}
+
 .video-feed-sub-instructions {
     top: 37%;
     font-size: smaller;

@@ -235,6 +235,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
     const isRunningTesseractDetection = currentDetectedCardName == null && currentDetectedCardID == null;
 
+    const [successfullyAddedCardText, setSuccessfullyAddedCardText] = useState(null);
+
     const [tesseractOutput, setTesseractOutput] = useState('');
 
     const {
@@ -549,6 +551,14 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         }
         setCurrentDetectedCardID(null);
         setCurrentDetectedCardName(null);
+        if (cardInfo.supertype === 'Pokémon') {
+            setSuccessfullyAddedCardText(`Added ${count}x ${cardInfo.name} ${cardInfo.set_code} ${cardInfo.number}`);
+        } else {
+            setSuccessfullyAddedCardText(`Added ${count}x ${cardInfo.name}`);
+        }
+        setTimeout(() => {
+            setSuccessfullyAddedCardText(null);
+        }, 1300);
     }
 
     const cancelScan = () => {
@@ -599,7 +609,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             }
             }></div> : null}
             <div className='video-feed-instructions'>{
-                currentDetectedCardName == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="card-name-scan-instruction" >Scan the card name</motion.div> : (
+                currentDetectedCardName == null ? <div key="card-name-scan-instruction" >Scan the card name</div> : (
                     currentDetectedCardID == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="set-number-scan-instruction" >Scan the set number</motion.div> : null
                 )
             }</div>
@@ -663,6 +673,13 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 </div>
             </motion.div> : null
             }
+            <AnimatePresence>
+                {
+                    successfullyAddedCardText != null ?
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ opacity: 0 }} key="successfully-added-card-text" className='successfully-added-card-text'>&#10004; {successfullyAddedCardText}</motion.div>
+                        : null
+                }
+            </AnimatePresence>
         </motion.div>
         <div className="progress-bar">
             <motion.div layout className={totalCards === 60 ? 'progress-bar-green' : 'progress-bar-blue'}
