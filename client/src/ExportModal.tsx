@@ -476,10 +476,10 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                             const textPos = data.cell.textPos;
                             const img = new Image();
                             const imgProps = doc.getImageProperties(spriteUrl);
-                            const height = dim;
+                            const height = dim * 0.9;
                             const width = (imgProps.width * height) / imgProps.height;
                             img.src = spriteUrl;
-                            doc.addImage(img, 'png', data.cell.x - 8, data.cell.y, width, height);
+                            doc.addImage(img, 'png', data.cell.x - 7, data.cell.y + dim * 0.1, width, height);
                         }
                     } catch (e) {
                         // do nothing
