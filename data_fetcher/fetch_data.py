@@ -460,6 +460,16 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             target_height = 32
             target_width = int(cropped.width * (target_height / cropped.height))
             cropped = cropped.resize((target_width, target_height), Image.LANCZOS)
+
+            # Crop the image to a rounded rectangle
+            bigsize = (cropped.size[0] * 3, cropped.size[1] * 3)
+            mask = Image.new('L', bigsize, 0)
+            draw = ImageDraw.Draw(mask) 
+            draw.rounded_rectangle(((0, 0), bigsize), bigsize[0] / 5, fill=255)
+
+            mask = mask.resize(cropped.size, Image.LANCZOS)
+            cropped.putalpha(mask)
+
             cropped.save(trainer_symbol_path)
 
     # for pokedex_number in range(0,1025 + 1): # Up to pecharunt
@@ -474,11 +484,11 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
     #     shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
 if __name__ == '__main__':
-    # cards = get_cards()
-    # cards_df = pd.DataFrame(cards)
+    cards = get_cards()
+    cards_df = pd.DataFrame(cards)
 
     # cards_df.to_csv('data/temp_cards.csv')
-    cards_df = pd.read_csv('data/temp_cards.csv')
+    # cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
 
