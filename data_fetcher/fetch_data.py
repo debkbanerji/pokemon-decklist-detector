@@ -7,7 +7,7 @@ import re
 import shutil
 import json
 import math
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 
 DATA_DIRECTORY = './data'
 CARD_IMAGES_DIRECTORY = DATA_DIRECTORY + '/card-images'
@@ -435,6 +435,15 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             target_height = 32
             target_width = int(cropped.width * (target_height / cropped.height))
             cropped = cropped.resize((target_width, target_height), Image.LANCZOS)
+
+            # Crop the image to a circle
+            bigsize = (cropped.size[0] * 3, cropped.size[1] * 3)
+            mask = Image.new('L', bigsize, 0)
+            draw = ImageDraw.Draw(mask) 
+            draw.ellipse((0, 0) + bigsize, fill=255)
+            mask = mask.resize(cropped.size, Image.LANCZOS)
+            cropped.putalpha(mask)
+
             cropped.save(energy_symbol_path)
 
         if card["supertype"] == 'Trainer' and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
@@ -465,11 +474,11 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
     #     shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
 
 if __name__ == '__main__':
-    cards = get_cards()
-    cards_df = pd.DataFrame(cards)
+    # cards = get_cards()
+    # cards_df = pd.DataFrame(cards)
 
     # cards_df.to_csv('data/temp_cards.csv')
-    # cards_df = pd.read_csv('data/temp_cards.csv')
+    cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
 
