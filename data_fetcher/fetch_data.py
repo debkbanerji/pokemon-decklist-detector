@@ -432,6 +432,9 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             right = width * 0.96
             lower = height * 0.135
             cropped = img.crop((left, upper, right, lower)) 
+            target_height = 32
+            target_width = int(cropped.width * (target_height / cropped.height))
+            cropped = cropped.resize((target_width, target_height), Image.LANCZOS)
             cropped.save(energy_symbol_path)
 
         if card["supertype"] == 'Trainer' and convert_int_or_infinity(card['number']) <= card['set_printed_total']:
@@ -445,6 +448,9 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             right = width * 0.925
             lower = height * 0.52
             cropped = img.crop((left, upper, right, lower))
+            target_height = 32
+            target_width = int(cropped.width * (target_height / cropped.height))
+            cropped = cropped.resize((target_width, target_height), Image.LANCZOS)
             cropped.save(trainer_symbol_path)
 
     # for pokedex_number in range(0,1025 + 1): # Up to pecharunt
