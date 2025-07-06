@@ -590,7 +590,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             {
                 currentDetectedCardName != null && currentDetectedCardID == null ?
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='detected-card-name'>
-                        <button onClick={cancelScan} className='cancel-scan-button'>&#10006;</button>
+                        <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
                         {currentDetectedCardName}
                     </motion.div> :
                     null
@@ -626,7 +626,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 currentDetectedCardID == null && showBasicEnergySelector ? <motion.div
                     initial={{ scale: 0 }} animate={{ scale: 1 }}
                     className='video-feed-basic-energy-selector'>
-                    <button onClick={() => setShowBasicEnergySelector(false)} className='cancel-scan-button'>&#10006;</button>
+                    <button onClick={() => setShowBasicEnergySelector(false)} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
                     &nbsp;
                     Is this basic energy?
                     <br />
@@ -653,7 +653,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             }
             {currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='card-count-selector'>
                 <div className='card-count-selector-instructions'>
-                    <button onClick={cancelScan} className='cancel-scan-button'>&#10006;</button>
+                    <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
                     &nbsp;
                     <div>How many?</div>
                 </div>
@@ -676,7 +676,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             <AnimatePresence>
                 {
                     successfullyAddedCardText != null ?
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ opacity: 0 }} key="successfully-added-card-text" className='successfully-added-card-text'>&#10004; {successfullyAddedCardText}</motion.div>
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ opacity: 0 }} key="successfully-added-card-text" className='successfully-added-card-text'>&#10004;&#xFE0E; {successfullyAddedCardText}</motion.div>
                         : null
                 }
             </AnimatePresence>
@@ -793,7 +793,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 </div> : null}
                             <div className='update-count-row'>
                                 <span>
-                                    <button onClick={deleteCard} className='update-count-button'>&#128465;</button>
+                                    <button onClick={deleteCard} className='update-count-button'>&#128465;&#xFE0E;</button>
                                     <button onClick={decreaseCardCount} disabled={count <= 1} className='update-count-button'>-</button>
                                     <button onClick={increaseCardCount} disabled={count >= 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
                                 </span>
