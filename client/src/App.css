@@ -8,6 +8,28 @@
   text-align: center;
 }
 
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  justify-content: center;
+}
+
+.header > a {
+  color: black;
+  text-decoration: none;
+  margin-top: 0;
+  font-size: 20px;
+  text-align: left;
+  padding-left: 12px;
+}
+
+.header h3 {
+  flex: 1;
+  text-align: center;
+  margin-left: 8px;
+}
+
+
 .card {
   padding: 2em;
 }

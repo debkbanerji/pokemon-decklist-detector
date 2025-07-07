@@ -98,14 +98,14 @@ function App() {
           throw new Error("Empty decklist");
         }
         setDecklistForModal(decklist.map((card, index) => {
-            return {
-              cardInfo: {
-                originalIndex: index,
-                ...card.cardInfo,
-                ...cardDatabase[card.cardInfo.id]
-              }
+          return {
+            cardInfo: {
+              originalIndex: index,
+              ...card.cardInfo,
+              ...cardDatabase[card.cardInfo.id]
             }
-          }));
+          }
+        }));
         setClipboardButtonText('Import from Clipboard');
       } catch (e) {
         console.error(e);
@@ -150,7 +150,10 @@ function App() {
 
 
   return <>
-    <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
+    <div className="header">
+      {hasStarted ? <a className='home-button' href={window.location.origin}>&#x25c0;&#xFE0E;</a> : <span></span>}
+      <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
+    </div>
     {hasStarted ? <ErrorBoundary>
       {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
     </ErrorBoundary> : <div>
