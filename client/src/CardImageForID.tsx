@@ -16,13 +16,13 @@ function CardImageForID({ id, showSetInfo = false, cardDatabase }) {
 
   return hasLoaded ?
     <div className='card-image-container'>
-      <img src={imageUrl} style={{ width: '100%' }} />
       {
         showSetInfo ? <div className="card-set-info-text">
           {card.set_code}&nbsp;
           {card.number}
         </div> : null
       }
+      <img src={imageUrl} style={{ width: '100%' }} />
     </div>
     :
     <div className="card-image-loading-spinner-container">
