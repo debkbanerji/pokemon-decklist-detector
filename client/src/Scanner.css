@@ -26,6 +26,13 @@ h3 {
     background-size: cover;
 }
 
+.video-feed-viewport-scanning {
+    /* background: linear-gradient(90deg, #aaaaaa3a 40%, #68686831 50%, #aaaaaa3a 60%);
+    background-size: 300%;
+    background-position-x: 100%;
+    animation: shimmer 0.9s infinite linear; */
+}
+
 .video-feed-viewport-line {
     content: '';
     height: 0.5px;

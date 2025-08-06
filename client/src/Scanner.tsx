@@ -595,7 +595,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                     </motion.div> :
                     null
             }
-            <div className="video-feed-viewport" style={{
+            <div className={`video-feed-viewport ${currentDetectedCardID == null ? 'video-feed-viewport-scanning' : ''}`} style={{
                 top: (viewportTop * 100) + '%',
                 height: (viewportHeight * 100) + '%',
                 left: (viewportLeft * 100) + '%',
@@ -703,7 +703,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                             exit={{ opacity: 0, x: 200, scale: 1.2 }}
                             transition={{ duration: 0.6, type: "spring", delay: 0.03 * index }}
                         >
-                            <CardImageForID id={id} showSetInfo={true} cardDatabase={cardDatabase}/>
+                            <CardImageForID id={id} showSetInfo={true} cardDatabase={cardDatabase} />
                         </motion.div>
                     </div>
                 })}
