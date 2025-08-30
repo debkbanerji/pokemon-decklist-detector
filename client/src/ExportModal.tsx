@@ -454,7 +454,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 }
             };
 
-
+            const autotableDefaultWidth = doc.internal.pageSize.getWidth() * 0.87;
             autoTable(doc, {
                 head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
                 body: pokemonTable,
@@ -462,6 +462,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 columnStyles,
                 headStyles,
                 margin: { top: 47 },
+                tableWidth: autotableDefaultWidth,
                 didParseCell,
                 didDrawCell: function (data) {
                     try {
@@ -485,30 +486,57 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             });
 
             doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
-            autoTable(doc, {
-                head: [['QTY', 'NAME']],
-                body: trainerTable,
-                styles: tableStyles,
-                columnStyles,
-                headStyles,
-                didParseCell,
-                didDrawCell: function (data) {
-                    try {
-                        if (data.column.index === 1 && data.row.section === 'body') {
-                            const spriteUrl = 'trainer-symbols/' + trainerTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
-                            const dim = data.cell.height - data.cell.padding('vertical');
-                            const textPos = data.cell.textPos;
-                            const img = new Image();
-                            const imgProps = doc.getImageProperties(spriteUrl);
-                            const height = dim * 0.9;
-                            const width = (imgProps.width * height) / imgProps.height;
-                            img.src = spriteUrl;
-                            doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
+            const targetYForTrainerTable = doc.lastAutoTable.finalY + 10;
+
+            let trainerTablesDisplayData = [
+                { table: trainerTable, y: targetYForTrainerTable, width: autotableDefaultWidth, margin: null },
+            ];
+            if (trainerTable.length >= 16) {
+                // split the trainer table in two
+                trainerTablesDisplayData = [
+                    {
+                        table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)),
+                        y: targetYForTrainerTable,
+                        margin: null,
+                        width: autotableDefaultWidth * 0.48
+                    },
+                    {
+                        table: trainerTable.slice(Math.ceil(trainerTable.length / 2)),
+                        y: targetYForTrainerTable,
+                        margin: { left: autotableDefaultWidth * 0.595 },
+                        width: autotableDefaultWidth * 0.48
+                    },
+                ]
+            }
+            trainerTablesDisplayData.forEach(({ table, y, width, margin }) => {
+                autoTable(doc, {
+                    head: [['QTY', 'NAME']],
+                    body: table,
+                    styles: tableStyles,
+                    startY: y,
+                    margin,
+                    tableWidth: width,
+                    columnStyles,
+                    headStyles,
+                    didParseCell,
+                    didDrawCell: function (data) {
+                        try {
+                            if (data.column.index === 1 && data.row.section === 'body') {
+                                const spriteUrl = 'trainer-symbols/' + table[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                const dim = data.cell.height - data.cell.padding('vertical');
+                                const textPos = data.cell.textPos;
+                                const img = new Image();
+                                const imgProps = doc.getImageProperties(spriteUrl);
+                                const height = dim * 0.9;
+                                const width = (imgProps.width * height) / imgProps.height;
+                                img.src = spriteUrl;
+                                doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
+                            }
+                        } catch (e) {
+                            // do nothing
                         }
-                    } catch (e) {
-                        // do nothing
                     }
-                }
+                });
             });
 
             doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
@@ -518,6 +546,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 styles: tableStyles,
                 columnStyles,
                 headStyles,
+                tableWidth: autotableDefaultWidth,
                 didParseCell,
                 didDrawCell: function (data) {
                     try {
