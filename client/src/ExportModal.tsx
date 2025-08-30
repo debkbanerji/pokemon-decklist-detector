@@ -475,7 +475,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                                 const height = dim;
                                 const width = (imgProps.width * height) / imgProps.height;
                                 img.src = spriteUrl;
-                                doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
+                                doc.addImage(img, 'png', data.cell.x - 2 - width, data.cell.y, width, height);
                             }
                         }
                     } catch (e) {
@@ -503,7 +503,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                             const height = dim * 0.9;
                             const width = (imgProps.width * height) / imgProps.height;
                             img.src = spriteUrl;
-                            doc.addImage(img, 'png', data.cell.x - 7, data.cell.y + dim * 0.1, width, height);
+                            doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
                         }
                     } catch (e) {
                         // do nothing
