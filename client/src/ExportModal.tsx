@@ -439,7 +439,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 const name = row[0];
                 const count = row[1];
                 return [count, name]
-            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+            });
 
             const energyTable = energies.filter(row => row[1] > 0).map(row => {
                 const name = row[0];
@@ -534,22 +534,22 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             });
 
             doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
-            const targetYForTrainerTable = doc.lastAutoTable.finalY + 10;
+            const targetYForTrainerTable = doc.lastAutoTable.finalY + 8;
 
             let trainerTablesDisplayData = [
                 { table: trainerTable, y: targetYForTrainerTable, width: autotableDefaultWidth, margin: null },
             ];
-            if (trainerTable.length >= 16) {
+            if (trainerTable.length >= 16 && pokemonTable.length >= 12) {
                 // split the trainer table in two
                 trainerTablesDisplayData = [
                     {
-                        table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)),
+                        table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
                         y: targetYForTrainerTable,
                         margin: null,
                         width: autotableDefaultWidth * 0.48
                     },
                     {
-                        table: trainerTable.slice(Math.ceil(trainerTable.length / 2)),
+                        table: trainerTable.slice(Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
                         y: targetYForTrainerTable,
                         margin: { left: autotableDefaultWidth * 0.595 },
                         width: autotableDefaultWidth * 0.48
@@ -587,11 +587,12 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 });
             });
 
-            doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 6);
+            doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 8);
             autoTable(doc, {
                 head: [['QTY', 'NAME']],
                 body: energyTable,
                 styles: tableStyles,
+                startY: doc.lastAutoTable.finalY + 10,
                 columnStyles,
                 headStyles,
                 tableWidth: autotableDefaultWidth,
