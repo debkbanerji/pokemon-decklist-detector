@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-function CardImageForID({ id, showSetInfo = false, cardDatabase }) {
+function CardImageForID({ id, showSetInfo = false, cardDatabase, onLoaded }) {
   const imageUrl = `/cards/${id}.png`;
   const card = cardDatabase != null ? cardDatabase[id] : {};
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -9,6 +9,11 @@ function CardImageForID({ id, showSetInfo = false, cardDatabase }) {
       if (!hasLoaded) {
         await fetch(imageUrl); // wait for this network request to finish
         setHasLoaded(true);
+        if (onLoaded) {
+          setTimeout(() => {
+            onLoaded(id);
+          }, 500);
+        }
       }
     }
     waitForLoad();

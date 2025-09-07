@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
@@ -8,6 +8,7 @@ import DecklistImage from './DecklistImage.tsx';
 import Select, { components, OptionProps } from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
+import { toJpeg } from 'html-to-image';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -231,6 +232,9 @@ function processStringForPDFCompatibility(str) {
 function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, onClose }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
+    const decklistImageRef = useRef<HTMLDivElement>(null);
+    const [decklistImageDataURL, setDecklistImageDataURL] = useState(null);
+
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
             setModalOpenedTimestamp(Date.now());
@@ -702,7 +706,19 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>
         </div> : null}
         <hr style={{ marginTop: 16 }} />
-        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
+        <div ref={decklistImageRef} >
+            <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase}
+                onAllCardImagesLoaded={
+                    () => {
+                        toJpeg(decklistImageRef.current, { cacheBust: true, })
+                            .then(setDecklistImageDataURL)
+                            .catch((err) => {
+                                console.log(err)
+                            })
+                    }
+                }
+            />
+        </div>
         <br />
         {
             totalCountValid ?
@@ -781,6 +797,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
                     {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
+                <a href={decklistImageDataURL} download={`${(deckName ?? 'decklist').replaceAll(' ', '-').replaceAll('/', '-')}.jpeg`}>
+                    <button type="button" disabled={decklistImageDataURL == null} >
+                        Download Image
+                    </button>
+                </a>
                 <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
                     Email List
                 </button></a>
