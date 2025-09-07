@@ -325,7 +325,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         return result;
     }, [cardDatabase]);
 
-    const [clipboardButtonText, setClipboardButtonText] = useState('Copy List to Clipboard');
+    const [clipboardButtonText, setClipboardButtonText] = useState('Copy to Clipboard');
     const pokemonText = `Pokémon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {
         const id = row[0];
         const count = row[1];
@@ -358,7 +358,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             ).then(() => {
                 setClipboardButtonText('Copied!');
                 setTimeout(() =>
-                    setClipboardButtonText('Copy List to Clipboard'), 1000)
+                    setClipboardButtonText('Copy to Clipboard'), 1000)
             });
         await saveDecklistToStorage();
     }
@@ -795,6 +795,23 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
                     {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
+                {canshareUrl ? <>
+                    <button type="button" onClick={onShareUrl}>
+                        Share Link
+                    </button>
+                    <button type="button" onClick={async () => {
+                        await saveDecklistToStorage();
+                        setShowQRCode(true);
+                    }}>
+                        View QR Code
+                    </button>
+                </> : null}
+                <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
+                    Email List
+                </button></a>
+                <button type="button" onClick={onCopyToClipboard}>
+                    {clipboardButtonText}
+                </button>
                 <button type="button" disabled={!canDownloadDecklistImage || isDownloadingDecklistImage}
                     onClick={
                         () => {
@@ -815,23 +832,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     }
                 >
                     {isDownloadingDecklistImage ? 'Preparing...' : 'Download Image'}
-                </button>
-                <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
-                    Email List
-                </button></a>
-                {canshareUrl ? <>
-                    <button type="button" onClick={onShareUrl}>
-                        Share Link
-                    </button>
-                    <button type="button" onClick={async () => {
-                        await saveDecklistToStorage();
-                        setShowQRCode(true);
-                    }}>
-                        View QR Code
-                    </button>
-                </> : null}
-                <button type="button" onClick={onCopyToClipboard}>
-                    {clipboardButtonText}
                 </button>
             </div>
             <div className='export-pdf-field'>
