@@ -173,7 +173,7 @@ function hexToRgb(hex) {
     } : null;
 }
 
-const TYPE_TO_HEADER_COLOR_PAIR = {
+const TYPE_TO_TEXT_COLOR_PAIR = {
     'Grass': ['#1B5E20', '#E0E0E0'],
     'Fire': ['#BF360C', '#E0E0E0'],
     'Water': ['#0D47A1', '#E0E0E0'],
@@ -184,6 +184,20 @@ const TYPE_TO_HEADER_COLOR_PAIR = {
     'Metal': ['#424242', '#E0E0E0'],
     'Dragon': ['#A66E00', '#E0E0E0'],
     'Colorless': ['#000000', '#E0E0E0'],
+}
+
+
+const TYPE_TO_HEADER_COLOR_PAIR = {
+    'Grass': ['#145018', '#F5F5F5'],
+    'Fire': ['#ba3200', '#F5F5F5'],
+    'Water': ['#08306b', '#F5F5F5'],
+    'Lightning': ['#7A5200', '#F5F5F5'],
+    'Psychic': ['#7B1040', '#F5F5F5'],
+    'Fighting': ['#5C381A', '#F5F5F5'],
+    'Darkness': ['#23272B', '#F5F5F5'],
+    'Metal': ['#212121', '#F5F5F5'],
+    'Dragon': ['#7A5200', '#F5F5F5'],
+    'Colorless': ['#222222', '#F5F5F5'],
 }
 
 // TODO: Remove the animated ones!
@@ -459,7 +473,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
             doc.setFontSize(16);
             const coverPokemonType = getCoverPokemonType(coverPokemon);
-            const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
+            const coverPokemonTextRGB = hexToRgb(TYPE_TO_TEXT_COLOR_PAIR[coverPokemonType][0]);
             doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
             doc.setFont(undefined, 'bold').text(processStringForPDFCompatibility(deckName), 15, 10);
             doc.line(15, 12, 160, 12);
@@ -501,8 +515,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
             const didParseCell = (table) => {
                 if (table.section === 'head') {
-                    // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
-                    // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
+                    // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
+                    // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
                 }
             };
 
