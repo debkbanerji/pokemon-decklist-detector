@@ -510,7 +510,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
 
             doc.setFontSize(12);
-            doc.text(`Pokemon: ${numPokemon}`, 15, 45);
+            doc.text(`Pokemon: ${numPokemon}`, 14.5, 45);
 
 
             const didParseCell = (table) => {
@@ -551,7 +551,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 }
             });
 
-            doc.text(`Trainer: ${numTrainers}`, 15, doc.lastAutoTable.finalY + 6);
+            doc.text(`Trainer: ${numTrainers}`, 14.5, doc.lastAutoTable.finalY + 6);
             const targetYForTrainerTable = doc.lastAutoTable.finalY + 8;
 
             let trainerTablesDisplayData = [
@@ -605,7 +605,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 });
             });
 
-            doc.text(`Energy: ${numEnergies}`, 15, doc.lastAutoTable.finalY + 8);
+            doc.text(`Energy: ${numEnergies}`, 14.5, doc.lastAutoTable.finalY + 8);
             autoTable(doc, {
                 head: [['QTY', 'NAME']],
                 body: energyTable,
@@ -638,7 +638,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 }
             });
 
-            doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 15, doc.lastAutoTable.finalY + 6)
+            doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 14.5, doc.lastAutoTable.finalY + 6)
 
             if (coverPokemon.length > 0) {
                 const coverPokemonImg = new Image();
