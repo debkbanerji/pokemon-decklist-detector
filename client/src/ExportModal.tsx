@@ -447,7 +447,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 return [count, name]
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-            const doc = new jsPDF({ format: 'letter' });
+            const doc = new jsPDF({ format: 'letter', compress: true });
 
             const tableStyles = { cellPadding: 0.2 };
             const columnStyles = { 0: { cellWidth: 16 } };
