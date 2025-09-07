@@ -9,6 +9,7 @@ import Select, { components, OptionProps } from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
 import { toJpeg } from 'html-to-image';
+import { set } from 'rsuite/esm/internals/utils/date/index';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -233,7 +234,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     const decklistImageRef = useRef<HTMLDivElement>(null);
-    const [decklistImageDataURL, setDecklistImageDataURL] = useState(null);
+    const [canDownloadDecklistImage, setCanDownloadDecklistImage] = useState(false);
+    const [isDownloadingDecklistImage, setIsDownloadingDecklistImage] = useState(false);
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -710,11 +712,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase}
                 onAllCardImagesLoaded={
                     () => {
-                        toJpeg(decklistImageRef.current, { cacheBust: true, })
-                            .then(setDecklistImageDataURL)
-                            .catch((err) => {
-                                console.log(err)
-                            })
+                        setCanDownloadDecklistImage(true);
                     }
                 }
             />
@@ -797,11 +795,27 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
                     {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
-                <a href={decklistImageDataURL} download={`${(deckName ?? 'decklist').replaceAll(' ', '-').replaceAll('/', '-')}.jpeg`}>
-                    <button type="button" disabled={decklistImageDataURL == null} >
-                        Download Image
-                    </button>
-                </a>
+                <button type="button" disabled={!canDownloadDecklistImage || isDownloadingDecklistImage}
+                    onClick={
+                        () => {
+                            setIsDownloadingDecklistImage(true);
+                            toJpeg(decklistImageRef.current, { cacheBust: true, })
+                                .then((dataUrl) => {
+                                    const link = document.createElement('a')
+                                    link.download = `${(deckName ?? 'decklist').replaceAll(' ', '-').replaceAll('/', '-')}.jpeg`;
+                                    link.href = dataUrl;
+                                    link.click();
+                                    setIsDownloadingDecklistImage(false);
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                    setIsDownloadingDecklistImage
+                                })
+                        }
+                    }
+                >
+                    {isDownloadingDecklistImage ? 'Preparing...' : 'Download Image'}
+                </button>
                 <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
                     Email List
                 </button></a>
