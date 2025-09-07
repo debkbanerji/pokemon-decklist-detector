@@ -209,6 +209,10 @@ const playerSpriteFilenames = [
     'volkner.png',
 ]
 
+function processStringForPDFCompatibility(str) {
+    return str;
+}
+
 
 function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, onClose }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
@@ -432,19 +436,19 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
                 const spriteUrl = getPokemonSpriteUrlForCard(card);
 
-                return [count, card['name'], getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
+                return [count, processStringForPDFCompatibility(card['name']), getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
             const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
                 const name = row[0];
                 const count = row[1];
-                return [count, name]
+                return [count, processStringForPDFCompatibility(name)]
             });
 
             const energyTable = energies.filter(row => row[1] > 0).map(row => {
                 const name = row[0];
                 const count = row[1];
-                return [count, name]
+                return [count, processStringForPDFCompatibility(name)]
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
             const doc = new jsPDF({ format: 'letter', compress: true });
@@ -457,7 +461,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             const coverPokemonType = getCoverPokemonType(coverPokemon);
             const coverPokemonTextRGB = hexToRgb(TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0]);
             doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
-            doc.setFont(undefined, 'bold').text(deckName, 15, 10);
+            doc.setFont(undefined, 'bold').text(processStringForPDFCompatibility(deckName), 15, 10);
             doc.line(15, 12, 160, 12);
 
             doc.setTextColor(0, 0, 0);
