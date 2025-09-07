@@ -816,7 +816,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     onClick={
                         () => {
                             setIsDownloadingDecklistImage(true);
-                            toJpeg(decklistImageRef.current, { cacheBust: true, })
+                            toJpeg(decklistImageRef.current, { cacheBust: true, quality: 0.9 }); // without lowering the quality, the download fails on iOS for some reason
                                 .then((dataUrl) => {
                                     const link = document.createElement('a')
                                     link.download = `${(deckName ?? 'decklist').replaceAll(' ', '-').replaceAll('/', '-')}.jpeg`;
