@@ -352,7 +352,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }
 
     const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(undeletedCardData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
-    const canshareUrl = (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
+    const canshareUrl = window.location.href.indexOf('forceShareable') > -1 || (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
     async function onShareUrl() {
         await saveDecklistToStorage();
         navigator.share({ url: shareableUrl });
@@ -451,7 +451,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 return [count, processStringForPDFCompatibility(name)]
             }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-            const doc = new jsPDF({ format: 'letter', compress: true });
+            const doc = new jsPDF({ format: 'letter', compress: true, floatPrecision: 1 });
 
             const tableStyles = { cellPadding: 0.2 };
             const columnStyles = { 0: { cellWidth: 16 } };
