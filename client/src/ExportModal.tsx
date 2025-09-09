@@ -446,230 +446,233 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     function onDownloadPDF() {
         setIsDownloadingPDF(true);
         setTimeout(async () => { // Wait a few ms for the UI to update before triggering pdf generation
-            await saveDecklistToStorage();
-            const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
-                const id = row[0];
-                const count = row[1];
-                const card = cardDatabase[id];
-                const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
-                // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
-                // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
-                const spriteUrl = getPokemonSpriteUrlForCard(card);
+            async function makeAndDownloadPDF() {
+                await saveDecklistToStorage();
+                const pokemonTable = pokemon.filter(row => row[1] > 0).map(row => {
+                    const id = row[0];
+                    const count = row[1];
+                    const card = cardDatabase[id];
+                    const nationalPokedexNumber = (card.national_pokedex_numbers ?? [])[0] ?? NAME_TO_POKEDEX_NUMBER_FALLBACK[card.name_without_prefix_and_postfix] ?? 0;
+                    // const spriteUrl = 'sprites/' + nationalPokedexNumber + '.png';
+                    // const energySymbolUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.types[0]];
+                    const spriteUrl = getPokemonSpriteUrlForCard(card);
 
-                return [count, processStringForPDFCompatibility(card['name']), getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
-            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+                    return [count, processStringForPDFCompatibility(card['name']), getDisplaySetCode(card), maybeProcessGalleryCardNumber(card['number']), card['regulation_mark'], spriteUrl];
+                }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-            const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
-                const name = row[0];
-                const count = row[1];
-                return [count, processStringForPDFCompatibility(name)]
-            });
+                const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
+                    const name = row[0];
+                    const count = row[1];
+                    return [count, processStringForPDFCompatibility(name)]
+                });
 
-            const energyTable = energies.filter(row => row[1] > 0).map(row => {
-                const name = row[0];
-                const count = row[1];
-                return [count, processStringForPDFCompatibility(name)]
-            }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
+                const energyTable = energies.filter(row => row[1] > 0).map(row => {
+                    const name = row[0];
+                    const count = row[1];
+                    return [count, processStringForPDFCompatibility(name)]
+                }).concat([...Array(1)].map(_ => { return ['', '']; })); // add some buffer for writing in changes by hand
 
-            const doc = new jsPDF({ format: 'letter', compress: true, floatPrecision: 1 });
+                const doc = new jsPDF({ format: 'letter', compress: true, floatPrecision: 1 });
 
-            const tableStyles = { cellPadding: 0.2 };
-            const columnStyles = { 0: { cellWidth: 16 } };
-            const headStyles = { fillColor: '#a9a9a9' };
+                const tableStyles = { cellPadding: 0.2 };
+                const columnStyles = { 0: { cellWidth: 16 } };
+                const headStyles = { fillColor: '#a9a9a9' };
 
-            doc.setFontSize(16);
-            const coverPokemonType = getCoverPokemonType(coverPokemon);
-            const coverPokemonTextRGB = hexToRgb(TYPE_TO_TEXT_COLOR_PAIR[coverPokemonType][0]);
-            doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
-            doc.setFont(undefined, 'bold').text(processStringForPDFCompatibility(deckName), 15, 10);
-            doc.line(15, 12, 160, 12);
+                doc.setFontSize(16);
+                const coverPokemonType = getCoverPokemonType(coverPokemon);
+                const coverPokemonTextRGB = hexToRgb(TYPE_TO_TEXT_COLOR_PAIR[coverPokemonType][0]);
+                doc.setTextColor(coverPokemonTextRGB.r, coverPokemonTextRGB.g, coverPokemonTextRGB.b);
+                doc.setFont(undefined, 'bold').text(processStringForPDFCompatibility(deckName), 15, 10);
+                doc.line(15, 12, 160, 12);
 
-            doc.setTextColor(0, 0, 0);
+                doc.setTextColor(0, 0, 0);
 
-            doc.setFontSize(8);
-            const generatedText = `Generated by decklist.debkbanerji.com on ${new Date().toLocaleDateString()}`
-            doc.setFont(undefined, 'normal').text(generatedText, 159.5 - doc.getTextWidth(generatedText), 10);
+                doc.setFontSize(8);
+                const generatedText = `Generated by decklist.debkbanerji.com on ${new Date().toLocaleDateString()}`
+                doc.setFont(undefined, 'normal').text(generatedText, 159.5 - doc.getTextWidth(generatedText), 10);
 
-            doc.setFontSize(13);
-            doc.setFont(undefined, 'bold').text('Player Name:', 15, 17).setFont(undefined, 'normal').text(playerName, 45, 17);
-            if (playerSpriteFile != null && playerSpriteFile.length > 0) {
-                const playerSpriteImage = new Image();
-                playerSpriteImage.src = 'customization_sprites/' + playerSpriteFile;
-                doc.addImage(playerSpriteImage, 'png', 45.5 + doc.getTextWidth(playerName), 13, 5, 5);
-            }
-            doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(playerID, 37, 22);
-            doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 27);
-            doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(ageDivision, 45, 32);
-            const ageDivisionPokeballIcon = new Image();
-            ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
-            doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 28.5, 4.5, 4.5);
-            doc.setFont(undefined, 'bold').text('Format:', 15, 37).setFont(undefined, 'normal').text(format, 33, 37);
-
-            if (canshareUrl) {
-                const decklistQRObject = qrcode(0, 'M');
-                decklistQRObject.addData(shareableUrl);
-                decklistQRObject.make();
-                const decklistQRCodeImage = new Image();
-                decklistQRCodeImage.src = decklistQRObject.createDataURL(null, 0);
-                doc.addImage(decklistQRCodeImage, 'png', 161.5, 5, 40, 40);
-            }
-
-
-            doc.setFontSize(12);
-            doc.text(`Pokemon: ${numPokemon}`, 14.5, 45);
-
-
-            const didParseCell = (table) => {
-                if (table.section === 'head') {
-                    // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
-                    // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
+                doc.setFontSize(13);
+                doc.setFont(undefined, 'bold').text('Player Name:', 15, 17).setFont(undefined, 'normal').text(playerName, 45, 17);
+                if (playerSpriteFile != null && playerSpriteFile.length > 0) {
+                    const playerSpriteImage = new Image();
+                    playerSpriteImage.src = 'customization_sprites/' + playerSpriteFile;
+                    doc.addImage(playerSpriteImage, 'png', 45.5 + doc.getTextWidth(playerName), 13, 5, 5);
                 }
-            };
+                doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(playerID, 37, 22);
+                doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 27);
+                doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(ageDivision, 45, 32);
+                const ageDivisionPokeballIcon = new Image();
+                ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
+                doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 28.5, 4.5, 4.5);
+                doc.setFont(undefined, 'bold').text('Format:', 15, 37).setFont(undefined, 'normal').text(format, 33, 37);
 
-            const autotableDefaultWidth = doc.internal.pageSize.getWidth() * 0.87;
-            autoTable(doc, {
-                head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
-                body: pokemonTable,
-                styles: tableStyles,
-                columnStyles,
-                headStyles,
-                margin: { top: 47 },
-                tableWidth: autotableDefaultWidth,
-                didParseCell,
-                didDrawCell: function (data) {
-                    try {
-                        if (data.column.index === 1 && data.row.section === 'body') {
-                            const spriteUrl = pokemonTable[data.row.index][5];
-                            const dim = data.cell.height - data.cell.padding('vertical');
-                            const textPos = data.cell.textPos;
-                            if (spriteUrl != null && spriteUrl.length > 0) {
-                                const img = new Image();
-                                const imgProps = doc.getImageProperties(spriteUrl);
-                                const height = dim;
-                                const width = (imgProps.width * height) / imgProps.height;
-                                img.src = spriteUrl;
-                                doc.addImage(img, 'png', data.cell.x - 2 - width, data.cell.y, width, height);
-                            }
-                        }
-                    } catch (e) {
-                        // do nothing
+                if (canshareUrl) {
+                    const decklistQRObject = qrcode(0, 'M');
+                    decklistQRObject.addData(shareableUrl);
+                    decklistQRObject.make();
+                    const decklistQRCodeImage = new Image();
+                    decklistQRCodeImage.src = decklistQRObject.createDataURL(null, 0);
+                    doc.addImage(decklistQRCodeImage, 'png', 161.5, 5, 40, 40);
+                }
+
+
+                doc.setFontSize(12);
+                doc.text(`Pokemon: ${numPokemon}`, 14.5, 45);
+
+
+                const didParseCell = (table) => {
+                    if (table.section === 'head') {
+                        // table.cell.styles.textColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][1];
+                        // table.cell.styles.fillColor = TYPE_TO_HEADER_COLOR_PAIR[coverPokemonType][0];
                     }
-                }
-            });
+                };
 
-            doc.text(`Trainer: ${numTrainers}`, 14.5, doc.lastAutoTable.finalY + 6);
-            const targetYForTrainerTable = doc.lastAutoTable.finalY + 8;
-
-            let trainerTablesDisplayData = [
-                { table: trainerTable, y: targetYForTrainerTable, width: autotableDefaultWidth, margin: null },
-            ];
-            if (trainerTable.length >= 16 && pokemonTable.length >= 12) {
-                // split the trainer table in two
-                trainerTablesDisplayData = [
-                    {
-                        table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
-                        y: targetYForTrainerTable,
-                        margin: null,
-                        width: autotableDefaultWidth * 0.48
-                    },
-                    {
-                        table: trainerTable.slice(Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
-                        y: targetYForTrainerTable,
-                        margin: { left: autotableDefaultWidth * 0.595 },
-                        width: autotableDefaultWidth * 0.48
-                    },
-                ]
-            }
-            trainerTablesDisplayData.forEach(({ table, y, width, margin }) => {
+                const autotableDefaultWidth = doc.internal.pageSize.getWidth() * 0.87;
                 autoTable(doc, {
-                    head: [['QTY', 'NAME']],
-                    body: table,
+                    head: [['QTY', 'NAME', 'SET', 'COLL #', 'REG']],
+                    body: pokemonTable,
                     styles: tableStyles,
-                    startY: y,
-                    margin,
-                    tableWidth: width,
                     columnStyles,
                     headStyles,
+                    margin: { top: 47 },
+                    tableWidth: autotableDefaultWidth,
                     didParseCell,
                     didDrawCell: function (data) {
                         try {
                             if (data.column.index === 1 && data.row.section === 'body') {
-                                const spriteUrl = 'trainer-symbols/' + table[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                const spriteUrl = pokemonTable[data.row.index][5];
                                 const dim = data.cell.height - data.cell.padding('vertical');
                                 const textPos = data.cell.textPos;
-                                const img = new Image();
-                                const imgProps = doc.getImageProperties(spriteUrl);
-                                const height = dim * 0.9;
-                                const width = (imgProps.width * height) / imgProps.height;
-                                img.src = spriteUrl;
-                                doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
+                                if (spriteUrl != null && spriteUrl.length > 0) {
+                                    const img = new Image();
+                                    const imgProps = doc.getImageProperties(spriteUrl);
+                                    const height = dim;
+                                    const width = (imgProps.width * height) / imgProps.height;
+                                    img.src = spriteUrl;
+                                    doc.addImage(img, 'png', data.cell.x - 2 - width, data.cell.y, width, height);
+                                }
                             }
                         } catch (e) {
                             // do nothing
                         }
                     }
                 });
-            });
 
-            doc.text(`Energy: ${numEnergies}`, 14.5, doc.lastAutoTable.finalY + 8);
-            autoTable(doc, {
-                head: [['QTY', 'NAME']],
-                body: energyTable,
-                styles: tableStyles,
-                startY: doc.lastAutoTable.finalY + 10,
-                columnStyles,
-                headStyles,
-                tableWidth: autotableDefaultWidth,
-                didParseCell,
-                didDrawCell: function (data) {
-                    try {
-                        if (data.column.index === 1 && data.row.section === 'body') {
-                            let spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy', '')];
-                            if (spriteUrl == null) {
-                                // special energy
-                                spriteUrl = 'special-energy-symbols/' + energyTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                doc.text(`Trainer: ${numTrainers}`, 14.5, doc.lastAutoTable.finalY + 6);
+                const targetYForTrainerTable = doc.lastAutoTable.finalY + 8;
+
+                let trainerTablesDisplayData = [
+                    { table: trainerTable, y: targetYForTrainerTable, width: autotableDefaultWidth, margin: null },
+                ];
+                if (trainerTable.length >= 16 && pokemonTable.length >= 12) {
+                    // split the trainer table in two
+                    trainerTablesDisplayData = [
+                        {
+                            table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
+                            y: targetYForTrainerTable,
+                            margin: null,
+                            width: autotableDefaultWidth * 0.48
+                        },
+                        {
+                            table: trainerTable.slice(Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
+                            y: targetYForTrainerTable,
+                            margin: { left: autotableDefaultWidth * 0.595 },
+                            width: autotableDefaultWidth * 0.48
+                        },
+                    ]
+                }
+                trainerTablesDisplayData.forEach(({ table, y, width, margin }) => {
+                    autoTable(doc, {
+                        head: [['QTY', 'NAME']],
+                        body: table,
+                        styles: tableStyles,
+                        startY: y,
+                        margin,
+                        tableWidth: width,
+                        columnStyles,
+                        headStyles,
+                        didParseCell,
+                        didDrawCell: function (data) {
+                            try {
+                                if (data.column.index === 1 && data.row.section === 'body') {
+                                    const spriteUrl = 'trainer-symbols/' + table[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                    const dim = data.cell.height - data.cell.padding('vertical');
+                                    const textPos = data.cell.textPos;
+                                    const img = new Image();
+                                    const imgProps = doc.getImageProperties(spriteUrl);
+                                    const height = dim * 0.9;
+                                    const width = (imgProps.width * height) / imgProps.height;
+                                    img.src = spriteUrl;
+                                    doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
+                                }
+                            } catch (e) {
+                                // do nothing
                             }
-                            const dim = data.cell.height - data.cell.padding('vertical');
-                            const textPos = data.cell.textPos;
-                            const img = new Image();
-                            const imgProps = doc.getImageProperties(spriteUrl);
-                            const height = dim;
-                            const width = (imgProps.width * height) / imgProps.height;
-                            img.src = spriteUrl;
-                            doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
                         }
-                    } catch (e) {
-                        // do nothing
+                    });
+                });
+
+                doc.text(`Energy: ${numEnergies}`, 14.5, doc.lastAutoTable.finalY + 8);
+                autoTable(doc, {
+                    head: [['QTY', 'NAME']],
+                    body: energyTable,
+                    styles: tableStyles,
+                    startY: doc.lastAutoTable.finalY + 10,
+                    columnStyles,
+                    headStyles,
+                    tableWidth: autotableDefaultWidth,
+                    didParseCell,
+                    didDrawCell: function (data) {
+                        try {
+                            if (data.column.index === 1 && data.row.section === 'body') {
+                                let spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[energyTable[data.row.index][1].replace(' Energy', '')];
+                                if (spriteUrl == null) {
+                                    // special energy
+                                    spriteUrl = 'special-energy-symbols/' + energyTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                }
+                                const dim = data.cell.height - data.cell.padding('vertical');
+                                const textPos = data.cell.textPos;
+                                const img = new Image();
+                                const imgProps = doc.getImageProperties(spriteUrl);
+                                const height = dim;
+                                const width = (imgProps.width * height) / imgProps.height;
+                                img.src = spriteUrl;
+                                doc.addImage(img, 'png', data.cell.x - 6, data.cell.y, width, height);
+                            }
+                        } catch (e) {
+                            // do nothing
+                        }
+                    }
+                });
+
+                doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 14.5, doc.lastAutoTable.finalY + 6)
+
+                if (coverPokemon.length > 0) {
+                    const coverPokemonImg = new Image();
+                    const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
+                    if (coverPokemonUrl && coverPokemonUrl.length > 0) {
+                        const imgProps = doc.getImageProperties(coverPokemonUrl);
+                        const height = 6;
+                        const width = (imgProps.width * height) / imgProps.height;
+                        coverPokemonImg.src = coverPokemonUrl;
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold')
+                        doc.addImage(coverPokemonUrl, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
+
+                        // Watermark the page
+                        doc.setGState(new doc.GState({ opacity: 0.10 }));
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const bigHeight = pageHeight / 3;
+                        const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
+                        doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
+                        doc.setGState(new doc.GState({ opacity: 1 }));
                     }
                 }
-            });
-
-            doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 14.5, doc.lastAutoTable.finalY + 6)
-
-            if (coverPokemon.length > 0) {
-                const coverPokemonImg = new Image();
-                const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
-                if (coverPokemonUrl && coverPokemonUrl.length > 0) {
-                    const imgProps = doc.getImageProperties(coverPokemonUrl);
-                    const height = 6;
-                    const width = (imgProps.width * height) / imgProps.height;
-                    coverPokemonImg.src = coverPokemonUrl;
-                    doc.setFontSize(16);
-                    doc.setFont(undefined, 'bold')
-                    doc.addImage(coverPokemonUrl, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
-
-                    // Watermark the page
-                    doc.setGState(new doc.GState({ opacity: 0.10 }));
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    const bigHeight = pageHeight / 3;
-                    const bigWidth = (imgProps.width * bigHeight) / imgProps.height;
-                    doc.addImage(coverPokemonUrl, 'png', (pageWidth - bigWidth) / 2, (pageHeight - bigHeight) / 2, bigWidth, bigHeight);
-                    doc.setGState(new doc.GState({ opacity: 1 }));
-                }
+                const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
+                doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
             }
-            const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
-            doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
+            await makeAndDownloadPDF();
         }, 30);
     }
 
