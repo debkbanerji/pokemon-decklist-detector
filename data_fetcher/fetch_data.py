@@ -1,7 +1,6 @@
-from pokemontcgsdk import RestClient as PokemonTCGSDKRestClient
-from pokemontcgsdk import Card
 import pandas as pd
 import urllib
+import urllib.request
 import os
 import re
 import shutil
@@ -30,14 +29,9 @@ CLIENT_SPRITES_DIRECTORY = './../client/public/sprites'
 if not os.path.exists(CLIENT_SPRITES_DIRECTORY):
     os.makedirs(CLIENT_SPRITES_DIRECTORY)
 
-api_key_file = open("pokemontcg_api_key.txt", "r")
-api_key = api_key_file.read().strip()
-
-PokemonTCGSDKRestClient.configure(api_key)
-
 PAGE_SIZE = 250
 
-prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost|white) )*", re.IGNORECASE)
+prefix_replacement_regex = re.compile(r"^((special delivery|radiant|origin forme|hisuian|galarian|alolan|paldean|teal mask|hearthflame mask|wellspring mask|cornerstone mask|bloodmoon|lance's|single strike|rapid strike|ice rider|shadow rider|flying|surfing|heat|mow|wash|fan|frost|white|mega) )*", re.IGNORECASE)
 postfix_replacement_regex = re.compile(r" (ex|v|vstar|vmax|v-union|sunny form|rainy form|snowy form|with grey felt hat)$", re.IGNORECASE)
 
 professors_research_named_regex = re.compile(r"professor's research \(.*\)$", re.IGNORECASE)
@@ -109,33 +103,39 @@ def get_cards(): # Returns dataframe
     total_downloaded_cards = 0
     page_number = 1
     processed_cards = None
-    while processed_cards is None or len(processed_cards) > 0:
-        query = 'legalities.standard:legal'
-        query = '(OR regulationMark:g OR regulationMark:h OR regulationMark:i OR name:basic) ' + query
-        # query = 'set.id:swsh9 ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
-        # query = '(name:dialga OR name:greninja OR name:basculin OR name:beldum OR name:metang) ' + query # Uncomment for smaller test set (second ex: 'name:arceus')
-        full_card_objects = Card.where(page=page_number, pageSize=PAGE_SIZE, q=query) # All standard legal cards
+    
+    # get the set info directly from github, to avoid computationally expensive calls to the API
+    sets_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/sets/en.json"
+    sets_data = json.load(urllib.request.urlopen(sets_url))
+    
+    # only Scarlet & Violet and Mega Evolution sets are currently supported 
+    sets_data = [s for s in sets_data if s['series'] == 'Scarlet & Violet' or s['series'] == 'Mega Evolution']
 
+    for set_data in sets_data:
+        set_id = set_data['id']
+        print("Downloading info for set " + set_id + " (" + set_data['name'] + ")")
+        set_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/cards/en/" + set_id + ".json"
+        cards_in_set = json.load(urllib.request.urlopen(set_url))
         processed_cards = [
             {
-                "id": card.id,
-                "name": get_processed_name(card.name),
-                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype)),
-                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.name), card.supertype))),
-                "supertype": card.supertype,
-                "subtypes": card.subtypes if hasattr(card, 'subtypes') else [],
-                "rarity": card.rarity,
-                "hp": card.hp,
-                "set_id": card.set.id,
-                "set_code": set_id_to_official_code_overrides[card.set.id]  if card.set.id in set_id_to_official_code_overrides else card.set.ptcgoCode,
-                "regulation_mark": card.regulationMark,
-                "set_name": card.set.name,
-                "number": card.number,
-                "set_printed_total": card.set.printedTotal, # The total printed on the card - excludes secret rares
-                "small_image_url": card.images.small,
-                "types": card.types,
-                "national_pokedex_numbers": card.nationalPokedexNumbers
-            } for card in full_card_objects
+                "id": card.get('id'),
+                "name": get_processed_name(card.get('name')),
+                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype'))),
+                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype')))),
+                "supertype": card.get('supertype'),
+                "subtypes": card.get('subtypes', []),
+                "rarity": card.get('rarity'),
+                "hp": card.get('hp'),
+                "set_id": set_data.get('id'),
+                "set_code": set_id_to_official_code_overrides[set_data.get('id')] if set_data.get('id') in set_id_to_official_code_overrides else set_data.get('ptcgoCode'),
+                "regulation_mark": card.get('regulationMark'),
+                "set_name": set_data.get('name'),
+                "number": card.get('number'),
+                "set_printed_total": set_data.get('printedTotal'),
+                "small_image_url": card.get('images', {}).get('small'),
+                "types": card.get('types'),
+                "national_pokedex_numbers": card.get('nationalPokedexNumbers')
+            } for card in cards_in_set
         ]
         dfs_list.append(pd.DataFrame(processed_cards))
         page_number = page_number + 1
@@ -567,9 +567,6 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
     print("Downloading image data")
     # Downloads images of cards for which the image does not already exist in CARD_IMAGES_DIRECTORY
     # Naturally, this function will download all the images if none of them exist
-    opener = urllib.request.build_opener()
-    opener.addheaders = [('X-Api-Key', api_key)]
-    urllib.request.install_opener(opener)
     for index, card in cards_df.iterrows():
         file_name = card["id"] + ".png"
         img_path = CARD_IMAGES_DIRECTORY + "/" + file_name
