@@ -120,8 +120,8 @@ def get_cards(): # Returns dataframe
             {
                 "id": card.get('id'),
                 "name": get_processed_name(card.get('name')),
-                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype'))),
-                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype')))),
+                "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype'))) if card.get('supertype') == 'Pokémon' else get_processed_name(card.get('name')),
+                "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name(card.get('name')), card.get('supertype')))) if card.get('supertype') == 'Pokémon' else get_processed_name(card.get('name')),
                 "supertype": card.get('supertype'),
                 "subtypes": card.get('subtypes', []),
                 "rarity": card.get('rarity'),
@@ -544,6 +544,8 @@ def get_cards(): # Returns dataframe
     return concatenated_df
 
 def compute_detection_keywords_for_name(target_name, all_names):
+    if target_name.lower() == "billy & o'nare": # Goofy card that messes up squawkabilly detection
+        return [target_name]
     # look at all possible prefixes and postfixes for target_name
     # for each of these that are not a substring present within all_names, add them to the result list
 
