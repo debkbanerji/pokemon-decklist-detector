@@ -257,6 +257,10 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             result[name] = (result[name] ?? []).concat([id]);
         });
         for (const key of Object.keys(result)) {
+            // first, put longer IDs at the end so we check against this last when scanning and overwrite
+            // i.e. prefer the longer match
+            result[key].sort((a, b) => a.length - b.length);
+
             result[key].sort((a, b) => isCardSecretRare(cardDatabase[a]) - isCardSecretRare(cardDatabase[b]));
         }
         return result;
