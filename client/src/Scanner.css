@@ -412,6 +412,8 @@ h3 {
 
 .card-image-container {
     width: 100%;
+    border-radius: 4.5%;
+    overflow: hidden;
 }
 
 .card-set-info-text {
