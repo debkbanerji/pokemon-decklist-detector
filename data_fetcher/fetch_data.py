@@ -165,6 +165,25 @@ def get_cards(): # Returns dataframe
             "national_pokedex_numbers": [1017]
         },
         {
+            "id": 'svp-173',
+            "name": "Eevee",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "subtypes": ['Basic'],
+            "rarity": "Promo",
+            "hp": "50",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "H",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "173",
+            "set_printed_total": 173,
+            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_173_std.jpg",
+            "types": ['Colorless'],
+            "national_pokedex_numbers": [133]
+        },
+        {
             "id": 'svp-177',
             "name": "Bloodmoon Ursaluna ex",
             "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex")),
