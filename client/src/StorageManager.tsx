@@ -123,6 +123,8 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
         }
         const count = parseInt(countMatch[0], 10);
         row = row.replace(/^\d+ /, '');
+        // remove ' PH' suffix if it exists - tcg live sometimes adds this for certain holo patterns
+        row = row.replace(/ PH$/, '');
 
         const setNumberMatch = row.match(/[a-zA-Z0-9]+$/);
         if (!setNumberMatch) {
