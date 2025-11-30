@@ -929,6 +929,9 @@ def compute_detection_keywords_for_name(target_name, all_names):
         postfix = ' '.join(words[i:])
         if not any(postfix in name for name in filtered_names) and len(postfix) > 4:
             result.append(postfix)
+            
+    # Remove the word 'stadium' from the result if present, to prevent false positives
+    result = [keyword for keyword in result if keyword.lower() != 'stadium']
 
     return result
 
