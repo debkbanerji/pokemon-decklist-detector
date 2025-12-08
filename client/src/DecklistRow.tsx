@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ExportModal from './ExportModal.tsx';
+import ErrorBoundary from './ErrorBoundary.tsx';
 import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } from './StorageManager';
 import { motion } from "motion/react"
@@ -69,30 +70,32 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                             }}><MdOutlineDelete /></button>
                     </div>
                 </div>
-                {previousDecklistInfo && previousDecklistInfo.length > 0 ?
-                    <details className='previous-decklists-container'>
-                        <summary>Previous Versions</summary>
-                        <div className='previous-decklist-rows-container'>
-                            {
-                                previousDecklistInfo.map(({ createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name, serializedDecklist, successorCreatedTimestamp }) =>
-                                    <div key={createdTimestamp} className='previous-decklist-row'>
-                                        <DecklistRow
-                                            cardDatabase={cardDatabase}
-                                            loadInDecklist={loadInDecklist}
-                                            deleteDecklist={deleteDecklist}
-                                            createdTimestamp={createdTimestamp}
-                                            coverPokemon={coverPokemon}
-                                            coverPokemonSpriteUrl={coverPokemonSpriteUrl}
-                                            name={name}
-                                            serializedDecklist={serializedDecklist}
-                                            successorCreatedTimestamp={successorCreatedTimestamp}
-                                            isNested={true}
-                                        />
-                                    </div>)
-                            }
-                        </div>
-                    </details>
-                    : null}
+                <ErrorBoundary>
+                    {previousDecklistInfo && previousDecklistInfo.length > 0 ?
+                        <details className='previous-decklists-container'>
+                            <summary>Previous Versions</summary>
+                            <div className='previous-decklist-rows-container'>
+                                {
+                                    previousDecklistInfo.map(({ createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name, serializedDecklist, successorCreatedTimestamp }) =>
+                                        <div key={createdTimestamp} className='previous-decklist-row'>
+                                            <DecklistRow
+                                                cardDatabase={cardDatabase}
+                                                loadInDecklist={loadInDecklist}
+                                                deleteDecklist={deleteDecklist}
+                                                createdTimestamp={createdTimestamp}
+                                                coverPokemon={coverPokemon}
+                                                coverPokemonSpriteUrl={coverPokemonSpriteUrl}
+                                                name={name}
+                                                serializedDecklist={serializedDecklist}
+                                                successorCreatedTimestamp={successorCreatedTimestamp}
+                                                isNested={true}
+                                            />
+                                        </div>)
+                                }
+                            </div>
+                        </details>
+                        : null}
+                </ErrorBoundary>
             </div>
 
             {

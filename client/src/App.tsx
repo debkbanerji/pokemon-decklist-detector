@@ -181,20 +181,21 @@ function App() {
             successorCreatedTimestamp,
             previousDecklistInfo
           }) => {
-            return <DecklistRow
-              key={createdTimestamp}
-              cardDatabase={cardDatabase}
-              loadInDecklist={loadInDecklist}
-              deleteDecklist={deleteDecklist}
-              createdTimestamp={createdTimestamp}
-              coverPokemon={coverPokemon}
-              coverPokemonSpriteUrl={coverPokemonSpriteUrl}
-              name={name}
-              serializedDecklist={serializedDecklist}
-              successorCreatedTimestamp={successorCreatedTimestamp}
-              previousDecklistInfo={previousDecklistInfo}
-              isNested={false}
-            />;
+            return <ErrorBoundary
+              key={createdTimestamp}>
+              <DecklistRow
+                cardDatabase={cardDatabase}
+                loadInDecklist={loadInDecklist}
+                deleteDecklist={deleteDecklist}
+                createdTimestamp={createdTimestamp}
+                coverPokemon={coverPokemon}
+                coverPokemonSpriteUrl={coverPokemonSpriteUrl}
+                name={name}
+                serializedDecklist={serializedDecklist}
+                successorCreatedTimestamp={successorCreatedTimestamp}
+                previousDecklistInfo={previousDecklistInfo}
+                isNested={false}
+              /></ErrorBoundary>;
           })}
         </div>
       </div> : null}
