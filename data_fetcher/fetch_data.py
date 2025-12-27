@@ -943,8 +943,11 @@ def get_cards(): # Returns dataframe
     return concatenated_df
 
 def compute_detection_keywords_for_name(target_name, all_names):
-    if target_name.lower() == "billy & o'nare": # Goofy card that messes up squawkabilly detection
+    # Edge cases - to prevent false squawkabilly and scream tail detection
+    special_cases = ["billy & o'nare", "jumbo ice cream"]
+    if target_name.lower() in special_cases:
         return [target_name]
+    
     # look at all possible prefixes and postfixes for target_name
     # for each of these that are not a substring present within all_names, add them to the result list
 
