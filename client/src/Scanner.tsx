@@ -235,6 +235,12 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
     const isRunningTesseractDetection = currentDetectedCardName == null && currentDetectedCardID == null;
 
+    const isCurrentlyDetectedCardPokemon = currentDetectedCardID != null && cardDatabase[currentDetectedCardID]?.supertype === 'Pokémon';
+    const currentDetectedCardIDCount = currentDetectedCardID != null ? cardInfoListNonNull.filter(
+        cardInfo => isCurrentlyDetectedCardPokemon ?
+            cardInfo.id === currentDetectedCardID : cardInfo.name === currentDetectedCardName)
+        .reduce((a, b) => a + b.count, 0) : 0;
+
     const [successfullyAddedCardText, setSuccessfullyAddedCardText] = useState(null);
 
     const [tesseractOutput, setTesseractOutput] = useState('');
@@ -536,7 +542,13 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const addCard = (cardInfo, count) => {
         setShowBasicEnergySelector(false); // clear this
 
-        const existingCardInfoIndex = cardInfoList.findIndex(existingCard => existingCard?.id === cardInfo.id);
+        // if the card is a pokemon, match by id
+        // else, match by card name
+        const existingCardInfoIndex = cardInfoList.findIndex(existingCard =>
+            cardInfo?.supertype === 'Pokémon' ?
+                existingCard?.id === cardInfo.id
+                : existingCard?.name === cardInfo.name
+        );
 
         if (existingCardInfoIndex < 0) { // add a new card
             const augmentedCardInfo = {
@@ -594,7 +606,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             {
                 currentDetectedCardName != null && currentDetectedCardID == null ?
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='detected-card-name'>
-                        <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
+                        <button onClick={cancelScan} className='cancel-scan-button' style={{ passingTop: 2 }}>&#10006;&#xFE0E;</button>
                         {currentDetectedCardName}
                     </motion.div> :
                     null
@@ -659,7 +671,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                 <div className='card-count-selector-instructions'>
                     <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
                     &nbsp;
-                    <div>How many?</div>
+                    <div style={{ marginTop: 2 }}>{currentDetectedCardIDCount === 0 ? 'How many?' : `${currentDetectedCardIDCount} already scanned`}</div>
                 </div>
                 <div className={BASIC_ENERGY_NAMES.includes(currentDetectedCardName)
                     ? 'card-count-selector-buttons-energy' : 'card-count-selector-buttons-4'}>
@@ -671,7 +683,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                             const onClick = () => {
                                 addCard(cardDatabase[currentDetectedCardID], count);
                             }
-                            return <button key={count} onClick={onClick}>{count}</button>
+                            return <button key={count} onClick={onClick}>{currentDetectedCardIDCount > 0 ? '+' : ''}{count}</button>
                         })
                     }
                 </div>
