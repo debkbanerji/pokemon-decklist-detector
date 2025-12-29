@@ -134,7 +134,9 @@ def get_cards(): # Returns dataframe
                 "set_printed_total": set_data.get('printedTotal'),
                 "small_image_url": card.get('images', {}).get('small'),
                 "types": card.get('types'),
-                "national_pokedex_numbers": card.get('nationalPokedexNumbers')
+                "national_pokedex_numbers": card.get('nationalPokedexNumbers'),
+                # weird hack - we only use this to match between cards in order to warn users about similar cards that *may* only differ by set info
+                "first_attack_name": card.get('attacks')[0].get('name') if card.get('attacks') and len(card.get('attacks')) > 0 else None,
             } for card in cards_in_set
         ]
         dfs_list.append(pd.DataFrame(processed_cards))
@@ -985,6 +987,25 @@ def add_detection_keywords_to_df(cards_df):
     ))
     return cards_df
 
+def add_similar_card_ids_to_df(cards_df):
+    # function that adds a column to the df to help tell the user if they might be mis-scanning a card
+    
+    # group together cards with the same name, rarity, and first_attack_name
+    # if these 3 match, the cards are very likely to look like one another
+    cards_df = cards_df.assign(
+        similar_card_ids = cards_df.apply(
+            lambda row: cards_df[
+                (row['first_attack_name'] is not None) &
+                (cards_df['first_attack_name'] == row['first_attack_name']) &
+                (cards_df['name'] == row['name']) &                
+                (cards_df['rarity'] == row['rarity']) & 
+                (cards_df['id'] != row['id'])
+            ]['id'].tolist(),
+            axis=1
+        )
+    )
+    return cards_df
+
 
 def download_missing_card_images_and_sprites_for_df(cards_df):
     print("Downloading image data")
@@ -1088,6 +1109,11 @@ if __name__ == '__main__':
     # cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
+    cards_df =  add_similar_card_ids_to_df(cards_df)
+    
+    # delete the 'first_attack_name' column; we don't need it in the final output
+    if 'first_attack_name' in cards_df.columns:
+        cards_df = cards_df.drop(columns=['first_attack_name'])
 
     download_missing_card_images_and_sprites_for_df(cards_df)
 
