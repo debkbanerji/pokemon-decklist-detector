@@ -988,8 +988,18 @@ def add_detection_keywords_to_df(cards_df):
     ))
     return cards_df
 
+def get_pseudo_rarity_for_promo(card_id):
+    # TODO: Implement
+    # Cards that look like full arts, but are promos
+    # Cards that look like double rares, but are promos
+    # Cards that look like rares, but are promos
+    pass
+
+
 def add_similar_card_ids_to_df(cards_df):
     # function that adds a column to the df to help tell the user if they might be mis-scanning a card
+    
+    # TODO: deal with promo 'psuedo' rarities
     
     # group together cards with the same name, rarity, and concatenated_attack_names
     # if these 3 match, the cards are very likely to look like one another
