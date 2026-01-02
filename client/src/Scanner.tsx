@@ -234,6 +234,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
     const isRunningTesseractDetection = currentDetectedCardName == null && currentDetectedCardID == null;
+    const numSimilarCards = ((cardDatabase[currentDetectedCardID] ?? {}).similar_card_ids ?? []).length;
 
     const isCurrentlyDetectedCardPokemon = currentDetectedCardID != null && cardDatabase[currentDetectedCardID]?.supertype === 'Pokémon';
     const currentDetectedCardIDCount = currentDetectedCardID != null ? cardInfoListNonNull.filter(
@@ -654,6 +655,23 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                         return <img key={energyInfo.name} onClick={onClick} src={energyInfo.iconUri} width={30} height={30}></img>
                     })}
                 </motion.div> : null
+            }
+            {
+                numSimilarCards > 0 ?
+                    <div className='similar-card-ids-notice'>
+                        <div>
+                            ⚠️ at least {numSimilarCards} {numSimilarCards === 1 ? 'card looks' : 'cards look'} similar to {cardDatabase[currentDetectedCardID].set_code}&nbsp;
+                            {cardDatabase[currentDetectedCardID].number}:
+                        </div>
+                        <div>{cardDatabase[currentDetectedCardID].similar_card_ids
+                            .map((similarID) => {
+                                const similarCard = cardDatabase[similarID];
+                                return <button key={similarID} onClick={() =>
+                                    setCurrentDetectedCardID(similarID)} > {similarCard.set_code} {similarCard.number}</button>;
+                            }
+                            )}
+                        </div>
+                    </div> : null
             }
             {currentDetectedCardID != null ? <div className='detected-card-in-feed filter-blur'>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
