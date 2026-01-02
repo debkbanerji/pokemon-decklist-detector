@@ -163,6 +163,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "H",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "166",
+            "concatenated_attack_names": "Myriad Leaf Shower", # used to match the card to the very similar looking regular set version
             "set_printed_total": 177, # The total printed on the card - excludes secret rares
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/596439_in_1000x1000.jpg",
             "types": ['Grass'],
@@ -201,6 +202,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "H",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "177",
+            "concatenated_attack_names": "Blood Moon", # used to match the card to the very similar looking regular set version
             "set_printed_total": 177, # The total printed on the card - excludes secret rares
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/595473_in_1000x1000.jpg",
             "types": ['Colorless'],
@@ -297,6 +299,7 @@ def get_cards(): # Returns dataframe
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "196",
             "set_printed_total": 196,
+            "concatenated_attack_names": "Burning Darkness", # used to match the card to the very similar looking regular set version
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_196_std.jpg",
             "types": ['Darkness'],
             "national_pokedex_numbers": [6]
@@ -315,6 +318,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "193",
+            "concatenated_attack_names": "Insta Strike_Brave Slash", # used to match the card to the very similar looking regular set version
             "set_printed_total": 193, # The total printed on the card - excludes secret rares
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_193_std.jpg",
             "types": ['Metal'],
@@ -334,6 +338,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "194",
+            "concatenated_attack_names": "Thunderous Bolt", # used to match the card to the very similar looking regular set version
             "set_printed_total": 194, # The total printed on the card - excludes secret rares
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_194_std.jpg",
             "types": ['Electric'],
@@ -353,6 +358,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "195",
+            "concatenated_attack_names": "Full Moon Rondo", # used to match the card to the very similar looking regular set version
             "set_printed_total": 195, # The total printed on the card - excludes secret rares
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_195_std.jpg",
             "types": ['Psychic'],
@@ -448,6 +454,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "204",
+            "concatenated_attack_names": "Corkscrew Dive_Draconic Buster", # used to match the card to the very similar looking regular set version
             "set_printed_total": 204, # The total printed on the card - excludes secret rares
             "small_image_url": "https://www.cardtrader.com/uploads/blueprints/image/327135/show_cynthia-s-garchomp-204-sv-p-sv-black-star-promos(2).jpg",
             "types": ['Fighting'],
@@ -676,6 +683,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "11",
+            "concatenated_attack_names": "Strafe_Illusory Impulse", # used to match the card to the very similar looking regular set version
             "set_printed_total": 11, # The total printed on the card - excludes secret rares
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/657846_in_1000x1000.jpg",
             "types": ['Dragon'],
@@ -695,6 +703,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "12",
+            "concatenated_attack_names": "Aura Jab_Mega Brave", # used to match the card to the very similar looking regular set version
             "set_printed_total": 12, # The total printed on the card - excludes secret rares
             "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/663177_in_1000x1000.jpg",
             "types": ['Fighting'],
@@ -714,6 +723,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "13",
+            "concatenated_attack_names": "Jungle Dump", # used to match the card to the very similar looking regular set version
             "set_printed_total": 13,
             "small_image_url": "https://assets.pokemon.com/static-assets/content-assets/cms2/img/cards/web/MEP/MEP_EN_13.png",
             "types": ['Grass'],
@@ -866,6 +876,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "25",
+            "concatenated_attack_names": "Rapid-Fire Combo", # used to match the card to the very similar looking regular set version
             "set_printed_total": 27,
             "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_025_std.jpg",  
             "types": ['Colorless'],
@@ -927,6 +938,13 @@ def get_cards(): # Returns dataframe
         #     "national_pokedex_numbers": [???]
         # }
     ])
+    # Add in rarity_for_mismatch_correction to manual fixes
+    manual_fixes_df = manual_fixes_df.assign(
+        rarity_for_mismatch_correction = manual_fixes_df.apply(
+            lambda row: get_rarity_for_mismatch_correction(row['id'], row['rarity']),
+            axis=1
+        )
+    )
     dfs_list.append(manual_fixes_df)
 
     concatenated_df = pd.concat(dfs_list, ignore_index=True)
@@ -1035,6 +1053,7 @@ def get_rarity_for_mismatch_correction(card_id, rarity):
         "svp-56",
         "svp-74",
         "svp-166",
+        "svp-194",
         "svp-195",
         "svp-204",
     ]:
