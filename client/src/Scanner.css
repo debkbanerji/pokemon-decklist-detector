@@ -73,7 +73,9 @@ h3 {
 }
 
 .similar-card-ids-notice *>button {
-    margin: 1px;
+    margin-top: 1px;
+    margin-right: 2px;
+    margin-left: 2px;
     padding: 2px 6px;
     font-size: small;
 }

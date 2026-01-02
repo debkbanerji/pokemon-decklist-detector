@@ -125,6 +125,7 @@ def get_cards(): # Returns dataframe
                 "supertype": card.get('supertype'),
                 "subtypes": card.get('subtypes', []),
                 "rarity": card.get('rarity'),
+                "rarity_for_mismatch_correction" : get_rarity_for_mismatch_correction(card.get('id'), card.get('rarity')) ,
                 "hp": card.get('hp'),
                 "set_id": set_data.get('id'),
                 "set_code": set_id_to_official_code_overrides[set_data.get('id')] if set_data.get('id') in set_id_to_official_code_overrides else set_data.get('ptcgoCode'),
@@ -988,12 +989,58 @@ def add_detection_keywords_to_df(cards_df):
     ))
     return cards_df
 
-def get_pseudo_rarity_for_promo(card_id):
+def get_rarity_for_mismatch_correction(card_id, rarity):
     # TODO: Implement
-    # Cards that look like full arts, but are promos
+    if rarity != 'Promo':
+        return rarity # if not a promo, return the original rarity
+    
+    # If it's a promo, try to match it to an existing rarity so we can tell the user if
+    # they might be mis-scanning a card
+     
     # Cards that look like double rares, but are promos
-    # Cards that look like rares, but are promos
-    pass
+    if card_id in [
+        "svp-28",
+        "svp-29",
+        "svp-33",
+        "svp-34",
+        "svp-25",
+        "svp-49",
+        "svp-50",
+        "svp-67",
+        "svp-68",
+        "svp-126",
+        "svp-127",
+        "svp-128",
+        "svp-144",
+        "svp-145",
+        "svp-146",
+        "svp-147",
+        "svp-160",
+        "svp-161",
+        "svp-177",
+        "svp-193",
+        "svp-196",
+        "svp-205",
+        "svp-216",
+        "svp-217",
+        "svp-218",
+        "mep-11",
+        "mep-12",
+        "mep-25",
+    ]:
+        return 'Double Rare'
+    
+    # Cards that look like full arts, but are promos
+    if card_id in [
+        "svp-56",
+        "svp-74",
+        "svp-166",
+        "svp-195",
+        "svp-204",
+    ]:
+        return 'Ultra Rare'
+   
+    return rarity
 
 
 def add_similar_card_ids_to_df(cards_df):
@@ -1009,7 +1056,7 @@ def add_similar_card_ids_to_df(cards_df):
                 (row['concatenated_attack_names'] is not None) &
                 (cards_df['concatenated_attack_names'] == row['concatenated_attack_names']) &
                 (cards_df['name'] == row['name']) &                
-                (cards_df['rarity'] == row['rarity']) & 
+                (cards_df['rarity_for_mismatch_correction'] == row['rarity_for_mismatch_correction']) & 
                 (cards_df['id'] != row['id'])
             ]['id'].tolist(),
             axis=1
@@ -1122,9 +1169,12 @@ if __name__ == '__main__':
     cards_df = add_detection_keywords_to_df(cards_df)
     cards_df =  add_similar_card_ids_to_df(cards_df)
     
-    # delete the 'concatenated_attack_names' column; we don't need it in the final output
+    # delete the 'concatenated_attack_names' and 'rarity_for_mismatch_correction' columns; we don't need these in the final output
     if 'concatenated_attack_names' in cards_df.columns:
         cards_df = cards_df.drop(columns=['concatenated_attack_names'])
+        
+    if 'rarity_for_mismatch_correction' in cards_df.columns:
+        cards_df = cards_df.drop(columns=['rarity_for_mismatch_correction'])
 
     download_missing_card_images_and_sprites_for_df(cards_df)
 
