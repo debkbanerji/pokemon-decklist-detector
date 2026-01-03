@@ -474,6 +474,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "205",
+            "concatenated_attack_names": "Erasure Ball", # used to match the card to the very similar looking regular set version
             "set_printed_total": 205, # The total printed on the card - excludes secret rares
             "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/SVP/SVP_EN_205.png",
             "types": ['Psychic'],
@@ -516,6 +517,26 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_207_std.jpg",
             "types": ['Metal'],
             "national_pokedex_numbers": [374]
+        },
+        {
+            "id": 'svp-216',
+            "name": "Team Rocket's Mewtwo ex",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "subtypes": ['Basic', 'ex'],
+            "rarity": "Promo",
+            "hp": "280",
+            "set_id": "svp",
+            "set_code": "SVP",
+            "regulation_mark": "I",
+            "set_name": "Scarlet & Violet Black Star Promos",
+            "number": "216",
+            "concatenated_attack_names": "Erasure Ball", # used to match the card to the very similar looking regular set version
+            "set_printed_total": 216, # The total printed on the card - excludes secret rares
+            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/SVP/SVP_EN_216.png",
+            "types": ['Psychic'],
+            "national_pokedex_numbers": [150]
         },
         {
             "id": 'mep-1',
