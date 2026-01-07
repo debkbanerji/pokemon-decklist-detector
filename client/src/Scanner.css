@@ -410,6 +410,58 @@ h3 {
 
 .export-pdf-field {
     margin-top: 3px;
+    display: flex   ;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+
+/* Toggle switch used in ExportModal */
+.toggle-switch {
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle-switch .toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .toggle-track {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  background: #ccc;
+  border-radius: 28px;
+  transition: background 180ms ease;
+  box-sizing: border-box;
+  padding: 2px;
+}
+
+.toggle-switch .toggle-knob {
+  display: block;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transform: translateX(2px);
+  transition: transform 180ms ease;
+}
+
+/* checked state */
+.toggle-switch.checked .toggle-track {
+background: rgb(51, 170, 255);
+}
+.toggle-switch.checked .toggle-knob {
+  transform: translateX(20px);
 }
 
 .progress-bar {

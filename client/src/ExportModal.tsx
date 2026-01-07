@@ -383,6 +383,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const [playerDOB, setPlayerDOB] = useState();
     const [playerSpriteFile, setPlayerSpriteFile] = useState('');
     const [ageDivision, setAgeDivision] = useState('Masters Division');
+    const [includePlayerInfoInPDF, setIncludePlayerInfoInPDF] = useState(true);
 
 
     useEffect(() => {
@@ -441,8 +442,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
     const emailLink = `mailto:?to=&body=${emailText}&subject=${playerName}'s Decklist`;
 
-    const isDownloadPDFEnabled = playerName && playerID && playerDOB;
-
     function onDownloadPDF() {
         setIsDownloadingPDF(true);
         setTimeout(async () => { // Wait a few ms for the UI to update before triggering pdf generation
@@ -492,18 +491,20 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 doc.setFont(undefined, 'normal').text(generatedText, 159.5 - doc.getTextWidth(generatedText), 10);
 
                 doc.setFontSize(13);
-                doc.setFont(undefined, 'bold').text('Player Name:', 15, 17).setFont(undefined, 'normal').text(playerName, 45, 17);
-                if (playerSpriteFile != null && playerSpriteFile.length > 0) {
+                doc.setFont(undefined, 'bold').text('Player Name:', 15, 17).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerName : '', 45, 17);
+                if (playerSpriteFile != null && playerSpriteFile.length > 0 && includePlayerInfoInPDF) {
                     const playerSpriteImage = new Image();
                     playerSpriteImage.src = 'customization_sprites/' + playerSpriteFile;
                     doc.addImage(playerSpriteImage, 'png', 45.5 + doc.getTextWidth(playerName), 13, 5, 5);
                 }
-                doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(playerID, 37, 22);
-                doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(playerDOB.toLocaleDateString(), 45, 27);
-                doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(ageDivision, 45, 32);
-                const ageDivisionPokeballIcon = new Image();
-                ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
-                doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 28.5, 4.5, 4.5);
+                doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerID : '', 37, 22);
+                doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerDOB.toLocaleDateString() : '', 45, 27);
+                doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? ageDivision : '', 45, 32);
+                if (includePlayerInfoInPDF) {
+                    const ageDivisionPokeballIcon = new Image();
+                    ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
+                    doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 28.5, 4.5, 4.5);
+                }
                 doc.setFont(undefined, 'bold').text('Format:', 15, 37).setFont(undefined, 'normal').text(format, 33, 37);
 
                 if (canshareUrl) {
@@ -794,8 +795,23 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <hr />
         <div>
             <h3>Export Options</h3>
+            <div className='export-pdf-field'>
+                Include player info in pdf
+                <label className={`toggle-switch ${includePlayerInfoInPDF ? 'checked' : ''}`}>
+                    <input
+                        className="toggle-input"
+                        type="checkbox"
+                        checked={includePlayerInfoInPDF}
+                        onChange={(e) => setIncludePlayerInfoInPDF((e.target as HTMLInputElement).checked)}
+                        aria-label="Include player info in export"
+                    />
+                    <span className="toggle-track" aria-hidden="true">
+                        <span className="toggle-knob" />
+                    </span>
+                </label>
+            </div>
             <div className='share-buttons-row'>
-                <button type="button" onClick={onDownloadPDF} disabled={!(playerName && playerID && playerDOB) || isDownloadingPDF}>
+                <button type="button" onClick={onDownloadPDF} disabled={(includePlayerInfoInPDF ? !(playerName && playerID && playerDOB) : false) || isDownloadingPDF}>
                     {isDownloadingPDF ? 'Generating...' : 'Download PDF'}
                 </button>
                 {canshareUrl ? <>
