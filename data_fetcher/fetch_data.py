@@ -1079,6 +1079,14 @@ def get_rarity_for_mismatch_correction(card_id, rarity):
         "svp-204",
     ]:
         return 'Ultra Rare'
+    
+      # Cards that look like commons, but are promos
+    if card_id in [
+        # "mep-7", # Psyduck
+    ]:
+        return 'Common'
+    
+    # TODO: Add in golduck from ASC, depending on rarity
    
     return rarity
 
