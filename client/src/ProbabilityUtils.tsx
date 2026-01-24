@@ -21,7 +21,6 @@ function pMulligan(numBasicsInDeck): number {
 
 // Probability of starting hand with only the target basic pokemon and no others
 function pOnlyStartWithTargetBasic(numTargetBasic, numBasicsInDeck): number {
-    console.log({ numTargetBasic, numBasicsInDeck });
     const numOtherBasics = numBasicsInDeck - numTargetBasic; // 'bad' basics
 
     const totalMulliganHands = combination(DECK_SIZE - numBasicsInDeck, OPENING_HAND_SIZE);
@@ -35,5 +34,22 @@ function pOnlyStartWithTargetBasic(numTargetBasic, numBasicsInDeck): number {
     )
 }
 
+// Probability of starting hand containing the target basic
+function pBasicInStartingHand(numTargetBasic, numBasicsInDeck): number {
+    const numOtherBasics = numBasicsInDeck - numTargetBasic; // 'bad' basics
 
-export { pMulligan, pOnlyStartWithTargetBasic };
+    const totalMulliganHands = combination(DECK_SIZE - numBasicsInDeck, OPENING_HAND_SIZE);
+    const totalPossibleHands = combination(DECK_SIZE, OPENING_HAND_SIZE);
+    const totalNonMulliganHands = totalPossibleHands - totalMulliganHands;
+
+    const handsWithNoTargetBasics = combination(DECK_SIZE - numTargetBasic, OPENING_HAND_SIZE);
+    const handsWithAtLeastOneTargetBasic = totalPossibleHands - handsWithNoTargetBasics;
+
+    return divideBigInt(
+        handsWithAtLeastOneTargetBasic,
+        totalNonMulliganHands
+    )
+}
+
+
+export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand };

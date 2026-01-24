@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { pMulligan, pOnlyStartWithTargetBasic } from './ProbabilityUtils';
+import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand } from './ProbabilityUtils';
 
 
 function formatPercentage(probability) {
@@ -31,8 +31,10 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                 <h3>Basic Pokémon</h3>
                 {basics.map(basic => {
                     return <div key={basic.id}>
-                        <h4>{basic.name} {basic.set_code} {basic.number}</h4>
+                        <h4>{basic.count} &times; {basic.name} {basic.set_code} {basic.number}</h4>
                         <div>
+                            P(In starting 7): {formatPercentage(pBasicInStartingHand(basic.count, numBasics))}
+                            <br/>
                             P(Only starter): {formatPercentage(pOnlyStartWithTargetBasic(basic.count, numBasics))}
                         </div>
                     </div>;
