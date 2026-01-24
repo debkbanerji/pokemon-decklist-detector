@@ -6,6 +6,12 @@ function formatPercentage(probability) {
     return (probability * 100).toFixed(2) + '%';
 }
 
+function Probability({label, value}) {
+    return <div>
+        P({label}): {formatPercentage(value)}
+    </div>;
+}
+
 function ProbabilityModal({ undeletedCardData, onClose }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne'];
     const modeLabels = {
@@ -20,7 +26,6 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
     const numBasics = basics.reduce((sum, card) => sum + card.count, 0);
 
     const [mode, setMode] = useState(modes[0]);
-    console.log(cardList)
 
     let innerContent = null;
     if (mode === 'setup') {
@@ -33,9 +38,8 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                     return <div key={basic.id}>
                         <h4>{basic.count} &times; {basic.name} {basic.set_code} {basic.number}</h4>
                         <div>
-                            P(In starting 7): {formatPercentage(pBasicInStartingHand(basic.count, numBasics))}
-                            <br/>
-                            P(Only starter): {formatPercentage(pOnlyStartWithTargetBasic(basic.count, numBasics))}
+                            <Probability label={"In Starting 7"} value={pBasicInStartingHand(basic.count, numBasics)} />
+                            <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
                         </div>
                     </div>;
                 }
