@@ -14,6 +14,7 @@
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",
     "html-to-image": "^1.11.13",
+    "js-combinatorics": "^2.1.2",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "motion": "^11.11.17",

@@ -90,9 +90,40 @@ function App() {
 
   async function importFromClipboard() {
     setClipboardButtonText('Importing...');
+
+        const clipboardContents = `
+        Pokémon: 15
+3 Gimmighoul SSP 97
+1 Gimmighoul PAR 87
+4 Gholdengo ex PAR 139
+2 Solrock MEG 75
+2 Lunatone MEG 74
+1 Genesect ex BLK 67
+1 Fezandipiti ex SFA 38
+1 Mega Mawile ex MEG 94
+
+Trainer: 34
+4 Arven OBF 186
+4 Boss's Orders MEG 114
+2 Professor Turo's Scenario PAR 171
+4 Superior Energy Retrieval PAL 189
+4 Nest Ball SVI 181
+3 Buddy-Buddy Poffin TEF 144
+3 Earthen Vessel PAR 163
+3 Fighting Gong MEG 116
+1 Secret Box TWM 163
+1 Night Stretcher SFA 61
+1 Picnic Basket SVI 184
+2 Air Balloon BLK 79
+1 Vitality Band SVI 197
+1 Artazon PAL 171
+
+Energy: 11
+7 Fighting Energy MEE 6
+4 Metal Energy MEE 8
+        `;
     setTimeout(async () => {
       try {
-        const clipboardContents = await navigator.clipboard.readText();
         const decklist = parseFormattedDecklist(clipboardContents, cardDatabase);
         if (decklist.length < 1) {
           throw new Error("Empty decklist");
@@ -202,7 +233,7 @@ function App() {
     </div >}
     {
       decklistForModal != null && cardDatabase != null ?
-        <div ref={exportModalRef} className="export-modal">
+        <div ref={exportModalRef} className="modal">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
             <div className="export-modal-content">
               <ExportModal cardDatabase={cardDatabase}

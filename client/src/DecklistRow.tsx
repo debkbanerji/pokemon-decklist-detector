@@ -4,13 +4,15 @@ import ErrorBoundary from './ErrorBoundary.tsx';
 import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } from './StorageManager';
 import { motion } from "motion/react"
-import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdSearch, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import ProbabilityModal from './ProbabilityModal.tsx';
 
 function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist, successorCreatedTimestamp, previousDecklistInfo, isNested }) {
     const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon || '');
     const [deckName, setDeckName] = useState(startingDeckName || '');
 
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isProbabilityModalOpen, setIsProbabilityModalOpen] = useState(false);
     const exportModalRef = useRef(null);
     useEffect(() => {
         window.addEventListener("click", function (event) {
@@ -34,6 +36,16 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
         });
     },
         [deleteModalRef, setIsDeleteModalOpen]);
+    const probabilityModalRef = useRef(null);
+    useEffect(() => {
+        window.addEventListener("click", function (event) {
+            // close modal contents if background is clicked
+            if (event.target === probabilityModalRef.current) {
+                setIsProbabilityModalOpen(false);
+            }
+        });
+    },
+        [probabilityModalRef, setIsProbabilityModalOpen]);
 
     return <>
         <div className="decklist-row-container">
@@ -49,6 +61,17 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                         </div>
                     </div>
                     <div>
+
+                        {window.location.href.indexOf("probability") > -1 ?
+                            <button
+                                className={isNested ? 'previous-decklist-row-button ' : ''}
+                                onClick={() => {
+                                    setIsProbabilityModalOpen(true);
+                                    setTimeout(() => {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }, 100);
+                                }}><MdSearch /></button>
+                            : null}
                         <button
                             className={isNested ? 'previous-decklist-row-button ' : ''}
                             onClick={() => {
@@ -100,7 +123,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
 
             {
                 isExportModalOpen ?
-                    <div ref={exportModalRef} className="export-modal">
+                    <div ref={exportModalRef} className="modal">
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                             <div className="export-modal-content">
                                 <ExportModal
@@ -129,12 +152,36 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
             }
             {
                 isDeleteModalOpen ?
-                    <div ref={deleteModalRef} className="export-modal">
+                    <div ref={deleteModalRef} className="modal">
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                             <div className="delete-modal-content">
                                 <b>Delete this decklist?</b>
                                 <button onClick={() => { deleteDecklist(createdTimestamp) }}>Yes</button>
                                 <button onClick={() => { setIsDeleteModalOpen(false) }}>No</button>
+                            </div>
+                        </motion.div>
+                    </div> : null
+            }
+            {
+                isProbabilityModalOpen ?
+                    <div ref={probabilityModalRef} className="modal">
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                            <div className="probability-modal-content">
+                                <ProbabilityModal
+                                    undeletedCardData={deserializeDecklist(serializedDecklist, cardDatabase)
+                                        .map(({ cardInfo }, index) => {
+                                            const { id, count } = cardInfo;
+                                            return {
+                                                cardInfo: {
+                                                    originalIndex: index,
+                                                    count,
+                                                    id,
+                                                    ...cardDatabase[id]
+                                                }
+                                            };
+                                        })}
+                                    onClose={() => setIsProbabilityModalOpen(false)}
+                                ></ProbabilityModal>
                             </div>
                         </motion.div>
                     </div> : null
