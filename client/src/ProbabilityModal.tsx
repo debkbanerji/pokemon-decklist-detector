@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand } from './ProbabilityUtils';
+import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic } from './ProbabilityUtils';
 
 
 function formatPercentage(probability) {
-    return (probability * 100).toFixed(2) + '%';
+    return (probability * 100).toFixed(3) + '%'; // TODO: reduce display precision?
 }
 
-function Probability({label, value}) {
+function Probability({ label, value }) {
     return <div>
         P({label}): {formatPercentage(value)}
     </div>;
@@ -25,7 +25,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
     const numBasics = basics.reduce((sum, card) => sum + card.count, 0);
 
-    const [mode, setMode] = useState(modes[0]);
+    const [mode, setMode] = useState(modes[1]);
 
     let innerContent = null;
     if (mode === 'setup') {
@@ -48,7 +48,31 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         </div>;
     } else if (mode === 'prizing') {
         innerContent = <div>
-            TODO: Implement
+            {cardList.map(card => {
+                return <div key={card.id}>
+                    <h4>{card.count} &times; {card.name} {card.set_code} {card.number}</h4>
+                    <div>
+                        {
+                            card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
+                                <div>
+                                    {
+                                        [...Array(card.count + 1).keys()].map(prizedCopies =>
+                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} Prized`} key={prizedCopies} value={
+                                                pPrizedTargetBasic(
+                                                    card.count,
+                                                    numBasics,
+                                                    prizedCopies
+                                                )
+                                            } />
+                                        )
+                                    }
+                                </div> : <div>
+                                    TODO: Implement for non basic Pokémon
+                                </div>
+                        }
+                    </div>
+                </div>;
+            })}
         </div>;
     } else if (mode === 'openingHandPlusOne') {
         innerContent = <div>

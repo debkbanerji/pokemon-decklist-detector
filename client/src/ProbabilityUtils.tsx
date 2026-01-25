@@ -1,5 +1,9 @@
 import { combination } from 'js-combinatorics';
 
+// Calculates probabilities for certain situations using combinatorics
+// Cross checked with monte carlo simulations in 'simulations' directory
+// at the root of the codebase
+
 const DECK_SIZE = 60;
 const OPENING_HAND_SIZE = 7;
 const OPENING_HAND_PLUS_ONE_SIZE = 8;
@@ -7,7 +11,7 @@ const NUM_PRIZES = 6;
 
 // Divide two bigints with enough precision for our purposes
 function divideBigInt(numerator: bigint, denominator: bigint): number {
-    const scale = 10000000;
+    const scale = 100000;
     const scaledNumerator = numerator * BigInt(scale);
     return Number(scaledNumerator / denominator) / scale;
 }
@@ -52,4 +56,65 @@ function pBasicInStartingHand(numTargetBasic, numBasicsInDeck): number {
 }
 
 
-export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand };
+function pPrizedTargetBasic(
+    targetBasicCopies,
+    totalBasicCount,
+    prizedCopies
+) {
+    const REMAINING_AFTER_HAND = DECK_SIZE - OPENING_HAND_SIZE; // 53
+
+    // Total valid opening hands (must contain at least one Basic)
+    const validOpeningHands =
+        combination(DECK_SIZE, OPENING_HAND_SIZE) -
+        combination(DECK_SIZE - totalBasicCount, OPENING_HAND_SIZE);
+
+    let probability = 0;
+
+    // h = number of target Basic Pokémon in opening hand
+    const maxInHand = Math.min(OPENING_HAND_SIZE, targetBasicCopies);
+
+    for (let inHand = 0; inHand <= maxInHand; inHand++) {
+        let openingHandWays;
+
+        if (inHand === 0) {
+            // No target Basic, but must contain at least one *other* Basic
+            openingHandWays =
+                combination(DECK_SIZE - targetBasicCopies, OPENING_HAND_SIZE) -
+                combination(DECK_SIZE - totalBasicCount, OPENING_HAND_SIZE);
+        } else {
+            // Hands with inHand copies of the target Basic
+            openingHandWays =
+                combination(targetBasicCopies, inHand) *
+                combination(DECK_SIZE - targetBasicCopies, OPENING_HAND_SIZE - inHand);
+        }
+
+        const probabilityInHand = divideBigInt(openingHandWays, validOpeningHands);
+
+        const remainingTargetBasics = targetBasicCopies - inHand;
+        if (remainingTargetBasics < prizedCopies) continue;
+
+        // Prize card distribution
+        const prizeWays =
+            combination(remainingTargetBasics, prizedCopies) *
+            combination(
+                REMAINING_AFTER_HAND - remainingTargetBasics,
+                NUM_PRIZES - prizedCopies
+            );
+
+        const totalPrizeWays = combination(
+            REMAINING_AFTER_HAND,
+            NUM_PRIZES
+        );
+
+        const probabilityPrizedGivenHand =
+            divideBigInt(prizeWays, totalPrizeWays);
+
+        probability +=
+            probabilityInHand * probabilityPrizedGivenHand;
+    }
+
+    return probability;
+}
+
+
+export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic };

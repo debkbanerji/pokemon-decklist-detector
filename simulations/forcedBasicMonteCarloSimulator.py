@@ -42,10 +42,10 @@ def simulate_forced_target_start(
     return probability
 
 
-# We only use this to sanity check some math
+# We only use this to sanity check some math - not part of main codebase
 if __name__ == "__main__":
     X = 1   # Num of basics we're interested in
     Y = 11   # total Basics
 
-    prob = simulate_forced_target_start(X, Y, trials=500_000)
+    prob = simulate_forced_target_start(X, Y)
     print(f"Estimated probability: {prob:.6f}")
