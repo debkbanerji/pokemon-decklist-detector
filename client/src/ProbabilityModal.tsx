@@ -1,9 +1,13 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic } from './ProbabilityUtils';
+import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic } from './ProbabilityUtils';
 
 
 function formatPercentage(probability) {
-    return (probability * 100).toFixed(3) + '%'; // TODO: reduce display precision?
+    const numDigits = 3;
+    if (probability < Math.pow(0.1, 2 + numDigits)) {
+        return 'Close to 0';
+    }
+    return (probability * 100).toFixed(numDigits) + '%'; // TODO: reduce display precision?
 }
 
 function Probability({ label, value }) {
@@ -56,7 +60,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
                                     {
-                                        [...Array(card.count + 1).keys()].map(prizedCopies =>
+                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
                                             <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} Prized`} key={prizedCopies} value={
                                                 pPrizedTargetBasic(
                                                     card.count,
@@ -67,7 +71,17 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                                         )
                                     }
                                 </div> : <div>
-                                    TODO: Implement for non basic Pokémon
+                                    {
+                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
+                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} Prized`} key={prizedCopies} value={
+                                                pPrizedTargetNonBasic(
+                                                    card.count,
+                                                    numBasics,
+                                                    prizedCopies
+                                                )
+                                            } />
+                                        )
+                                    }
                                 </div>
                         }
                     </div>

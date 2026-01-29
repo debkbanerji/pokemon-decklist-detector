@@ -61,6 +61,9 @@ function pPrizedTargetBasic(
     totalBasicCount,
     prizedCopies
 ) {
+    if (prizedCopies > NUM_PRIZES) {
+        return 0;
+    }
     const REMAINING_AFTER_HAND = DECK_SIZE - OPENING_HAND_SIZE; // 53
 
     // Total valid opening hands (must contain at least one Basic)
@@ -117,4 +120,61 @@ function pPrizedTargetBasic(
 }
 
 
-export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic };
+// TODO: Verify correctness!
+function pPrizedTargetNonBasic(
+    targetCopies,
+    totalBasics,
+    prizedCopies
+) {
+    const validHands =
+        combination(DECK_SIZE, OPENING_HAND_SIZE) -
+        combination(DECK_SIZE - totalBasics, OPENING_HAND_SIZE);
+
+    let probability = 0;
+
+    const maxInHand = Math.min(
+        targetCopies,
+        OPENING_HAND_SIZE
+    );
+
+    for (let h = 0; h <= maxInHand; h++) {
+        const validHandsWithH =
+            combination(targetCopies, h) *
+            (
+                combination(
+                    DECK_SIZE - targetCopies,
+                    OPENING_HAND_SIZE - h
+                ) -
+                combination(
+                    DECK_SIZE - totalBasics - targetCopies,
+                    OPENING_HAND_SIZE - h
+                )
+            );
+
+        if (validHandsWithH > 0n) {
+            const pHand = divideBigInt(
+                validHandsWithH,
+                validHands
+            );
+
+            const remainingTargets = targetCopies - h;
+            const remainingCards = DECK_SIZE - OPENING_HAND_SIZE;
+
+            const pPrizes = divideBigInt(
+                combination(remainingTargets, prizedCopies) *
+                combination(
+                    remainingCards - remainingTargets,
+                    NUM_PRIZES - prizedCopies
+                ),
+                combination(remainingCards, NUM_PRIZES)
+            );
+
+            probability += pHand * pPrizes;
+        }
+    }
+
+    return probability;
+}
+
+
+export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic };

@@ -70,7 +70,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                     setTimeout(() => {
                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }, 100);
-                                }}><MdSearch /></button>
+                                }}><MdSearch /> probability (beta)</button>
                             : null}
                         <button
                             className={isNested ? 'previous-decklist-row-button ' : ''}
