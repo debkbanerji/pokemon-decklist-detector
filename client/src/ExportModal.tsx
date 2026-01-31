@@ -80,6 +80,51 @@ const POKEMON_NAME_TO_MANUAL_FORM_SPRITE = {
     'Mega Gallade ex': 'gallade-mega.png',
     'Mega Audino ex': 'audino-mega.png',
     'Mega Diancie ex': 'diancie-mega.png',
+    'Mega Clefable ex': 'clefable-mega.png',
+    // 'Mega Victreebel ex': 'victreebel-mega.png',
+    'Mega Starmie ex': 'starmie-mega.png',
+    'Mega Dragonite ex': 'dragonite-mega.png',
+    'Mega Meganium ex': 'meganium-mega.png',
+    'Mega Feraligatr ex': 'feraligatr-mega.png',
+    'Mega Skarmory ex': 'skarmory-mega.png',
+    'Mega Froslass ex': 'froslass-mega.png',
+    'Mega Emboar ex': 'emboar-mega.png',
+    // 'Mega Excadrill ex': 'excadrill-mega.png',
+    // 'Mega Scolipede ex': 'scolipede-mega.png',
+    'Mega Scrafty ex': 'scrafty-mega.png',
+    'Mega Eelektross ex': 'eelektross-mega.png',
+    // 'Mega Chandelure ex': 'chandelure-mega.png',
+    // 'Mega Chesnaught ex': 'chesnaught-mega.png',
+    // 'Mega Delphox ex': 'delphox-mega.png',
+    // 'Mega Greninja ex': 'greninja-mega.png',
+    // 'Mega Pyroar ex': 'pyroar-mega.png',
+    // 'Mega Floette ex': 'floette-mega.png',
+    // 'Mega Malamar ex': 'malamar-mega.png',
+    // 'Mega Barbaracle ex': 'barbaracle-mega.png',
+    // 'Mega Dragalge ex': 'dragalge-mega.png',
+    'Mega Hawlucha ex': 'hawlucha-mega.png',
+    'Mega Zygarde ex': 'zygarde-mega.png',
+    // 'Mega Drampa ex': 'drampa-mega.png',
+    // 'Mega Falinks ex': 'falinks-mega.png',
+    // 'Mega Raichu X ex': 'raichu-x-mega.png',
+    // 'Mega Raichu Y ex': 'raichu-y-mega.png',
+    // 'Mega Chimecho ex': 'chimecho-mega.png',
+    // 'Mega Absol Z ex': 'absol-z-mega.png',
+    // 'Mega Staraptor ex': 'staraptor-mega.png',
+    // 'Mega Garchomp Z ex': 'garchomp-z-mega.png',
+    // 'Mega Lucario Z ex': 'lucario-z-mega.png',
+    // 'Mega Heatran ex': 'heatran-mega.png',
+    // 'Mega Darkrai ex': 'darkrai-mega.png',
+    // 'Mega Golurk ex': 'golurk-mega.png',
+    // 'Mega Meowstic ex': 'meowstic-mega.png',
+    // 'Mega Crabominable ex': 'crabominable-mega.png',
+    // 'Mega Golisopod ex': 'golisopod-mega.png',
+    // 'Mega Magearna ex': 'magearna-mega.png',
+    // 'Mega Zeraora ex': 'zeraora-mega.png',
+    // 'Mega Scovillain ex': 'scovillain-mega.png',
+    // 'Mega Glimmora ex': 'glimmora-mega.png',
+    // 'Mega Tatsugiri ex': 'tatsugiri-mega.png',
+    // 'Mega Baxcalibur ex': 'baxcalibur-mega.png',
 }
 
 // We have specific, manually mantained sprites for some common alternate formes
@@ -246,6 +291,19 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         if (undeletedCardData.length) {
             warmupSpriteURLs(undeletedCardData.map(card => card.cardInfo));
         }
+    }, [undeletedCardData]);
+
+    const showAscendedHeroesWarning = useMemo(() => {
+        // Don't show warning if it is March 6th 2026 or after
+        const currentDate = new Date();
+        const cutoffDate = new Date('2026-03-06T00:00:00Z');
+        if (currentDate >= cutoffDate) {
+            return false;
+        }
+        return undeletedCardData.some(({ cardInfo }) => {
+            return (cardInfo.set_code === 'ASC' && cardInfo.supertype === 'Pokémon') ||
+                ['Anthea & Concordea', 'Canari', 'Poké Pad', 'Thick Scale', 'Urbain', 'Waitress', 'Nighttime Mine', 'Light Ball', 'Team Rocket\'s Hypnotizer'].includes(cardInfo.name)
+        });
     }, [undeletedCardData]);
 
     async function saveDecklistToStorage() {
@@ -705,6 +763,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </div>
             </div>
         </div>
+        {
+            showAscendedHeroesWarning ?
+                <div><b>⚠️ This decklist contains <a href='https://x.com/playpokemon/status/2016587353247404141' target='_blank'>Ascended Heroes</a> cards. Please ensure you follow current tournament rules regarding their use!</b></div>
+                : null
+        }
         {enableSaving ? <div className='storage-info'>
             When you export a decklist, it is also saved to your browser's local storage
         </div> : null}

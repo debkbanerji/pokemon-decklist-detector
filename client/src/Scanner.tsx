@@ -840,7 +840,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
 
         {
             isExportModalOpen ?
-                <div ref={exportModalRef} className="export-modal">
+                <div ref={exportModalRef} className="modal">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                         <div className="export-modal-content">
                             <ExportModal cardDatabase={cardDatabase}

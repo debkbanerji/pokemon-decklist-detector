@@ -41,7 +41,7 @@ basic_energy_replacement_regex = re.compile(r"^basic ", re.IGNORECASE)
 sprite_url_replacement_regex = re.compile(r"(\'|\.|:)", re.IGNORECASE)
 
 
-owner_replacement_regex = re.compile(r"^((N|Iono|Lillie|Hop|Marnie|Steven|Arven|Misty|Ethan|Cynthia|Team Rocket)'s )*", re.IGNORECASE)
+owner_replacement_regex = re.compile(r"^((N|Iono|Lillie|Hop|Marnie|Steven|Arven|Misty|Ethan|Cynthia|Team Rocket|Erika|Larry)'s )*", re.IGNORECASE)
 
 # If the card is a pokemon, remove the owner name from the beginning
 # Leave in owner names for trainers
@@ -76,6 +76,7 @@ set_id_to_official_code_overrides = {
   "sv8": "SSP",
   "sv8pt5": "PRE",
   "sv9": "JTG",
+  "me2pt5": "ASC",
 }
 
 BASIC_ENERGY_NAMES = [
@@ -628,6 +629,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "7",
+            "concatenated_attack_names": "Ram", # used to match the card to the very similar looking regular set version
             "set_printed_total": 7, # The total printed on the card - excludes secret rares
             "small_image_url": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEP/MEP_007_R_EN_LG.png",
             "types": ['Water'],
@@ -647,6 +649,7 @@ def get_cards(): # Returns dataframe
             "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "8",
+            "concatenated_attack_names": "Hydro Pump", # used to match the card to the very similar looking regular set version
             "set_printed_total": 8, # The total printed on the card - excludes secret rares
             "small_image_url": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEP/MEP_008_R_EN_LG.png",
             "types": ['Water'],
@@ -1082,11 +1085,15 @@ def get_rarity_for_mismatch_correction(card_id, rarity):
     
       # Cards that look like commons, but are promos
     if card_id in [
-        # "mep-7", # Psyduck
+        "mep-7", # Psyduck
     ]:
         return 'Common'
     
-    # TODO: Add in golduck from ASC, depending on rarity
+    if card_id in [
+        "mep-8", # Golduck
+    ]:
+        return 'Uncommon'
+    
    
     return rarity
 
@@ -1162,7 +1169,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             mask = mask.resize(cropped.size, Image.LANCZOS)
             cropped.putalpha(mask)
 
-            cropped.save(energy_symbol_path)
+            cropped.convert('RGBA').save(energy_symbol_path)
 
         # Trainers for which we want to generate thumbnails
         # Only generate thumbnails for trainers which aren't secret rares
@@ -1194,7 +1201,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             mask = mask.resize(cropped.size, Image.LANCZOS)
             cropped.putalpha(mask)
 
-            cropped.save(trainer_symbol_path)
+            cropped.convert('RGBA').save(trainer_symbol_path)
 
     # for pokedex_number in range(0,1025 + 1): # Up to pecharunt
     #     sprite_file_name = str(pokedex_number) + ".png"
