@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic } from './ProbabilityUtils';
+import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand } from './ProbabilityUtils';
 
 
 function formatPercentage(probability) {
@@ -89,8 +89,32 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
             })}
         </div>;
     } else if (mode === 'openingHandPlusOne') {
-        innerContent = <div>
-            TODO: Implement
+         innerContent = <div>
+            {cardList.map(card => {
+                return <div key={card.id}>
+                    <h4>{card.count} &times; {card.name} {card.set_code} {card.number}</h4>
+                    <div>
+                        {
+                            card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
+                                <div>
+                                    {
+                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
+                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} in First 8`} key={prizedCopies} value={
+                                                pTargetBasicsInFirstEight(
+                                                    card.count,
+                                                    numBasics,
+                                                    prizedCopies
+                                                )
+                                            } />
+                                        )
+                                    }
+                                </div> : <div>
+                                  TODO: Implement for non-Basic Pokémon
+                                </div>
+                        }
+                    </div>
+                </div>;
+            })}
         </div>;
     }
 

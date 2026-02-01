@@ -176,5 +176,94 @@ function pPrizedTargetNonBasic(
     return probability;
 }
 
+function pTargetBasicsInOpeningHand(
+    targetCopies,
+    totalBasics,
+    targetInOpeningHand
+) {
+    if (
+        targetInOpeningHand < 0 ||
+        targetInOpeningHand > OPENING_HAND_SIZE ||
+        targetInOpeningHand > targetCopies
+    ) {
+        return 0;
+    }
 
-export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic };
+    const totalOpeningHands =
+        combination(DECK_SIZE, OPENING_HAND_SIZE);
+
+    const openingHandsWithNoBasics =
+        combination(DECK_SIZE - totalBasics, OPENING_HAND_SIZE);
+
+    const validOpeningHands =
+        totalOpeningHands - openingHandsWithNoBasics; // BigInt
+
+    let favorableHands;
+
+    if (targetInOpeningHand === 0) {
+        const handsWithNoTarget =
+            combination(DECK_SIZE - targetCopies, OPENING_HAND_SIZE);
+
+        favorableHands =
+            handsWithNoTarget - openingHandsWithNoBasics;
+    } else {
+        favorableHands =
+            combination(targetCopies, targetInOpeningHand) *
+            combination(
+                DECK_SIZE - targetCopies,
+                OPENING_HAND_SIZE - targetInOpeningHand
+            );
+    }
+
+    return divideBigInt(favorableHands, validOpeningHands);
+}
+
+function pTargetBasicsInFirstEight(
+    targetCopies,
+    totalBasics,
+    targetInFirstEight
+) {
+    const remainingDeckAfterOpening =
+        DECK_SIZE - OPENING_HAND_SIZE;
+
+    let probability = 0;
+
+    const probZInOpening =
+        pTargetBasicsInOpeningHand(
+            targetCopies,
+            totalBasics,
+            targetInFirstEight
+        );
+
+    if (probZInOpening > 0) {
+        const remainingTargets =
+            targetCopies - targetInFirstEight;
+
+        const missProbability =
+            (remainingDeckAfterOpening - remainingTargets) /
+            remainingDeckAfterOpening;
+
+        probability += probZInOpening * missProbability;
+    }
+
+    const probZMinusOneInOpening =
+        pTargetBasicsInOpeningHand(
+            targetCopies,
+            totalBasics,
+            targetInFirstEight - 1
+        );
+
+    if (probZMinusOneInOpening > 0) {
+        const remainingTargets =
+            targetCopies - (targetInFirstEight - 1);
+
+        const hitProbability =
+            remainingTargets / remainingDeckAfterOpening;
+
+        probability += probZMinusOneInOpening * hitProbability;
+    }
+
+    return probability;
+}
+
+export { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand };
