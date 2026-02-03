@@ -88,31 +88,60 @@ button:focus-visible {
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
-/* Add margins for all buttons inside the probability modal.
-   Gives horizontal spacing and a bit of bottom spacing for wrapping layouts. */
 .probability-modal-content .modal-content *:is(button) {
-  margin: 3px 6px 6px; /* top 3px, left/right 6px, bottom 6px */
+  margin: 3px 6px 6px;
 }
 
-/* Selected state for mode buttons */
 .probability-modal-content .modal-content button.selected,
 .probability-modal-content .modal-content button.active {
-  background-color: #64b5ff; /* lighter blue */
+  background-color: #64b5ff;
   color: white;
   border-color: #2b8fe6;
 }
 
-/* small icon for card previews in the probability modal */
 .card-preview-icon {
-  height: 20px;
-  width: auto; /* let width be determined by aspect ratio */
+  height: 24px;
+  width: auto; 
   object-fit: contain;
   vertical-align: middle;
-  margin: 0 4px; /* small horizontal spacing */
+  margin: 0 4px;
 }
 
-/* Ensure the icon is vertically centered with the card text headings */
-.probability-modal-content h4 {
+.probability-card-name {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  font-size: 1.125rem; 
+  margin: 8px 0 4px 0; 
+  font-weight: 900;
+}
+
+.probability-modal-content .modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.probability-row {
+  display: grid;
+  grid-template-columns: calc(50vw - 48px) auto; /* left column ends near center of viewport */
+  column-gap: 8px;
+  align-items: baseline;
+}
+
+.probability-label {
+  justify-self: end;
+  text-align: right;
+  color: #333;
+  padding-right: 6px;
+  font-size: 1rem; 
+  font-weight: 400; 
+}
+
+.probability-value {
+  text-align: left;
+  min-width: 64px;
+  font-size: 1rem; 
+  font-weight: 500;
 }

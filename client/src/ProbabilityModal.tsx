@@ -4,7 +4,7 @@ import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTarg
 
 
 function formatPercentage(probability) {
-    const numDigits = 3;
+    const numDigits = 2;
     if (probability < Math.pow(0.1, 2 + numDigits)) {
         return 'Close to 0';
     }
@@ -12,8 +12,9 @@ function formatPercentage(probability) {
 }
 
 function Probability({ label, value }) {
-    return <div>
-        P({label}): {formatPercentage(value)}
+    return <div className="probability-row">
+        <span className="probability-label">P({label}):</span>
+        <span className="probability-value">{formatPercentage(value)}</span>
     </div>;
 }
 
@@ -38,10 +39,10 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         innerContent = <div>
             <h3>P(Mulligan): {formatPercentage(pMulligan(numBasics))}</h3>
             <div>
-                <h3>Basic Pokémon</h3>
+                <h3>{numBasics} Basic Pokémon</h3>
                 {basics.map(basic => {
                     return <div key={basic.id}>
-                        <h4>{basic.count} &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</h4>
+                        <div className="probability-card-name">{basic.count} &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</div>
                         <div>
                             <Probability label={"In Starting 7"} value={pBasicInStartingHand(basic.count, numBasics)} />
                             <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
@@ -55,7 +56,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         innerContent = <div>
                 {cardList.map(card => {
                 return <div key={card.id}>
-                    <h4>{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</h4>
+                    <div className="probability-card-name">{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
@@ -93,7 +94,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         innerContent = <div>
                 {cardList.map(card => {
                 return <div key={card.id}>
-                    <h4>{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</h4>
+                    <div className="probability-card-name">{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
