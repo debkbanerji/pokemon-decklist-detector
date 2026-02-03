@@ -136,7 +136,8 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                     <button
                         key={m}
                         onClick={() => setMode(m)}
-                        className={mode === m ? 'active' : ''}
+                        className={mode === m ? 'active selected' : ''}
+                        aria-pressed={mode === m}
                     >
                         {modeLabels[m]}
                     </button>

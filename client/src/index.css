@@ -76,3 +76,28 @@ button:focus-visible {
   border-radius: 16px;
   overflow: hidden;
 }
+
+.probability-modal-content {
+  background-color: #fefefe;
+  margin: 2% auto;
+  padding: 20px;
+  width: 84%;
+  overflow-y: auto;
+  border: 1px solid #888;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* Add margins for all buttons inside the probability modal.
+   Gives horizontal spacing and a bit of bottom spacing for wrapping layouts. */
+.probability-modal-content .modal-content *:is(button) {
+  margin: 3px 6px 6px; /* top 3px, left/right 6px, bottom 6px */
+}
+
+/* Selected state for mode buttons */
+.probability-modal-content .modal-content button.selected,
+.probability-modal-content .modal-content button.active {
+  background-color: #64b5ff; /* lighter blue */
+  color: white;
+  border-color: #2b8fe6;
+}
