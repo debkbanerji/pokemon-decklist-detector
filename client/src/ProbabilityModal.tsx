@@ -1,24 +1,24 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import CardPreviewIcon from './CardPreviewIcon';
 import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand, pTargetNonBasicsInFirstEight } from './ProbabilityUtils';
-
+import DecklistImage from './DecklistImage';
 
 function formatPercentage(probability) {
     const numDigits = 2;
     if (probability < Math.pow(0.1, 2 + numDigits)) {
         return 'Close to 0';
     }
-    return (probability * 100).toFixed(numDigits) + '%'; // TODO: reduce display precision?
+    return (probability * 100).toFixed(numDigits) + '%';
 }
 
 function Probability({ label, value }) {
     return <div className="probability-row">
-        <span className="probability-label">P({label}):</span>
+        <span className="probability-label"><i>P(</i>&thinsp;{label}&thinsp;<i>)</i>:</span>
         <span className="probability-value">{formatPercentage(value)}</span>
     </div>;
 }
 
-function ProbabilityModal({ undeletedCardData, onClose }) {
+function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne'];
     const modeLabels = {
         'setup': 'Setup',
@@ -36,10 +36,10 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
     let innerContent = null;
     if (mode === 'setup') {
         // If we're calculating setup probabilites, only do so for each basic pokemon
-        innerContent = <div>
-            <h3>P(Mulligan): {formatPercentage(pMulligan(numBasics))}</h3>
-            <div>
-                <h3>{numBasics} Basic Pokémon</h3>
+        innerContent =
+            <div className='probability-section'>
+                <h4 style={{ marginTop: '10px' }}>{numBasics} Basic Pokémon</h4>
+                <Probability label="Mulligan" value={pMulligan(numBasics)} />
                 {basics.map(basic => {
                     return <div key={basic.id}>
                         <div className="probability-card-name"><div className='probability-card-name-count'>{basic.count}</div> &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</div>
@@ -50,11 +50,10 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                     </div>;
                 }
                 )}
-            </div>
-        </div>;
+            </div>;
     } else if (mode === 'prizing') {
-        innerContent = <div>
-                {cardList.map(card => {
+        innerContent = <div className='probability-section'>
+            {cardList.map(card => {
                 return <div key={card.id}>
                     <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
@@ -91,8 +90,8 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
             })}
         </div>;
     } else if (mode === 'openingHandPlusOne') {
-        innerContent = <div>
-                {cardList.map(card => {
+        innerContent = <div className='probability-section'>
+            {cardList.map(card => {
                 return <div key={card.id}>
                     <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
@@ -132,7 +131,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
 
 
     let content = <div className='modal-content'>
-        <div>
+        <div style={{ width: "100%", marginTop: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
             {
                 modes.map(m =>
                     <button
@@ -165,6 +164,13 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                 </div>
             </div>
         </div>
+        <DecklistImage decklist={cardList} cardDatabase={cardDatabase}
+            onAllCardImagesLoaded={
+                () => {
+
+                }
+            }
+        />
         {content}
     </div>;
 }

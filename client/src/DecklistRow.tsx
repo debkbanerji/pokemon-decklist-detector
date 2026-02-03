@@ -180,6 +180,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                                 }
                                             };
                                         })}
+                                    cardDatabase={cardDatabase}
                                     onClose={() => setIsProbabilityModalOpen(false)}
                                 ></ProbabilityModal>
                             </div>
