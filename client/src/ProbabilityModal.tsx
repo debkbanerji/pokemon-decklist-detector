@@ -6,7 +6,7 @@ import DecklistImage from './DecklistImage';
 function formatPercentage(probability) {
     const numDigits = 2;
     if (probability < Math.pow(0.1, 2 + numDigits)) {
-        return 'Close to 0';
+        return '<' + formatPercentage(Math.pow(0.1, 2 + numDigits));
     }
     return (probability * 100).toFixed(numDigits) + '%';
 }
