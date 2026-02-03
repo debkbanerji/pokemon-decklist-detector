@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand } from './ProbabilityUtils';
+import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand, pTargetNonBasicsInFirstEight } from './ProbabilityUtils';
 
 
 function formatPercentage(probability) {
@@ -89,7 +89,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
             })}
         </div>;
     } else if (mode === 'openingHandPlusOne') {
-         innerContent = <div>
+        innerContent = <div>
             {cardList.map(card => {
                 return <div key={card.id}>
                     <h4>{card.count} &times; {card.name} {card.set_code} {card.number}</h4>
@@ -98,18 +98,28 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
                                     {
-                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
-                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} in First 8`} key={prizedCopies} value={
+                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(copies =>
+                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies === 0 ? 'None' : copies} in First 8`} key={copies} value={
                                                 pTargetBasicsInFirstEight(
                                                     card.count,
                                                     numBasics,
-                                                    prizedCopies
+                                                    copies
                                                 )
                                             } />
                                         )
                                     }
                                 </div> : <div>
-                                  TODO: Implement for non-Basic Pokémon
+                                    {
+                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(copies =>
+                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies === 0 ? 'None' : copies} in First 8`} key={copies} value={
+                                                pTargetNonBasicsInFirstEight(
+                                                    card.count,
+                                                    numBasics,
+                                                    copies
+                                                )
+                                            } />
+                                        )
+                                    }
                                 </div>
                         }
                     </div>

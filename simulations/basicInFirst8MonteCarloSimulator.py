@@ -53,9 +53,9 @@ def monte_carlo_target_basic_in_first_8(
 
 # We only use this to sanity check some math - not part of main codebase
 if __name__ == "__main__":
-    X = 2   # copies of target basic
+    X = 3   # copies of target basic
     Y = 11  # total basic Pokémon in deck
-    Z = 2   # desired copies in first 8 cards
+    Z = 3   # desired copies in first 8 cards
     trials = 10_000_000
 
     prob = monte_carlo_target_basic_in_first_8(X, Y, Z, trials)
