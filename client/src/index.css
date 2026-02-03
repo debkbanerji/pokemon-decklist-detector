@@ -101,3 +101,18 @@ button:focus-visible {
   color: white;
   border-color: #2b8fe6;
 }
+
+/* small icon for card previews in the probability modal */
+.card-preview-icon {
+  height: 20px;
+  width: auto; /* let width be determined by aspect ratio */
+  object-fit: contain;
+  vertical-align: middle;
+  margin: 0 4px; /* small horizontal spacing */
+}
+
+/* Ensure the icon is vertically centered with the card text headings */
+.probability-modal-content h4 {
+  display: inline-flex;
+  align-items: center;
+}

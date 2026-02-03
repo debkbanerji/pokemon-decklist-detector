@@ -128,7 +128,7 @@ const POKEMON_NAME_TO_MANUAL_FORM_SPRITE = {
 }
 
 // We have specific, manually mantained sprites for some common alternate formes
-function getPokemonSpriteUrlForCard(card) {
+export function getPokemonSpriteUrlForCard(card) {
     let selectedOverrideUrl = null;
     Object.keys(POKEMON_NAME_TO_MANUAL_FORM_SPRITE).forEach((override) => {
         if (card.name.toLowerCase().includes(override.toLowerCase())) {
@@ -188,7 +188,7 @@ const NAME_TO_POKEDEX_NUMBER_FALLBACK = {
     "Pecharunt": 1025,
 }
 
-const TYPE_TO_ENERGY_SYMBOL_URL = {
+export const TYPE_TO_ENERGY_SYMBOL_URL = {
     'Grass': 'grass-energy-symbol.png',
     'Fire': 'fire-energy-symbol.png',
     'Water': 'water-energy-symbol.png',
