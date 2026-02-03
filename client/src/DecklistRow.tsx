@@ -62,16 +62,14 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                     </div>
                     <div>
 
-                        {window.location.href.indexOf("probability") > -1 ?
-                            <button
-                                className={isNested ? 'previous-decklist-row-button ' : ''}
-                                onClick={() => {
-                                    setIsProbabilityModalOpen(true);
-                                    setTimeout(() => {
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }, 100);
-                                }}><MdOutlineBarChart /></button>
-                            : null}
+                        <button
+                            className={isNested ? 'previous-decklist-row-button ' : ''}
+                            onClick={() => {
+                                setIsProbabilityModalOpen(true);
+                                setTimeout(() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 100);
+                            }}><MdOutlineBarChart /></button>
                         <button
                             className={isNested ? 'previous-decklist-row-button ' : ''}
                             onClick={() => {
