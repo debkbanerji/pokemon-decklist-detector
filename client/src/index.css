@@ -39,7 +39,7 @@ button {
   box-shadow: 0 1px 1px #888888;
 }
 
-button[disabled]{
+button[disabled] {
   color: grey;
 }
 
@@ -85,7 +85,7 @@ button:focus-visible {
   overflow-y: auto;
   border: 1px solid #888;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .probability-modal-content .modal-content *:is(button) {
@@ -96,12 +96,11 @@ button:focus-visible {
 .probability-modal-content .modal-content button.active {
   background-color: #64b5ff;
   color: white;
-  border-color: #2b8fe6;
 }
 
 .card-preview-icon {
   height: 24px;
-  width: auto; 
+  width: auto;
   object-fit: contain;
   vertical-align: middle;
   margin: 0 4px;
@@ -112,9 +111,13 @@ button:focus-visible {
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  font-size: 1.125rem; 
-  margin: 8px 0 4px 0; 
-  font-weight: 900;
+  font-size: 1.125rem;
+  margin: 8px 0 4px 0;
+  font-weight: 550;
+}
+
+.probability-card-name-count {
+  font-weight: 750;
 }
 
 .probability-modal-content .modal-content {
@@ -125,7 +128,8 @@ button:focus-visible {
 
 .probability-row {
   display: grid;
-  grid-template-columns: calc(50vw - 48px) auto; /* left column ends near center of viewport */
+  grid-template-columns: calc(50vw - 48px) auto;
+  /* left column ends near center of viewport */
   column-gap: 8px;
   align-items: baseline;
 }
@@ -135,13 +139,13 @@ button:focus-visible {
   text-align: right;
   color: #333;
   padding-right: 6px;
-  font-size: 1rem; 
-  font-weight: 400; 
+  font-size: 1rem;
+  font-weight: 400;
 }
 
 .probability-value {
   text-align: left;
   min-width: 64px;
-  font-size: 1rem; 
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
 }

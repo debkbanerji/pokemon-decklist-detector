@@ -42,7 +42,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
                 <h3>{numBasics} Basic Pokémon</h3>
                 {basics.map(basic => {
                     return <div key={basic.id}>
-                        <div className="probability-card-name">{basic.count} &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</div>
+                        <div className="probability-card-name"><div className='probability-card-name-count'>{basic.count}</div> &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</div>
                         <div>
                             <Probability label={"In Starting 7"} value={pBasicInStartingHand(basic.count, numBasics)} />
                             <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
@@ -56,7 +56,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         innerContent = <div>
                 {cardList.map(card => {
                 return <div key={card.id}>
-                    <div className="probability-card-name">{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
+                    <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
@@ -94,7 +94,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
         innerContent = <div>
                 {cardList.map(card => {
                 return <div key={card.id}>
-                    <div className="probability-card-name">{card.count} &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
+                    <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?

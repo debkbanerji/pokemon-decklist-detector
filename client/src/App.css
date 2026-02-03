@@ -14,7 +14,7 @@
   justify-content: center;
 }
 
-.header > a {
+.header>a {
   color: black;
   text-decoration: none;
   margin-top: 0;
@@ -115,14 +115,19 @@ h3 {
   flex-grow: 1;
 }
 
+.decklist-row button {
+  font-size: 1.1rem;
+  padding: 0.4em 0.8em;
+}
+
 .previous-decklist-rows-container {
   display: flex;
   flex-direction: column-reverse;
 }
 
 .previous-decklist-row-button {
-  padding: 6px;
-  padding-bottom: 4px;
+  padding: 6px !important;
+  padding-bottom: 4px !important;
 }
 
 .previous-decklists-container {
