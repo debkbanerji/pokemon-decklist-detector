@@ -4,7 +4,7 @@ import ErrorBoundary from './ErrorBoundary.tsx';
 import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } from './StorageManager';
 import { motion } from "motion/react"
-import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdSearch, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import { MdDelete, MdDeleteForever, MdEdit, MdIosShare, MdOutlineBarChart, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 import ProbabilityModal from './ProbabilityModal.tsx';
 
 function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTimestamp, coverPokemon: startingCoverPokemon, coverPokemonSpriteUrl, name: startingDeckName, serializedDecklist, successorCreatedTimestamp, previousDecklistInfo, isNested }) {
@@ -70,7 +70,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                                     setTimeout(() => {
                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }, 100);
-                                }}><MdSearch /> probability (beta)</button>
+                                }}><MdOutlineBarChart /> probability (beta)</button>
                             : null}
                         <button
                             className={isNested ? 'previous-decklist-row-button ' : ''}
