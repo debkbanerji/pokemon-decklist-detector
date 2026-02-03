@@ -160,7 +160,7 @@ function ProbabilityModal({ undeletedCardData, onClose }) {
     return <div>
         <div className='modal-header-row'>
             <div>
-                <h2>Probability</h2>&nbsp;
+                <h3>Probability Analysis</h3>&nbsp;
                 <div onClick={onClose} className='modal-header-row-button'>
                 </div>
             </div>

@@ -173,6 +173,7 @@ h3 {
 .modal-header-row>div {
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 
