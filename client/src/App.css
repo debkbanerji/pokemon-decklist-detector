@@ -117,7 +117,7 @@ h3 {
 
 .decklist-row button {
   font-size: 1.1rem;
-  padding: 0.4em 0.8em;
+  padding: 0.25em 0.6em;
 }
 
 .previous-decklist-rows-container {
@@ -127,7 +127,7 @@ h3 {
 
 .previous-decklist-row-button {
   padding: 6px !important;
-  padding-bottom: 4px !important;
+  padding-bottom: 1px !important;
 }
 
 .previous-decklists-container {
