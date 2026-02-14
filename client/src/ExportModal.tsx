@@ -10,6 +10,8 @@ import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
 import { toJpeg } from 'html-to-image';
 import { set } from 'rsuite/esm/internals/utils/date/index';
+import ProbabilityModal, { ProbabilityContent } from './ProbabilityModal.tsx';
+import { MdOutlineBarChart } from 'react-icons/md';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -281,6 +283,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const decklistImageRef = useRef<HTMLDivElement>(null);
     const [canDownloadDecklistImage, setCanDownloadDecklistImage] = useState(false);
     const [isDownloadingDecklistImage, setIsDownloadingDecklistImage] = useState(false);
+    const [showProbabilityContent, setShowProbabilityContent] = useState(false);
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -755,6 +758,23 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         </div>
     }
 
+    if (showProbabilityContent) {
+        return (
+            <div>
+                <div className='modal-header-row'>
+                    <div> <a
+                        className='home-button'
+                        style={{ position: 'relative', top: 0, left: 0, marginRight: 16, color: 'black' }}
+                        onClick={() => setShowProbabilityContent(false)}
+                    >&#x25c0;&#xFE0E;</a></div>
+                    <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>Probability Analysis</h3>
+                </div>
+                <ProbabilityContent cardList={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
+            </div>
+        );
+    }
+
+
     return <div>
         <div className='modal-header-row'>
             <div>
@@ -768,12 +788,10 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 <div><b>⚠️ This decklist contains <a href='https://x.com/playpokemon/status/2016587353247404141' target='_blank'>Ascended Heroes</a> cards. Please ensure you follow current tournament rules regarding their use!</b></div>
                 : null
         }
-        {enableSaving ? <div className='storage-info'>
-            When you export a decklist, it is also saved to your browser's local storage
-        </div> : null}
-        {enableSaving ? <div className='storage-info'>
-            <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>
-        </div> : null}
+        <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>
+            <button onClick={() => setShowProbabilityContent(true)}>Probability {enableSaving?'':' Analysis'}</button>
+            {enableSaving && <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>}
+        </div>
         <hr style={{ marginTop: 16 }} />
         <div ref={decklistImageRef} >
             <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase}

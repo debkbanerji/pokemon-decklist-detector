@@ -88,12 +88,12 @@ button:focus-visible {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.probability-modal-content .modal-content *:is(button) {
+.probability-modal-mode-select-button {
   margin: 3px 6px 6px;
 }
 
-.probability-modal-content .modal-content button.selected,
-.probability-modal-content .modal-content button.active {
+.probability-modal-mode-select-button.selected,
+.probability-modal-mode-select-button.active {
   background-color: #64b5ff;
   color: white;
 }

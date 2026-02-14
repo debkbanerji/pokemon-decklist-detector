@@ -18,24 +18,20 @@ function Probability({ label, value }) {
     </div>;
 }
 
-function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
+// ProbabilityContent: the main content, no modal wrapper
+export function ProbabilityContent({ cardList, cardDatabase }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne'];
     const modeLabels = {
         'setup': 'Setup',
         'openingHandPlusOne': 'Opening Hand + Draw for Turn',
         'prizing': 'Prizing'
     };
-    const cardList = undeletedCardData.map(({ cardInfo }) => cardInfo);
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
-
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
     const numBasics = basics.reduce((sum, card) => sum + card.count, 0);
-
     const [mode, setMode] = useState(modes[0]);
-
     let innerContent = null;
     if (mode === 'setup') {
-        // If we're calculating setup probabilites, only do so for each basic pokemon
         innerContent =
             <div className='probability-section'>
                 <h4 style={{ marginTop: '10px' }}>{numBasics} Basic Pokémon</h4>
@@ -48,8 +44,7 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
                             <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
                         </div>
                     </div>;
-                }
-                )}
+                })}
             </div>;
     } else if (mode === 'prizing') {
         innerContent = <div className='probability-section'>
@@ -129,33 +124,32 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
         </div>;
     }
 
-
-    let content = <div className='modal-content'>
-        <div style={{ width: "100%", marginTop: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
-            {
-                modes.map(m =>
-                    <button
-                        key={m}
-                        onClick={() => setMode(m)}
-                        className={mode === m ? 'active selected' : ''}
-                        aria-pressed={mode === m}
-                    >
-                        {modeLabels[m]}
-                    </button>
-                )
-            }
-        </div>
-        {innerContent}
-    </div>;
-
-
-
     if (numCards !== 60 || numBasics < 1) {
-        content = <div className='modal-content'>
+        return <div className='probability-content'>
             <p>Probability analysis is only available for standard 60-card decks with at least 1 basic</p>
         </div>;
     }
 
+    return <div className='modal-content'>
+        <div style={{ width: "100%", marginTop: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
+            {modes.map(m =>
+                <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={'probability-modal-mode-select-button ' + (mode === m ? 'selected active' : '')}
+                    aria-pressed={mode === m}
+                >
+                    {modeLabels[m]}
+                </button>
+            )}
+        </div>
+        {innerContent}
+    </div>;
+}
+
+// ProbabilityModal: wrapper with modal header and close
+function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
+    const cardList = undeletedCardData.map(({ cardInfo }) => cardInfo);
     return <div>
         <div className='modal-header-row'>
             <div>
@@ -165,13 +159,9 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
             </div>
         </div>
         <DecklistImage decklist={cardList} cardDatabase={cardDatabase}
-            onAllCardImagesLoaded={
-                () => {
-
-                }
-            }
+            onAllCardImagesLoaded={() => { }}
         />
-        {content}
+        <ProbabilityContent cardList={cardList} cardDatabase={cardDatabase} />
     </div>;
 }
 
