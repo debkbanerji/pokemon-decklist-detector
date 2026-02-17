@@ -27,6 +27,8 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
         }
         
         let hand;
+        let drawForTurn;
+        let prizes
         let hasBasic = false;
         
         // Keep drawing until we get a hand with at least one basic
@@ -39,6 +41,8 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
             }
             // Draw 7 cards
             hand = shuffled.slice(0, 7);
+            drawForTurn = shuffled[7];
+            prizes = shuffled.slice(8, 13);
             
             // Check if hand has at least one basic pokemon
             hasBasic = hand.some(card => 
@@ -67,8 +71,9 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
 
     return (
         <div className="opening-hand-simulator-section" style={{ padding: '10px' }}>
-            <h4>Opening Hand Simulator</h4>
-            <button onClick={drawNewHand}>New Hand</button>
+            <h4>Opening Examples</h4>
+            <div style={{ fontSize: '0.9em', color: '#888' }}>Excludes Mulligans</div>
+            <button onClick={drawNewHand}>Generate New Example</button>
             <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column' }}>
                 {hands.map((hand, handIndex) => (
                     <div key={handIndex} style={{ marginBottom: '10px', opacity: handIndex === 0 ? 1 : 0.4, paddingBottom: '10px', borderBottom: handIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>

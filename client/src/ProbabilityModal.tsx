@@ -26,7 +26,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
         'setup': 'Setup',
         'openingHandPlusOne': 'Opening Hand + Draw for Turn',
         'prizing': 'Prizing',
-        'openingHandSimulator': 'Opening Hand Examples'
+        'openingHandSimulator': 'Opening Examples'
     };
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
