@@ -55,9 +55,16 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
+                                    <Probability label="None Prized" value={
+                                        pPrizedTargetBasic(
+                                            card.count,
+                                            numBasics,
+                                            0
+                                        )
+                                    } />
                                     {
-                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
-                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} Prized`} key={prizedCopies} value={
+                                        [...Array(Math.min(card.count, 6)).keys()].map(i => i + 1).map(prizedCopies =>
+                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies} Prized`} key={prizedCopies} value={
                                                 pPrizedTargetBasic(
                                                     card.count,
                                                     numBasics,
@@ -67,9 +74,16 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                                         )
                                     }
                                 </div> : <div>
+                                       <Probability label="None Prized" value={
+                                        pPrizedTargetNonBasic(
+                                            card.count,
+                                            numBasics,
+                                            0
+                                        )
+                                    } />
                                     {
-                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(prizedCopies =>
-                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies === 0 ? 'None' : prizedCopies} Prized`} key={prizedCopies} value={
+                                        [...Array(Math.min(card.count, 6)).keys()].map(i => i + 1).map(prizedCopies =>
+                                            <Probability label={`${prizedCopies === card.count && prizedCopies > 1 ? 'All ' : ''}${prizedCopies} Prized`} key={prizedCopies} value={
                                                 pPrizedTargetNonBasic(
                                                     card.count,
                                                     numBasics,
