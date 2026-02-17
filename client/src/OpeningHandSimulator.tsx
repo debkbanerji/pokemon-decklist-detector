@@ -54,23 +54,23 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
         return hand;
     }
 
-    const [hands, setHands] = useState(() =>
-        Array.from({ length: MAX_HANDS }, (_, index) => ({
-            id: MAX_HANDS - index,
+    const [hands, setHands] = useState(() => [
+        ...Array.from({ length: MAX_HANDS }, (_, i) => ({
+            id: i + 1,
             cards: getNewHand(),
         }))
-    );
+    ]);
 
     function drawNewHand() {
         const newHand = getNewHand();
-        const newHandId = hands[0].id + 1;
+        const newHandId = (hands.length > 0 ? hands[hands.length - 1].id : 0) + 1;
 
-        // Add new hand to the beginning of the list
-        let updatedHands = [{ id: newHandId, cards: newHand }, ...hands];
+        // Add new hand to the end of the list
+        let updatedHands = [...hands, { id: newHandId, cards: newHand }];
 
-        // If we exceed MAX_HANDS, remove the last one
+        // If we exceed MAX_HANDS, remove the first one
         if (updatedHands.length > MAX_HANDS) {
-            updatedHands = updatedHands.slice(0, MAX_HANDS);
+            updatedHands = updatedHands.slice(1);
         }
 
         setHands(updatedHands);
@@ -80,30 +80,33 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
         <div className="opening-hand-simulator-section" style={{ padding: '10px' }}>
             <h4>Opening Examples</h4>
             <div style={{ fontSize: '0.9em', color: '#888', marginBottom: '8px' }}>Excludes Mulligans</div>
-            <button onClick={drawNewHand} style={{width: '100%'}}>Generate New Example</button>
-            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column' }}>
+            <button onClick={drawNewHand} style={{ width: '100%' }}>Generate New Example</button>
+            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column-reverse' }}>
                 <AnimatePresence>
-                    {hands.map((handObj, handIndex) => (
-                        <motion.div
-                            layout="position"
-                            key={handObj.id}
-                            initial={{ opacity: 0, x: -400, scale: 0.5 }}
-                            animate={{ opacity: handIndex === 0 ? 1 : 0.4, x: 0, scale: 1 }}
-                            transition={{ duration: 0.6, type: "spring" }}
-                            exit={{ opacity: 0, x: 400, scale: 0.5 }}
-                            style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: handIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
-                            <div style={{ display: 'flex', gap: '6px', maxWidth: '600px', flexDirection: 'row' }}>
-                                {handObj.cards.map((card, cardIndex) => (
-                                    <div key={cardIndex} style={{
-                                        flex: 1,
-                                        minWidth: 0
-                                    }}>
-                                        <CardImageForID id={card.id} cardDatabase={cardDatabase} />
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    ))}
+                    {hands.map((handObj, handIndex) => {
+                        const reversedIndex = hands.length - 1 - handIndex;
+                        return (
+                            <motion.div
+                                layout="position"
+                                key={handObj.id}
+                                initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                                animate={{ opacity: reversedIndex === 0 ? 1 : 0.4, x: 0, scale: 1 }}
+                                transition={{ duration: 0.6, type: "spring" }}
+                                exit={{ opacity: 0, x: 400, scale: 0.5 }}
+                                style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: reversedIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
+                                <div style={{ display: 'flex', gap: '6px', maxWidth: '600px', flexDirection: 'row' }}>
+                                    {handObj.cards.map((card, cardIndex) => (
+                                        <div key={cardIndex} style={{
+                                            flex: 1,
+                                            minWidth: 0
+                                        }}>
+                                            <CardImageForID id={card.id} cardDatabase={cardDatabase} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </AnimatePresence>
             </div>
 
