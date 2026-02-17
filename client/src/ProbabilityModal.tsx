@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import CardPreviewIcon from './CardPreviewIcon';
 import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand, pTargetNonBasicsInFirstEight } from './ProbabilityUtils';
 import DecklistImage from './DecklistImage';
+import OpeningHandSimulator from './OpeningHandSimulator';
 
 function formatPercentage(probability) {
     const numDigits = 2;
@@ -20,11 +21,12 @@ function Probability({ label, value }) {
 
 // ProbabilityContent: the main content, no modal wrapper
 export function ProbabilityContent({ cardList, cardDatabase }) {
-    const modes = ['setup', 'prizing', 'openingHandPlusOne'];
+    const modes = ['setup', 'prizing', 'openingHandPlusOne', 'openingHandSimulator'];
     const modeLabels = {
         'setup': 'Setup',
         'openingHandPlusOne': 'Opening Hand + Draw for Turn',
-        'prizing': 'Prizing'
+        'prizing': 'Prizing',
+        'openingHandSimulator': 'Opening Hand Examples'
     };
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
@@ -158,6 +160,8 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                 </div>;
             })}
         </div>;
+    } else if (mode === 'openingHandSimulator') {
+        innerContent = <OpeningHandSimulator cardList={cardList} cardDatabase={cardDatabase} />;
     }
 
     if (numCards !== 60 || numBasics < 1) {
