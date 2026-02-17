@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import CardImageForID from './CardImageForID';
+import { motion, AnimatePresence } from 'motion/react';
 
 
 const MAX_HANDS = 4;
@@ -53,15 +54,16 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
         return hand;
     }
 
-    const [hands, setHands] = useState(() => [getNewHand()]);
+    const [hands, setHands] = useState(() => [{ id: 0, cards: getNewHand() }]);
 
     function drawNewHand() {
         const newHand = getNewHand();
+        const newHandId = hands[0].id  + 1;
 
         // Add new hand to the beginning of the list
-        let updatedHands = [newHand, ...hands];
+        let updatedHands = [{ id: newHandId, cards: newHand }, ...hands];
 
-        // If we exceed 6 hands, remove the last one
+        // If we exceed MAX_HANDS, remove the last one
         if (updatedHands.length > MAX_HANDS) {
             updatedHands = updatedHands.slice(0, MAX_HANDS);
         }
@@ -75,20 +77,28 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
             <div style={{ fontSize: '0.9em', color: '#888' }}>Excludes Mulligans</div>
             <button onClick={drawNewHand}>Generate New Example</button>
             <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column' }}>
-                {hands.map((hand, handIndex) => (
-                    <div key={handIndex} style={{ marginBottom: '10px', opacity: handIndex === 0 ? 1 : 0.4, paddingBottom: '10px', borderBottom: handIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
-                        <div style={{ display: 'flex', gap: '6px', maxWidth: '600px', flexDirection: 'row' }}>
-                            {hand.map((card, cardIndex) => (
-                                <div key={cardIndex} style={{
-                                    flex: 1,
-                                    minWidth: 0
-                                }}>
-                                    <CardImageForID id={card.id} cardDatabase={cardDatabase} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                ))}
+                <AnimatePresence>
+                    {hands.map((handObj, handIndex) => (
+                        <motion.div 
+                            key={handObj.id}
+                            initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                            animate={{ opacity: handIndex === 0 ? 1 : 0.4, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 200, scale: 1.2 }}
+                            transition={{ duration: 0.6, type: "spring" }}
+                            style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: handIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
+                            <div style={{ display: 'flex', gap: '6px', maxWidth: '600px', flexDirection: 'row' }}>
+                                {handObj.cards.map((card, cardIndex) => (
+                                    <div key={cardIndex} style={{
+                                        flex: 1,
+                                        minWidth: 0
+                                    }}>
+                                        <CardImageForID id={card.id} cardDatabase={cardDatabase} />
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
 
         </div>
