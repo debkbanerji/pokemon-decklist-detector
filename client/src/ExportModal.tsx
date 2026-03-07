@@ -296,19 +296,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }
     }, [undeletedCardData]);
 
-    const showAscendedHeroesWarning = useMemo(() => {
-        // Don't show warning if it is March 6th 2026 or after
-        const currentDate = new Date();
-        const cutoffDate = new Date('2026-03-06T00:00:00Z');
-        if (currentDate >= cutoffDate) {
-            return false;
-        }
-        return undeletedCardData.some(({ cardInfo }) => {
-            return (cardInfo.set_code === 'ASC' && cardInfo.supertype === 'Pokémon') ||
-                ['Anthea & Concordea', 'Canari', 'Poké Pad', 'Thick Scale', 'Urbain', 'Waitress', 'Nighttime Mine', 'Light Ball', 'Team Rocket\'s Hypnotizer'].includes(cardInfo.name)
-        });
-    }, [undeletedCardData]);
-
     async function saveDecklistToStorage() {
         // Also save the user to storage
         await overWriteLatestPlayer({
@@ -783,11 +770,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </div>
             </div>
         </div>
-        {
-            showAscendedHeroesWarning ?
-                <div><b>⚠️ This decklist contains <a href='https://x.com/playpokemon/status/2016587353247404141' target='_blank'>Ascended Heroes</a> cards. Please ensure you follow current tournament rules regarding their use!</b></div>
-                : null
-        }
         <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>
             <button onClick={() => setShowProbabilityContent(true)}>Probability {enableSaving?'':' Analysis'}</button>
             {enableSaving && <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>}
