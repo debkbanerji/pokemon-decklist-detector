@@ -77,6 +77,7 @@ set_id_to_official_code_overrides = {
   "sv8pt5": "PRE",
   "sv9": "JTG",
   "me2pt5": "ASC",
+  "me3": "POR",
 }
 
 BASIC_ENERGY_NAMES = [
@@ -1103,8 +1104,27 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/e/ec/MegaFeraligatrexMEPPromo36.jpg/270px-MegaFeraligatrexMEPPromo36.jpg",
             "types": ["Water"],
             "national_pokedex_numbers": [160]
+        },
+        {
+            "id": 'mep-68',
+            "name": "Makuhita",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Makuhita"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Makuhita"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "subtypes": ['Basic'],
+            "rarity": "Promo",
+            "hp": "80",
+            "set_id": "mep",
+            "set_code": "MEP",
+            "regulation_mark": "J",
+            "set_name": "Mega Evolution Black Star Promos",
+            "number": "68",
+            "concatenated_attack_names": "Corkscrew Punch_Confront", # used to match the card to the very similar looking regular set version
+            "set_printed_total": 68,
+            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/f/f1/MakuhitaMEPPromo68.jpg/270px-MakuhitaMEPPromo68.jpg",
+            "types": ['Fighting'],
+            "national_pokedex_numbers": [296]
         }
-        
         # {
         #     "id": '???',
         #     "name": "???",
