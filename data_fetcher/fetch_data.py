@@ -1116,7 +1116,7 @@ def get_cards(): # Returns dataframe
             "hp": "80",
             "set_id": "mep",
             "set_code": "MEP",
-            "regulation_mark": "J",
+            "regulation_mark": "I",
             "set_name": "Mega Evolution Black Star Promos",
             "number": "68",
             "concatenated_attack_names": "Corkscrew Punch_Confront", # used to match the card to the very similar looking regular set version
