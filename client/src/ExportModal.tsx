@@ -147,6 +147,45 @@ export function getPokemonSpriteUrlForCard(card) {
 }
 
 
+const OWNER_NAMES = [
+    'N',
+    'Iono',
+    'Lillie',
+    'Hop',
+    'Marnie',
+    'Steven',
+    'Arven',
+    'Misty',
+    'Ethan',
+    'Cynthia',
+    'Team Rocket',
+    'Erika',
+    'Larry'
+]
+
+function getOwnerForDecklist(cardList) {
+    const threshold = 6;
+
+    // if at least a certain number of Pokemon within the deck
+    // belong to this owner, return the owner name
+    // else, return null
+    for (const ownerName of OWNER_NAMES) {
+        const count = cardList.reduce((acc, { cardInfo }) => {
+            if (cardInfo.supertype === 'Pokémon' && cardInfo.name.toLowerCase().startsWith(ownerName.toLowerCase() + '\'s ')) {
+                return acc + cardInfo.count;
+            }
+            return acc;
+        }, 0);
+
+        if (count >= threshold) {
+            return ownerName;
+        }
+    }
+    return null;
+
+}
+
+
 function warmupSpriteURLs(cards) {
     cards.forEach(card => {
         if (card.supertype === 'Pokémon') {
@@ -696,19 +735,39 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
                 doc.setFont(undefined, 'normal').text(`Total Cards:  ${totalCount}`, 14.5, doc.lastAutoTable.finalY + 6)
 
+
+                // if owner name is non null, use that owner icon on the top left
+                // this should be done instead of the 'cover' pokemon when available
+                const owner = getOwnerForDecklist(undeletedCardData);
+                console.log({ owner })
+                if (owner != null) {
+                    const ownerImg = new Image();
+                    const ownerUrl = `owner-icons/${owner.toLowerCase().replaceAll(' ', '-')}.png`;
+                    const imgProps = doc.getImageProperties(ownerUrl);
+                    const height = 6;
+                    const width = (imgProps.width * height) / imgProps.height;
+                    ownerImg.src = ownerUrl;
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold')
+                    doc.addImage(ownerImg, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
+                }
+
                 if (coverPokemon.length > 0) {
                     const coverPokemonImg = new Image();
                     const coverPokemonUrl = pokemonNameToSpriteUrl[coverPokemon];
                     if (coverPokemonUrl && coverPokemonUrl.length > 0) {
                         const imgProps = doc.getImageProperties(coverPokemonUrl);
-                        const height = 6;
-                        const width = (imgProps.width * height) / imgProps.height;
-                        coverPokemonImg.src = coverPokemonUrl;
-                        doc.setFontSize(16);
-                        doc.setFont(undefined, 'bold')
-                        doc.addImage(coverPokemonUrl, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
+                        if (owner == null) {
+                            // only do this if we don't have an owner icon
+                            const height = 6;
+                            const width = (imgProps.width * height) / imgProps.height;
+                            coverPokemonImg.src = coverPokemonUrl;
+                            doc.setFontSize(16);
+                            doc.setFont(undefined, 'bold')
+                            doc.addImage(coverPokemonUrl, 'png', 17 + doc.getTextWidth(deckName), 5, width, height);
+                        }
 
-                        // Watermark the page
+                        // Watermark the page, regardless of the presence of an owner icon
                         doc.setGState(new doc.GState({ opacity: 0.10 }));
                         const pageWidth = doc.internal.pageSize.getWidth();
                         const pageHeight = doc.internal.pageSize.getHeight();
@@ -771,7 +830,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             </div>
         </div>
         <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>
-            <button onClick={() => setShowProbabilityContent(true)}>Probability {enableSaving?'':' Analysis'}</button>
+            <button onClick={() => setShowProbabilityContent(true)}>Probability {enableSaving ? '' : ' Analysis'}</button>
             {enableSaving && <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>}
         </div>
         <hr style={{ marginTop: 16 }} />
