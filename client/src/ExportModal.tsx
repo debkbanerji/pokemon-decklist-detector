@@ -917,7 +917,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         </div>
         <hr />
         <div>
-            <h3>Export Options</h3>
+            <h3>Export</h3>
             <div className='export-pdf-field'>
                 Include player info in pdf
                 <label className={`toggle-switch ${includePlayerInfoInPDF ? 'checked' : ''}`}>
