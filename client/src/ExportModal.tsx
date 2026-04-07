@@ -858,20 +858,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </b>
         }
         <hr />
-        <h3>Deck Info</h3>
-        <div className='export-pdf-field'>
-            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
-                <option value={''} key="unset">(none)</option>
-                {Object.keys(pokemonNameToSpriteUrl).map(name =>
-                    <option value={name} key={name}>{name}</option>
-                )}
-            </select>
-            {coverPokemon != null && coverPokemon.length > 0 ? <img style={{ marginLeft: 5 }} src={pokemonNameToSpriteUrl[coverPokemon]}></img> : null}
-        </div>
-        <div className='export-pdf-field'>
-            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
-        </div>
-        <hr />
+        
         <h3>Player Info</h3>
         <div className='export-pdf-field'>
             Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
@@ -913,6 +900,20 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     <button onClick={() => setPlayerSpriteFile('')}>✖</button>
                 </div>
             }
+        </div>
+        <hr />
+        <h3>Deck Info</h3>
+        <div className='export-pdf-field'>
+            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
+                <option value={''} key="unset">(none)</option>
+                {Object.keys(pokemonNameToSpriteUrl).map(name =>
+                    <option value={name} key={name}>{name}</option>
+                )}
+            </select>
+            {coverPokemon != null && coverPokemon.length > 0 ? <img style={{ marginLeft: 5 }} src={pokemonNameToSpriteUrl[coverPokemon]}></img> : null}
+        </div>
+        <div className='export-pdf-field'>
+            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
         <hr />
         <div>
