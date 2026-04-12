@@ -1124,6 +1124,26 @@ def get_cards(): # Returns dataframe
             "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/f/f1/MakuhitaMEPPromo68.jpg/270px-MakuhitaMEPPromo68.jpg",
             "types": ['Fighting'],
             "national_pokedex_numbers": [296]
+        },
+        {
+            "id": 'mep-69',
+            "name": "Chikorita",
+            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Chikorita"), "Pokémon")),
+            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Chikorita"), "Pokémon"))),
+            "supertype": "Pokémon",
+            "subtypes": ['Basic'],
+            "rarity": "Promo",
+            "hp": "70",
+            "set_id": "mep",
+            "set_code": "MEP",
+            "regulation_mark": "I",
+            "set_name": "Mega Evolution Black Star Promos",
+            "number": "69",
+            "concatenated_attack_names": "Razor Leaf", # used to match the card to the very similar looking regular set version
+            "set_printed_total": 69,
+            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/686342_in_1000x1000.jpg",
+            "types": ['Grass'],
+            "national_pokedex_numbers": [152]
         }
         # {
         #     "id": '???',
