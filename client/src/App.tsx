@@ -7,6 +7,7 @@ import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, parseFormattedDecklist } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "motion/react"
+import { i } from 'motion/react-client';
 
 
 const TITLE_ADJECTIVES = [
@@ -149,6 +150,7 @@ function App() {
   },
     [exportModalRef, setDecklistForModal]);
 
+  const isPortraitMobile = window.innerHeight > window.innerWidth;
 
   return <>
     <div className="header">
@@ -164,6 +166,7 @@ function App() {
         then export it to Email, PDF, or TCG Live
         <br />
       </div>
+      {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
       <video className='demo-video' autoPlay loop muted playsInline>
         <source src="demo-video.mp4" type="video/mp4" />
       </video>
