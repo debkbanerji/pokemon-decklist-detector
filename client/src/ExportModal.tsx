@@ -549,7 +549,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 const trainerTable = trainers.filter(row => row[1] > 0).map(row => {
                     const name = row[0];
                     const count = row[1];
-                    return [count, processStringForPDFCompatibility(name)]
+                    const cardSample = cardDatabase[fullCardNameToIDs[name][0]];
+                    return [count, processStringForPDFCompatibility(name), cardSample['rarity']]
                 });
 
                 const energyTable = energies.filter(row => row[1] > 0).map(row => {
@@ -656,13 +657,13 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     // split the trainer table in two
                     trainerTablesDisplayData = [
                         {
-                            table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
+                            table: trainerTable.slice(0, Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '', '']; })), // add some buffer for writing in changes by hand,
                             y: targetYForTrainerTable,
                             margin: null,
                             width: autotableDefaultWidth * 0.48
                         },
                         {
-                            table: trainerTable.slice(Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '']; })), // add some buffer for writing in changes by hand,
+                            table: trainerTable.slice(Math.ceil(trainerTable.length / 2)).concat([...Array(1)].map(_ => { return ['', '', '']; })), // add some buffer for writing in changes by hand,
                             y: targetYForTrainerTable,
                             margin: { left: autotableDefaultWidth * 0.595 },
                             width: autotableDefaultWidth * 0.48
@@ -672,7 +673,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 trainerTablesDisplayData.forEach(({ table, y, width, margin }) => {
                     autoTable(doc, {
                         head: [['QTY', 'NAME']],
-                        body: table,
+                        body: table.map(row => [row[0], row[1]]),
                         styles: tableStyles,
                         startY: y,
                         margin,
@@ -683,6 +684,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                         didDrawCell: function (data) {
                             try {
                                 if (data.column.index === 1 && data.row.section === 'body') {
+                                    const rarity = table[data.row.index][2];
                                     const spriteUrl = 'trainer-symbols/' + table[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
                                     const dim = data.cell.height - data.cell.padding('vertical');
                                     const textPos = data.cell.textPos;
@@ -692,6 +694,18 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                                     const width = (imgProps.width * height) / imgProps.height;
                                     img.src = spriteUrl;
                                     doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
+                                    
+                                    console.log({ rarity })
+                                    // Add purple star if rarity is Ace Spec Rare
+                                    if (rarity === 'ACE SPEC Rare') {
+                                        const purpleStarImg = new Image();
+                                        const purpleStarUrl = 'purple-star.png';
+                                        const imgProps = doc.getImageProperties(purpleStarUrl);
+                                        const starHeight = dim * 0.6;
+                                        const starWidth = (imgProps.width * starHeight) / imgProps.height;
+                                        purpleStarImg.src = purpleStarUrl;
+                                        doc.addImage(purpleStarImg, 'png', data.cell.x - 11, data.cell.y + dim * 0.25, starWidth, starHeight);
+                                    }
                                 }
                             } catch (e) {
                                 // do nothing
