@@ -694,7 +694,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                                     const width = (imgProps.width * height) / imgProps.height;
                                     img.src = spriteUrl;
                                     doc.addImage(img, 'png', data.cell.x - 7.5, data.cell.y + dim * 0.1, width, height);
-                                    
+
                                     console.log({ rarity })
                                     // Add purple star if rarity is Ace Spec Rare
                                     if (rarity === 'ACE SPEC Rare') {
@@ -872,7 +872,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </b>
         }
         <hr />
-        
+
         <h3>Player Info</h3>
         <div className='export-pdf-field'>
             Player Name: <input type="text" name='player-name' onChange={e => setPlayerName(e.target.value)} value={playerName} />
@@ -916,7 +916,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             }
         </div>
         <hr />
-        <h3>Deck Info</h3>
+        {coverPokemon.length>0 && deckName.length > 0 ? <h3>✓ Deck Info</h3> : <h3 className='warning-text'>⚠ Deck Info</h3>}
         <div className='export-pdf-field'>
             Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
                 <option value={''} key="unset">(none)</option>
