@@ -256,7 +256,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const cardNameToIDs = useMemo(() => {
         const result = {};
         Object.keys(cardDatabase).forEach(id => {
-            if (['A', 'B', 'C', 'D', 'E', 'F'].includes(cardDatabase[id].regulation_mark)) {
+            if (['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(cardDatabase[id].regulation_mark)) {
                 // Don't allow for scanning of old regulation marks
                 return;
             }
