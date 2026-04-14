@@ -297,7 +297,7 @@ def get_cards(): # Returns dataframe
             "hp": "330",
             "set_id": "svp",
             "set_code": "SVP",
-            "regulation_mark": "I",
+            "regulation_mark": "G",
             "set_name": "Scarlet & Violet Black Star Promos",
             "number": "196",
             "set_printed_total": 196,
