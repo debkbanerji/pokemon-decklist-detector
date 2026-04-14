@@ -1195,6 +1195,10 @@ def compute_detection_keywords_for_name(target_name, all_names):
     if target_name.lower() in special_cases:
         return [target_name]
     
+    # always include "rocky" for "rocky fighting energy"
+    if target_name.lower() == "rocky fighting energy":
+        return ["Rocky", target_name]
+
     # look at all possible prefixes and postfixes for target_name
     # for each of these that are not a substring present within all_names, add them to the result list
 
