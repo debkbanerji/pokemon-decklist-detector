@@ -160,7 +160,6 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
     unDedupedRows.forEach(({ cardInfo }) => {
         const existingCard = dedupedRows.find(({ cardInfo: dedupedCard }) => dedupedCard.id === cardInfo.id);
         if (existingCard) {
-            console.log({ existingCard, cardInfo });
             existingCard.cardInfo.count = existingCard.cardInfo.count + cardInfo.count;
         } else {
             dedupedRows.push({ cardInfo: { ...cardInfo } });
