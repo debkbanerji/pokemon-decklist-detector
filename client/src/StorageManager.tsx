@@ -116,7 +116,7 @@ async function overWriteLatestPlayer(newPlayer) {
 function parseFormattedDecklist(formattedDecklist, cardDatabase) {
     const allCards = Object.values(cardDatabase);
     const rows = formattedDecklist.split(/[\r\n]/);
-    return rows.map(row => {
+    const unDedupedRows = rows.map(row => {
         const countMatch = row.match(/^\d+/);
         if (!countMatch) {
             return null;
@@ -151,11 +151,22 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
         });
 
         if (result != null) {
-            result.count = count;
+            return { cardInfo: { ...result, count } };
         }
 
-        return result;
-    }).filter(card => card != null).map(card => { return { cardInfo: card } });
+        return null;
+    }).filter(item => item != null);
+    const dedupedRows = [];
+    unDedupedRows.forEach(({ cardInfo }) => {
+        const existingCard = dedupedRows.find(({ cardInfo: dedupedCard }) => dedupedCard.id === cardInfo.id);
+        if (existingCard) {
+            console.log({ existingCard, cardInfo });
+            existingCard.cardInfo.count = existingCard.cardInfo.count + cardInfo.count;
+        } else {
+            dedupedRows.push({ cardInfo: { ...cardInfo } });
+        }
+    });
+    return dedupedRows;
 }
 
 export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist };
