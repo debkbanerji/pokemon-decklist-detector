@@ -20,6 +20,19 @@ const TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE = {
     'Basic {R} Energy': 'Fire Energy',
 }
 
+// Regex for TCG Live special typed energy import
+// ex: Telepathic {P} Energy
+const TCG_LIVE_SPECIAL_ENERGY_REGEX = /^(?!Basic )([a-zA-Z]+) \{[a-zA-Z]\} Energy$/;
+const ENERGY_SYMBOL_TO_FULL_NAME = {
+    '{P}': 'Psychic',
+    '{F}': 'Fighting',
+    '{W}': 'Water',
+    '{L}': 'Lightning',
+    '{G}': 'Grass',
+    '{D}': 'Darkness',
+    '{M}': 'Metal',
+    '{R}': 'Fire',
+};
 
 function seralizeDecklist(cardData) {
     return cardData.map(({ cardInfo }) => `${cardInfo['id']}${SERIALIZED_COUNT_SEPERATOR}${cardInfo['count']}`).join(SERIALIZED_ENTRY_SEPARATOR);
@@ -140,7 +153,16 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
         const setCode = TCG_LIVE_REVERSE_SET_OVERRIDE[setCodeMatch[0]] ?? setCodeMatch[0];
         row = row.replace(/ [A-Za-z-]+$/, '');
 
-        const cardName = TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE[row] ?? row;
+        let cardName = TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE[row] ?? row;
+        // if the card is a typed special energy
+        const specialEnergyMatch = TCG_LIVE_SPECIAL_ENERGY_REGEX.exec(cardName);
+      
+        if (specialEnergyMatch) {
+             // for each entry in ENERGY_SYMBOL_TO_FULL_NAME, run replacement
+            for (const [symbol, fullName] of Object.entries(ENERGY_SYMBOL_TO_FULL_NAME)) {
+                cardName = cardName.replace(new RegExp(`\\${symbol}`, 'g'), fullName);
+            }
+        }
 
         const result = allCards.find((card) => {
             if (card.name !== cardName) {
