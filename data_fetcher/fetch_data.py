@@ -76,8 +76,11 @@ set_id_to_official_code_overrides = {
   "sv8": "SSP",
   "sv8pt5": "PRE",
   "sv9": "JTG",
+  "me1": "MEG",
+  "me2": "PFL",
   "me2pt5": "ASC",
   "me3": "POR",
+  "me4": "CRI",
 }
 
 BASIC_ENERGY_NAMES = [
