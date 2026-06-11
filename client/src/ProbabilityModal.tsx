@@ -24,9 +24,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne', 'openingHandSimulator'];
     const modeLabels = {
         'setup': 'Setup',
-        'openingHandPlusOne': 'Opening Hand + Draw for Turn',
+        'openingHandPlusOne': 'First Turn',
         'prizing': 'Prizing',
-        'openingHandSimulator': 'Opening Examples'
+        'openingHandSimulator': 'Opening Hand Examples'
     };
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
@@ -36,6 +36,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     if (mode === 'setup') {
         innerContent =
             <div className='probability-section'>
+            <div className='probability-section-description'>
+                What is the probability of seeing a basic when setting up the game?
+            </div>
                 <h4 style={{ marginTop: '10px' }}>{numBasics} Basic Pokémon</h4>
                 <Probability label="Mulligan" value={pMulligan(numBasics)} />
                 {basics.map(basic => {
@@ -50,6 +53,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
             </div>;
     } else if (mode === 'prizing') {
         innerContent = <div className='probability-section'>
+            <div className='probability-section-description'>
+                What is the probability of prizing a card?
+            </div>
             {cardList.map(card => {
                 return <div key={card.id}>
                     <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
@@ -124,6 +130,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
         </div>;
     } else if (mode === 'openingHandPlusOne') {
         innerContent = <div className='probability-section'>
+            <div className='probability-section-description'>
+                Assuming no mulligans, what is the probability of seeing a card after drawing for your first turn?
+            </div>
             {cardList.map(card => {
                 return <div key={card.id}>
                     <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>

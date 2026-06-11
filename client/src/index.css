@@ -111,6 +111,16 @@ button:focus-visible {
   width: 100%;
 }
 
+.probability-section-description {
+    text-align: left;
+    font-weight: 500;
+    margin-top: 8px;
+    padding-bottom: 6px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #ccc;
+}
+
 .probability-card-name {
   display: inline-flex;
   align-items: center;
