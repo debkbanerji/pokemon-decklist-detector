@@ -12,6 +12,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   justify-content: center;
+  margin-top: 5px;
 }
 
 .header>a {
