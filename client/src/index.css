@@ -60,6 +60,11 @@ button[disabled] {
   color: grey;
 }
 
+.home-button {
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
 @media {
   :root {
     color: #213547;

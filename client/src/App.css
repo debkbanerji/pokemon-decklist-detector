@@ -180,6 +180,7 @@ h3 {
 .modal-header-row-button {
   margin-left: 8px;
   margin-top: 1px;
+  cursor: pointer;
 }
 
 .modal-header-row-button:after {
