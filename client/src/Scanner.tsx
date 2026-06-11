@@ -326,6 +326,24 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
 
 
     useEffect(() => {
+        if (totalCards <= 0) {
+            return;
+        }
+
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = 'Changes you made may not be saved.';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [totalCards]);
+
+
+    useEffect(() => {
         if (videoRef != null) {
             const video = videoRef.current;
             video.setAttribute('autoplay', '');
