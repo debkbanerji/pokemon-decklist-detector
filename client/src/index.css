@@ -38,10 +38,10 @@ button {
   transition: border-color 0.25s;
   outline: 0.8px solid #218af3;
   background-color: #fefefe;
-}
-
-button[disabled] {
-  color: grey;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 button:hover {
@@ -51,6 +51,13 @@ button:hover {
 button:active {
   transform: translateY(1px);
   background-color: #f4f4f4;
+}
+
+button[disabled] {
+  transform: none;
+  background-color: #fefefe;
+  outline: 0.8px solid grey;
+  color: grey;
 }
 
 @media {

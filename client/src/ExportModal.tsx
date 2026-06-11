@@ -11,7 +11,7 @@ import qrcode from "qrcode-generator"
 import { toJpeg } from 'html-to-image';
 import { set } from 'rsuite/esm/internals/utils/date/index';
 import ProbabilityModal, { ProbabilityContent } from './ProbabilityModal.tsx';
-import { MdOutlineBarChart } from 'react-icons/md';
+import { MdOutlineBarChart, MdOutlineSave } from 'react-icons/md';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -1063,8 +1063,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             </div>
         </div>
         <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>
-            <button onClick={() => setShowProbabilityContent(true)}>Probability {enableSaving ? '' : ' Analysis'}</button>
-            {enableSaving && <button onClick={onSaveChangesManually}>{saveChangesButtonManuallyText}</button>}
+            <button onClick={() => setShowProbabilityContent(true)}><MdOutlineBarChart /> Probability {enableSaving ? '' : ' Analysis'}</button>
+            {enableSaving && <button onClick={onSaveChangesManually}> <MdOutlineSave /> {saveChangesButtonManuallyText}</button>}
         </div>
         <hr style={{ marginTop: 16 }} />
         <div ref={decklistImageRef} >

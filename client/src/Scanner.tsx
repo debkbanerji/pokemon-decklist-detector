@@ -6,6 +6,7 @@ import Select, { components, OptionProps } from 'react-select';
 import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
+import { MdOutlineDelete } from "react-icons/md";
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -826,11 +827,11 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                     <div className='set-info'><b>{set_code}</b> {number}</div>
                                 </div> : null}
                             <div className='update-count-row'>
-                                <span>
-                                    <button onClick={deleteCard} className='update-count-button'>&#128465;&#xFE0E;</button>
+                                <div>
+                                    <button onClick={deleteCard} className='update-count-button'><MdOutlineDelete /></button>
                                     <button onClick={decreaseCardCount} disabled={count <= 1} className='update-count-button'>-</button>
                                     <button onClick={increaseCardCount} disabled={count >= 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
-                                </span>
+                                </div>
                                 <div><b>{count}&times;</b></div>
                             </div>
                         </div>
