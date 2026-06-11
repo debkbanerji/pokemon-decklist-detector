@@ -3,7 +3,7 @@ import CardImageForID from './CardImageForID';
 import { motion, AnimatePresence } from 'motion/react';
 
 
-const MAX_HANDS = 4;
+const MAX_HANDS = 10;
 
 function OpeningHandSimulator({ cardList, cardDatabase }) {
     // Helper to flatten deck
