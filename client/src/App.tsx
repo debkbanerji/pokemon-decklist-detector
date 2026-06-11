@@ -161,9 +161,9 @@ function App() {
       {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
-        Beautiful decklists in minutes,
+        Beautiful decklists in minutes
         <br />
-        now with probability analysis!
+        Now with probability analysis!
         <br />
       </div>
       {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
