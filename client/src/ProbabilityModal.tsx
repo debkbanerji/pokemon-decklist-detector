@@ -37,7 +37,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
         innerContent =
             <div className='probability-section'>
             <div className='probability-section-description'>
-                What is the probability of seeing a basic when setting up the game?
+                What's the probability of seeing a basic when setting up the game?
             </div>
                 <h4 style={{ marginTop: '10px' }}>{numBasics} Basic Pokémon</h4>
                 <Probability label="Mulligan" value={pMulligan(numBasics)} />
@@ -54,7 +54,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     } else if (mode === 'prizing') {
         innerContent = <div className='probability-section'>
             <div className='probability-section-description'>
-                What is the probability of prizing a card?
+                What's the probability of prizing a card?
             </div>
             {cardList.map(card => {
                 return <div key={card.id}>
@@ -131,7 +131,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     } else if (mode === 'openingHandPlusOne') {
         innerContent = <div className='probability-section'>
             <div className='probability-section-description'>
-                Assuming no mulligans, what is the probability of seeing a card after drawing for your first turn?
+                Assuming no mulligans, what's the probability of seeing a card after drawing for your first turn?
             </div>
             {cardList.map(card => {
                 return <div key={card.id}>

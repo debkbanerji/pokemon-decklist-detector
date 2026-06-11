@@ -27,16 +27,17 @@ body {
 }
 
 button {
-  border-radius: 16px;
+  border-radius: 6px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #2196f3;
+  color: #218af3;
   cursor: pointer;
   transition: border-color 0.25s;
-  box-shadow: 0 1px 1px #888888;
+  outline: 0.8px solid #218af3;
+  background-color: #fefefe;
 }
 
 button[disabled] {
@@ -47,10 +48,9 @@ button:hover {
   /* border-color: #646cff; */
 }
 
-button:active,
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:active {
+  transform: translateY(1px);
+  background-color: #f4f4f4;
 }
 
 @media {
@@ -94,7 +94,7 @@ button:focus-visible {
 
 .probability-modal-mode-select-button.selected,
 .probability-modal-mode-select-button.active {
-  background-color: #64b5ff;
+  background-color: #218af3;
   color: white;
 }
 
@@ -112,13 +112,12 @@ button:focus-visible {
 }
 
 .probability-section-description {
-    text-align: left;
-    font-weight: 500;
-    margin-top: 8px;
-    padding-bottom: 6px;
-    text-align: center;
-    font-weight: 600;
-    border-bottom: 1px solid #ccc;
+  text-align: left;
+  font-weight: 500;
+  margin-top: 8px;
+  padding-bottom: 6px;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
 }
 
 .probability-card-name {
