@@ -1043,7 +1043,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 <div className='modal-header-row'>
                     <div> <a
                         className='home-button'
-                        style={{ position: 'relative', top: 0, left: 0, marginRight: 16, color: 'black' }}
+                        style={{ position: 'relative', top: 0, left: 0, marginRight: 16, color: 'black', fontSize: 20 }}
                         onClick={() => setShowProbabilityContent(false)}
                     >&#x25c0;&#xFE0E;</a></div>
                     <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>Probability Analysis</h3>

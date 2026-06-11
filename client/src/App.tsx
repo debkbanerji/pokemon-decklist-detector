@@ -154,16 +154,16 @@ function App() {
 
   return <>
     <div className="header">
-      {hasStarted ? <a className='home-button' href={window.location.origin}>&#x25c0;&#xFE0E;</a> : <span></span>}
+      {hasStarted ? <a className='home-button' href={window.location.origin} style={{ fontSize: 25 }}>&#x25c0;&#xFE0E;</a> : <span></span>}
       <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     </div>
     {hasStarted ? <ErrorBoundary>
       {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
-        Easily scan in your decklist,
+        Beautiful decklists in minutes,
         <br />
-        then export it to Email, PDF, or TCG Live
+        now with probability analysis!
         <br />
       </div>
       {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
@@ -174,7 +174,7 @@ function App() {
       <br />
       {cardDatabase != null ? <button onClick={importFromClipboard}>{clipboardButtonText}</button> : null}
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
-        <h3 className='saved-decklists-heading'>Previous Lists</h3>
+        <h3 className='saved-decklists-heading'>Saved Lists</h3>
         <div className='saved-decklists'>
           {getNestedSavedDecklists(savedDecklists).map(({
             serializedDecklist,

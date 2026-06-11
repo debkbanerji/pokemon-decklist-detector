@@ -333,6 +333,7 @@ h3 {
 
 .update-count-row {
     border-top: 0.5px solid;
+    padding-top: 5px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
