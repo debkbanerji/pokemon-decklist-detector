@@ -412,6 +412,46 @@ h3 {
     border-radius: 12px;
 }
 
+.art-swap-modal-content {
+    background-color: #fefefe;
+    margin: 8% auto;
+    padding: 18px;
+    border: 1px solid #888;
+    width: 88%;
+    border-radius: 12px;
+    max-height: 82vh;
+    overflow: auto;
+}
+
+.art-swap-modal-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.art-swap-options-grid {
+    margin-top: 2px;
+}
+
+.art-swap-options-grid>div {
+    cursor: pointer;
+}
+
+.art-swap-option-tile {
+    border: 2px solid transparent;
+    border-radius: 8px;
+}
+
+.art-swap-option-tile-selected {
+    border-color: #1b6ef3;
+    box-shadow: 0 0 0 2px rgba(27, 110, 243, 0.18);
+}
+
 .delete-modal-content>button {
     margin-left: 10px;
 }

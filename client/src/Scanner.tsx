@@ -1,12 +1,12 @@
-import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import './Scanner.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
-import Select, { components, OptionProps } from 'react-select';
+import Select from 'react-select';
 import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
-import { MdOutlineDelete } from "react-icons/md";
+import { MdOutlineDelete, MdOutlineSwapHoriz } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -207,6 +207,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon);
     const [deckName, setDeckName] = useState(startingDeckName);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isArtSwapModalOpen, setIsArtSwapModalOpen] = useState(false);
+    const [artSwapSourceOriginalIndex, setArtSwapSourceOriginalIndex] = useState(null);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
 
     const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
@@ -278,6 +280,33 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const cardNames = Object.keys(cardNameToIDs);
     const detectionKeywords = Object.keys(keywordsToCardNames);
     const cardNameOptions = useMemo(() => cardNames.map(name => { return { label: name, value: name } }), [cardNameToIDs]);
+    const mechanicallyIdenticalCardIDsByHash = useMemo(() => {
+        const result = {};
+        Object.values(cardDatabase).forEach(card => {
+            if (card?.supertype !== 'Pokémon') {
+                return;
+            }
+
+            const mechanicsKey = card.cardMechanicsHash;
+            if (mechanicsKey == null) {
+                return;
+            }
+
+            result[mechanicsKey] = (result[mechanicsKey] ?? []).concat(card.id);
+        });
+
+        Object.keys(result).forEach(key => {
+            result[key].sort((a, b) => {
+                const cardA = cardDatabase[a];
+                const cardB = cardDatabase[b];
+                return (cardA.set_code ?? '').localeCompare(cardB.set_code ?? '')
+                    || (cardA.number ?? '').localeCompare(cardB.number ?? '')
+                    || a.localeCompare(b);
+            });
+        });
+
+        return result;
+    }, [cardDatabase]);
 
     function setCardNameWrapped(cardName) {
         setShowBasicEnergySelector(false); // clear this
@@ -579,6 +608,42 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         }, 1300);
     }
 
+    const swapCardArt = (sourceOriginalIndex, targetCardID) => {
+        const targetCard = cardDatabase[targetCardID];
+        if (targetCard == null || targetCard.supertype !== 'Pokémon') {
+            return;
+        }
+
+        setCardInfoList(previousCardInfoList => {
+            const nextCardInfoList = [...previousCardInfoList];
+            const sourceCardInfo = nextCardInfoList[sourceOriginalIndex];
+            if (sourceCardInfo == null || sourceCardInfo.id === targetCardID) {
+                return previousCardInfoList;
+            }
+
+            const existingTargetIndex = nextCardInfoList.findIndex((item, index) => index !== sourceOriginalIndex && item != null && item.id === targetCardID);
+            if (existingTargetIndex >= 0) {
+                nextCardInfoList[existingTargetIndex] = {
+                    ...nextCardInfoList[existingTargetIndex],
+                    count: nextCardInfoList[existingTargetIndex].count + sourceCardInfo.count,
+                };
+                nextCardInfoList[sourceOriginalIndex] = null;
+            } else {
+                nextCardInfoList[sourceOriginalIndex] = {
+                    ...sourceCardInfo,
+                    ...targetCard,
+                    count: sourceCardInfo.count,
+                    originalIndex: sourceCardInfo.originalIndex,
+                };
+            }
+
+            return nextCardInfoList;
+        });
+
+        setIsArtSwapModalOpen(false);
+        setArtSwapSourceOriginalIndex(null);
+    }
+
     const cancelScan = () => {
         setShowBasicEnergySelector(false); // clear this
         if (currentDetectedCardID != null) {
@@ -728,10 +793,10 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             <h3> Or, select the art directly:</h3>
             <div className='candidate-card-ids'>
                 {candidateCardIDs.map((id, index) => {
-                    return <div onClick={() => {
+                    return <motion.div onClick={() => {
                         setCurrentDetectedCardID(id);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }} key={id}>
+                    }} whileTap={{ y: 4 }} key={id}>
                         <motion.div
                             initial={{ opacity: 0, x: -400, scale: 0.5 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -740,7 +805,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                         >
                             <CardImageForID id={id} showSetInfo={true} cardDatabase={cardDatabase} />
                         </motion.div>
-                    </div>
+                    </motion.div>
                 })}
             </div>
         </div> : null}
@@ -779,7 +844,10 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         <div className='scans-feed'>
             <motion.div>
                 {cardInfoListNonNull.map((cardInfo, index) => {
-                    const { id, name, number, set_code, set_id, set_name, name_without_prefix_and_postfix, supertype, count, originalIndex } = cardInfo;
+                    const { id, name, number, set_code, supertype, count, originalIndex } = cardInfo;
+                    const mechanicsKey = cardInfo.cardMechanicsHash;
+                    const artSwapCandidateIDs = supertype === 'Pokémon' && mechanicsKey != null ? (mechanicallyIdenticalCardIDsByHash[mechanicsKey] ?? []) : [];
+                    const canSwapArt = artSwapCandidateIDs.length > 1;
 
                     const deleteCard = () => {
                         setCardInfoList(cardInfoList.map((item, index) => {
@@ -831,8 +899,15 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                     <button onClick={deleteCard} className='update-count-button'><MdOutlineDelete /></button>
                                     <button onClick={decreaseCardCount} disabled={count <= 1} className='update-count-button'>-</button>
                                     <button onClick={increaseCardCount} disabled={count >= 4 && !BASIC_ENERGY_NAMES.includes(name)} className='update-count-button'>+</button>
+                                    {canSwapArt ?
+                                        <button onClick={() => {
+                                            setArtSwapSourceOriginalIndex(originalIndex);
+                                            setIsArtSwapModalOpen(true);
+                                        }} className='update-count-button'><MdOutlineSwapHoriz /></button> : null}
                                 </div>
-                                <div><b>{count}&times;</b></div>
+                                <div>
+                                    <b>{count}&times;</b>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -854,6 +929,47 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
                                 previousDecklistTimestamp={startingDecklistTimestamp}
                                 onClose={() => setIsExportModalOpen(false)}
                             />
+                        </div>
+                    </motion.div>
+                </div> : null
+        }
+        {
+            isArtSwapModalOpen && artSwapSourceOriginalIndex != null && cardInfoList[artSwapSourceOriginalIndex] != null ?
+                <div className="modal" onClick={(event) => {
+                    if (event.target === event.currentTarget) {
+                        setIsArtSwapModalOpen(false);
+                        setArtSwapSourceOriginalIndex(null);
+                    }
+                }}>
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <div className="art-swap-modal-content">
+                            <div className='art-swap-modal-header'>
+                                <b>Swap Art</b>
+                                <div onClick={() => {
+                                    setIsArtSwapModalOpen(false);
+                                    setArtSwapSourceOriginalIndex(null);
+                                }} className='modal-header-row-button'>
+                                </div>
+                            </div>
+                            <div className='candidate-card-ids art-swap-options-grid'>
+                                {(mechanicallyIdenticalCardIDsByHash[cardInfoList[artSwapSourceOriginalIndex].cardMechanicsHash] ?? []).map(cardID => {
+                                    const isCurrentArt = cardInfoList[artSwapSourceOriginalIndex].id === cardID;
+                                    return <div
+                                        key={cardID}
+                                        className={'art-swap-option-tile' + (isCurrentArt ? ' art-swap-option-tile-selected' : '')}
+                                        onClick={() => swapCardArt(artSwapSourceOriginalIndex, cardID)}>
+                                        <motion.div
+                                            initial={{ opacity: 0, x: -400, scale: 0.5 }}
+                                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                                            exit={{ opacity: 0, x: 200, scale: 1.2 }}
+                                            transition={{ duration: 0.6, type: "spring" }}
+                                            whileTap={{ y: 4 }}
+                                        >
+                                            <CardImageForID id={cardID} showSetInfo={true} cardDatabase={cardDatabase} />
+                                        </motion.div>
+                                    </div>;
+                                })}
+                            </div>
                         </div>
                     </motion.div>
                 </div> : null

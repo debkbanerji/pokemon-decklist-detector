@@ -8,6 +8,7 @@ type CardInfo = {
     set_code?: string;
     number?: string;
     evolves_from?: string | null;
+    cardMechanicsHash?: string;
 };
 
 type CardDatabase = Record<string, CardInfo>;

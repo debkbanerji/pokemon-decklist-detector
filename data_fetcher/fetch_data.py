@@ -6,6 +6,7 @@ import re
 import shutil
 import json
 import math
+import hashlib
 from PIL import Image, ImageDraw, ImageOps
 
 DATA_DIRECTORY = './data'
@@ -59,6 +60,60 @@ def get_processed_name(name):
     if basic_energy_regex.match(name):
         return re.sub(basic_energy_replacement_regex, "", name)
     return name
+
+
+def get_card_mechanics_hash(card):
+    # Hash the mechanics that determine game behavior so alternate arts can be swapped safely.
+    attacks = card.get('attacks') or []
+    abilities = card.get('abilities') or []
+    weaknesses = card.get('weaknesses') or []
+    resistances = card.get('resistances') or []
+    retreat_cost = card.get('retreatCost') or []
+
+    attack_names = sorted([
+        attack.get('name')
+        for attack in attacks
+        if attack is not None and attack.get('name') is not None
+    ])
+    if len(attack_names) == 0 and card.get('concatenated_attack_names') is not None:
+        attack_names = sorted([
+            attack_name
+            for attack_name in str(card.get('concatenated_attack_names')).split('_')
+            if attack_name != ''
+        ])
+
+    ability_names = sorted([
+        ability.get('name')
+        for ability in abilities
+        if ability is not None and ability.get('name') is not None
+    ])
+
+    weakness_values = sorted([
+        f"{weakness.get('type')}|{weakness.get('value')}"
+        for weakness in weaknesses
+        if weakness is not None and weakness.get('type') is not None
+    ])
+
+    resistance_values = sorted([
+        f"{resistance.get('type')}|{resistance.get('value')}"
+        for resistance in resistances
+        if resistance is not None and resistance.get('type') is not None
+    ])
+
+    payload = {
+        "name": get_processed_name(card.get('name')),
+        "hp": card.get('hp'),
+        "ability_names": ability_names,
+        "attack_names": attack_names,
+        "retreat_cost": sorted([str(cost) for cost in retreat_cost if cost is not None]),
+        "types": sorted([str(card_type) for card_type in (card.get('types') or []) if card_type is not None]),
+        "weaknesses": weakness_values,
+        "resistances": resistance_values,
+        "regulation_mark": card.get('regulationMark') if card.get('regulationMark') is not None else card.get('regulation_mark'),
+    }
+
+    serialized = json.dumps(payload, sort_keys=True, separators=(',', ':'))
+    return hashlib.sha1(serialized.encode('utf-8')).hexdigest()
 
 
 set_id_to_official_code_overrides = {
@@ -146,6 +201,7 @@ def get_cards(): # Returns dataframe
                 # weird hack - we only use this to match between cards in order to warn users about similar cards that *may* only differ by set info
                 "concatenated_attack_names": 
                     '_'.join([attack.get('name') for attack in card.get('attacks')]) if card.get('attacks') and len(card.get('attacks')) > 0 else None,
+                "cardMechanicsHash": get_card_mechanics_hash(card),
             } for card in cards_in_set
         ]
         dfs_list.append(pd.DataFrame(processed_cards))
@@ -1174,7 +1230,11 @@ def get_cards(): # Returns dataframe
             lambda row: get_rarity_for_mismatch_correction(row['id'], row['rarity']),
             axis=1
         ),
-        evolves_from = None
+        evolves_from = None,
+        cardMechanicsHash = manual_fixes_df.apply(
+            lambda row: get_card_mechanics_hash(row),
+            axis=1
+        )
     )
     dfs_list.append(manual_fixes_df)
 
@@ -1317,17 +1377,13 @@ def get_rarity_for_mismatch_correction(card_id, rarity):
 def add_similar_card_ids_to_df(cards_df):
     # function that adds a column to the df to help tell the user if they might be mis-scanning a card
     
-    # TODO: deal with promo 'psuedo' rarities
-    
-    # group together cards with the same name, rarity, and concatenated_attack_names
-    # if these 3 match, the cards are very likely to look like one another
+    # group together cards with the same mechanics hash
+    # if these match, the cards are mechanically identical and can safely swap art
     cards_df = cards_df.assign(
         similar_card_ids = cards_df.apply(
             lambda row: cards_df[
-                (row['concatenated_attack_names'] is not None) &
-                (cards_df['concatenated_attack_names'] == row['concatenated_attack_names']) &
-                (cards_df['name'] == row['name']) &                
-                (cards_df['rarity_for_mismatch_correction'] == row['rarity_for_mismatch_correction']) & 
+                (row['cardMechanicsHash'] is not None) &
+                (cards_df['cardMechanicsHash'] == row['cardMechanicsHash']) &
                 (cards_df['id'] != row['id'])
             ]['id'].tolist(),
             axis=1
