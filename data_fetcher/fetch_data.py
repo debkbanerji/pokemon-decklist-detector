@@ -60,6 +60,7 @@ def get_processed_name(name):
         return re.sub(basic_energy_replacement_regex, "", name)
     return name
 
+
 set_id_to_official_code_overrides = {
   "swshp": "PR", # sword and shield promos
   "svp": "SVP", # scarlet and violet promos
@@ -141,6 +142,7 @@ def get_cards(): # Returns dataframe
                 "small_image_url": card.get('images', {}).get('small'),
                 "types": card.get('types'),
                 "national_pokedex_numbers": card.get('nationalPokedexNumbers'),
+                "evolves_from": get_processed_name(card.get('evolvesFrom')) if card.get('evolvesFrom') is not None else None,
                 # weird hack - we only use this to match between cards in order to warn users about similar cards that *may* only differ by set info
                 "concatenated_attack_names": 
                     '_'.join([attack.get('name') for attack in card.get('attacks')]) if card.get('attacks') and len(card.get('attacks')) > 0 else None,
@@ -1171,7 +1173,8 @@ def get_cards(): # Returns dataframe
         rarity_for_mismatch_correction = manual_fixes_df.apply(
             lambda row: get_rarity_for_mismatch_correction(row['id'], row['rarity']),
             axis=1
-        )
+        ),
+        evolves_from = None
     )
     dfs_list.append(manual_fixes_df)
 

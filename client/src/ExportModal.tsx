@@ -12,6 +12,7 @@ import { toJpeg } from 'html-to-image';
 import { set } from 'rsuite/esm/internals/utils/date/index';
 import ProbabilityModal, { ProbabilityContent } from './ProbabilityModal.tsx';
 import { MdOutlineBarChart, MdOutlineSave } from 'react-icons/md';
+import { sortDecklistCards } from './DecklistSort.ts';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -367,15 +368,13 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }
     });
 
-    const pokemon = Object.keys(pokemonDict).map(id => [id, pokemonDict[id]]);
+    const pokemon = sortDecklistCards(Object.keys(pokemonDict).map(id => ({
+        id,
+        count: pokemonDict[id],
+        ...cardDatabase[id]
+    })), cardDatabase).map(card => [card.id, card.count]);
     const trainers = Object.keys(trainerDict).map(id => [id, trainerDict[id]]);
     const energies = Object.keys(energyDict).map(id => [id, energyDict[id]]);
-
-    pokemon.sort((a, b) => {
-        const card1 = cardDatabase[a[0]];
-        const card2 = cardDatabase[b[0]];
-        return (b[1] - a[1]) || card1.name.localeCompare(card2.name);
-    });
 
     const pokemonNameToSpriteUrl = {};
     pokemon.forEach((pair) => {

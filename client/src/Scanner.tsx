@@ -7,6 +7,7 @@ import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { MdOutlineDelete } from "react-icons/md";
+import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -20,16 +21,6 @@ const EDGE_CASE_REGEXES = [
     [/(ciphermaniac)/i, 'Ciphermaniac\'s Codebreaking'],
     [/(lono)/i, 'Iono']
 ]
-
-function getCardTypeSortWeight(card) {
-    if (card.supertype === 'Pokémon') {
-        return 0;
-    } else if (card.supertype === 'Trainer') {
-        return 1;
-    } else {
-        return 2;
-    }
-}
 
 function isCardSecretRare(card) {
     const number = parseInt(card.number) || 0;
@@ -220,16 +211,7 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
 
     const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
     const latestCard = cardInfoList.length > 0 ? cardInfoList[cardInfoList.length - 1] : null;
-    const cardInfoListNonNull = cardInfoList.filter(item => item != null).sort((a, b) => {
-        let result = getCardTypeSortWeight(a) - getCardTypeSortWeight(b);
-        if (result === 0) {
-            result = b.count - a.count;
-        }
-        if (result === 0) {
-            result = a.name.localeCompare(b.name);
-        }
-        return result;
-    });
+    const cardInfoListNonNull = sortDecklistCards(cardInfoList.filter(item => item != null), cardDatabase);
     const totalCards = cardInfoListNonNull.reduce((a, b) => a + (b.count), 0);
 
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);
