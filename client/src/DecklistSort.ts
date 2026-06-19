@@ -9,6 +9,7 @@ type CardInfo = {
     number?: string;
     evolves_from?: string | null;
     cardMechanicsHash?: string;
+    rarity_order?: number;
 };
 
 type CardDatabase = Record<string, CardInfo>;

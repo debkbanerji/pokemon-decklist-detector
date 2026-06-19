@@ -1248,6 +1248,7 @@ def get_cards(): # Returns dataframe
         'Uncommon': 2,
         'Rare': 3,
         'Rare Holo': 4,
+        'Double Rare': 5,
     }
     concatenated_df['rarity_order'] = concatenated_df['rarity'].map(rarity_order).fillna(11)  # Fill unspecified rarities with a high number
     concatenated_df = concatenated_df.sort_values(by=['rarity_order'])

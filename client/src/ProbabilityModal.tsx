@@ -207,9 +207,7 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
                 </div>
             </div>
         </div>
-        <DecklistImage decklist={cardList} cardDatabase={cardDatabase}
-            onAllCardImagesLoaded={() => { }}
-        />
+        <DecklistImage decklist={cardList} cardDatabase={cardDatabase} />
         <ProbabilityContent cardList={cardList} cardDatabase={cardDatabase} />
     </div>;
 }

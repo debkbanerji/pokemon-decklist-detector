@@ -837,7 +837,10 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
         <h3>Scanned Cards: {totalCards}</h3>
         {totalCards > 0 ?
             <div>
-                <DecklistImage decklist={cardInfoListNonNull} cardDatabase={cardDatabase} />
+                <DecklistImage
+                    decklist={cardInfoListNonNull}
+                    cardDatabase={cardDatabase}
+                />
                 <h4 style={{ marginBottom: 7, marginTop: 14 }}>Edit</h4>
             </div> : null
         }

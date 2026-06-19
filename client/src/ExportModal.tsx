@@ -1,15 +1,13 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
-import Select, { components, OptionProps } from 'react-select';
+import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
-import { toJpeg } from 'html-to-image';
-import { set } from 'rsuite/esm/internals/utils/date/index';
 import ProbabilityModal, { ProbabilityContent } from './ProbabilityModal.tsx';
 import { MdOutlineBarChart, MdOutlineSave } from 'react-icons/md';
 import { sortDecklistCards } from './DecklistSort.ts';
@@ -320,9 +318,6 @@ function processStringForPDFCompatibility(str) {
 function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, onClose }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
-    const decklistImageRef = useRef<HTMLDivElement>(null);
-    const [canDownloadDecklistImage, setCanDownloadDecklistImage] = useState(false);
-    const [isDownloadingDecklistImage, setIsDownloadingDecklistImage] = useState(false);
     const [showProbabilityContent, setShowProbabilityContent] = useState(false);
 
     useEffect(() => {
@@ -1066,15 +1061,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             {enableSaving && <button onClick={onSaveChangesManually}> <MdOutlineSave /> {saveChangesButtonManuallyText}</button>}
         </div>
         <hr style={{ marginTop: 16 }} />
-        <div ref={decklistImageRef} >
-            <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase}
-                onAllCardImagesLoaded={
-                    () => {
-                        setCanDownloadDecklistImage(true);
-                    }
-                }
-            />
-        </div>
+        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <br />
         {
             totalCountValid ?
@@ -1195,27 +1182,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </button></a>
                 <button type="button" onClick={onCopyToClipboard}>
                     {clipboardButtonText}
-                </button>
-                <button type="button" disabled={!canDownloadDecklistImage || isDownloadingDecklistImage}
-                    onClick={
-                        () => {
-                            setIsDownloadingDecklistImage(true);
-                            toJpeg(decklistImageRef.current, { cacheBust: true, quality: 0.9 }) // without lowering the quality, the download fails on iOS for some reason
-                                .then((dataUrl) => {
-                                    const link = document.createElement('a')
-                                    link.download = `${(deckName ?? 'decklist').replaceAll(' ', '-').replaceAll('/', '-')}.jpeg`;
-                                    link.href = dataUrl;
-                                    link.click();
-                                    setIsDownloadingDecklistImage(false);
-                                })
-                                .catch((err) => {
-                                    console.error(err);
-                                    setIsDownloadingDecklistImage
-                                })
-                        }
-                    }
-                >
-                    {isDownloadingDecklistImage ? 'Preparing...' : 'Download Image'}
                 </button>
             </div>
             <div className='export-pdf-field'>
