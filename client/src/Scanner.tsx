@@ -2,11 +2,13 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import './Scanner.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
+import { addDecklistToDB, seralizeDecklist } from './StorageManager';
 import Select from 'react-select';
 import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
-import { MdOutlineDelete, MdOutlineSwapHoriz } from "react-icons/md";
+import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
+import { MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -210,6 +212,8 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     const [isArtSwapModalOpen, setIsArtSwapModalOpen] = useState(false);
     const [artSwapSourceOriginalIndex, setArtSwapSourceOriginalIndex] = useState(null);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
+    const [saveChangesButtonText, setSaveChangesButtonText] = useState('Save Changes');
+    const [lastSavedDecklistTimestamp, setLastSavedDecklistTimestamp] = useState(startingDecklistTimestamp);
 
     const [cardInfoList, setCardInfoList] = useState(startingDecklist); // the result
     const latestCard = cardInfoList.length > 0 ? cardInfoList[cardInfoList.length - 1] : null;
@@ -307,6 +311,33 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
 
         return result;
     }, [cardDatabase]);
+
+    function getCoverPokemonSpriteUrl() {
+        if (!coverPokemon) {
+            return '';
+        }
+
+        const coverPokemonCard = Object.values(cardDatabase).find(card => card.name_without_prefix_and_postfix === coverPokemon);
+        return coverPokemonCard != null ? getPokemonSpriteUrlForCard(coverPokemonCard) : '';
+    }
+
+    async function saveChanges() {
+        setSaveChangesButtonText('Saving...');
+        const saveTimestamp = Date.now();
+        await addDecklistToDB(
+            saveTimestamp,
+            deckName,
+            seralizeDecklist(cardInfoListNonNull.map(cardInfo => ({ cardInfo }))),
+            getCoverPokemonSpriteUrl(),
+            coverPokemon,
+            lastSavedDecklistTimestamp
+        );
+        setLastSavedDecklistTimestamp(saveTimestamp);
+        setSaveChangesButtonText('Saved!');
+        setTimeout(() => {
+            setSaveChangesButtonText('Save Changes');
+        }, 1000);
+    }
 
     function setCardNameWrapped(cardName) {
         setShowBasicEnergySelector(false); // clear this
@@ -828,12 +859,21 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
             </div> : null
         }
         <hr />
-        <button onClick={() => {
-            setIsExportModalOpen(true);
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 100);
-        }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export / Save</button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button onClick={() => {
+                setIsExportModalOpen(true);
+                setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+            }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export</button>
+            <button
+                onClick={saveChanges}
+                className='scanner-save-changes-button'
+                disabled={cardInfoListNonNull.length === 0 || saveChangesButtonText === 'Saving...'}
+            >
+                <MdOutlineSave className='scanner-save-changes-button-icon' /> {saveChangesButtonText}
+            </button>
+        </div>
         <h3>Scanned Cards: {totalCards}</h3>
         {totalCards > 0 ?
             <div>
