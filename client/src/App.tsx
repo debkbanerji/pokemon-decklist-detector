@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Scanner from './Scanner.tsx';
+import DecklistCreator from './DecklistCreator.tsx';
 import ErrorBoundary from './ErrorBoundary.tsx';
 import ExportModal from './ExportModal.tsx';
 import DecklistRow from './DecklistRow.tsx';
@@ -158,7 +158,7 @@ function App() {
       <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     </div>
     {hasStarted ? <ErrorBoundary>
-      {cardDatabase != null ? <Scanner cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
+      {cardDatabase != null ? <DecklistCreator cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
         Beautiful decklists in minutes

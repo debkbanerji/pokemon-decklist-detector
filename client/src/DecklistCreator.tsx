@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import './Scanner.css';
+import './DecklistCreator.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import { addDecklistToDB, seralizeDecklist } from './StorageManager';
@@ -198,7 +198,7 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     }
 }
 
-function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp }) {
+function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     // const tesseractDebugCanvasRef = useRef(null);
@@ -1020,4 +1020,4 @@ function Scanner({ cardDatabase, startingDecklist, startingDeckName, startingCov
     </div >;
 }
 
-export default Scanner
+export default DecklistCreator
