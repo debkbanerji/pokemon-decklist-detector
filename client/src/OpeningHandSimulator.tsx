@@ -6,6 +6,10 @@ import { motion, AnimatePresence } from 'motion/react';
 const MAX_HANDS = 10;
 
 function OpeningHandSimulator({ cardList, cardDatabase }) {
+    function isBasicPokemon(card) {
+        return card.supertype === 'Pokémon' && card.subtypes.includes('Basic');
+    }
+
     // Helper to flatten deck
     const deck = useMemo(() => {
         const d = [];
@@ -19,9 +23,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
 
     function getNewHand() {
         // Check if deck has at least one basic pokemon
-        const hasBasicInDeck = deck.some(card =>
-            card.supertype === 'Pokémon' && card.subtypes.includes('Basic')
-        );
+        const hasBasicInDeck = deck.some(isBasicPokemon);
 
         if (!hasBasicInDeck) {
             throw new Error('Deck must contain at least one Basic Pokémon');
@@ -46,9 +48,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
             drawForTurn = shuffled[13];
 
             // Check if hand has at least one basic pokemon
-            hasBasic = hand.some(card =>
-                card.supertype === 'Pokémon' && card.subtypes.includes('Basic')
-            );
+            hasBasic = hand.some(isBasicPokemon);
         }
 
         return {

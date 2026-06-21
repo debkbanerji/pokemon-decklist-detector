@@ -101,7 +101,20 @@ button[disabled] {
 }
 
 .probability-modal-mode-select-button {
-  margin: 3px 6px 6px;
+  width: 100%;
+  margin: 0;
+}
+
+.probability-modal-mode-select-grid {
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .probability-modal-mode-select-button.selected,

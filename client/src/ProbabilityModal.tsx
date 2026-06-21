@@ -38,9 +38,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne', 'openingHandSimulator'];
     const modeLabels = {
         'setup': 'Setup',
-        'openingHandPlusOne': 'First Turn',
+        'openingHandPlusOne': 'Turn 1',
         'prizing': 'Prizing',
-        'openingHandSimulator': 'Opening Hand Examples'
+        'openingHandSimulator': 'Examples'
     };
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
@@ -146,7 +146,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     } else if (mode === 'openingHandPlusOne') {
         innerContent = <div className='probability-section'>
             <div className='probability-section-description'>
-                Assuming no mulligans, what's the probability of seeing a card after drawing for your first turn?
+                Assuming no mulligans, what's the probability of seeing a card by your turn 1 draw?
             </div>
             {cardList.map(card => {
                 return <div key={card.id}>
@@ -195,7 +195,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     }
 
     return <div className='modal-content'>
-        <div style={{ width: "100%", marginTop: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
+        <div className='probability-modal-mode-select-grid'>
             {modes.map(m =>
                 <button
                     key={m}
