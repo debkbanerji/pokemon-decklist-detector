@@ -146,13 +146,39 @@ button[disabled] {
 }
 
 .probability-card-name {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   width: 100%;
   font-size: 1.125rem;
   margin: 8px 0 4px 0;
   font-weight: 550;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.probability-card-name-prefix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.probability-card-name-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.probability-card-name-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.probability-card-name-suffix {
+  flex: 0 0 auto;
 }
 
 .probability-card-name-count {

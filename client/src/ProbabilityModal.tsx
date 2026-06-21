@@ -33,6 +33,22 @@ function Probability({ label, value }) {
     </div>;
 }
 
+function ProbabilityCardName({ card }) {
+    const suffix = card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : '';
+
+    return <div className="probability-card-name">
+        <span className='probability-card-name-prefix'>
+            <span className='probability-card-name-count'>{card.count}</span>
+            <span>&times;</span>
+            <span className='probability-card-name-icon'>
+                <CardPreviewIcon cardInfo={card} />
+            </span>
+        </span>
+        <span className='probability-card-name-title'>{card.name}</span>
+        {suffix ? <span className='probability-card-name-suffix'>{suffix}</span> : null}
+    </div>;
+}
+
 // ProbabilityContent: the main content, no modal wrapper
 export function ProbabilityContent({ cardList, cardDatabase }) {
     const modes = ['setup', 'prizing', 'openingHandPlusOne', 'openingHandSimulator'];
@@ -58,7 +74,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                 <Probability label="Mulligan" value={pMulligan(numBasics)} />
                 {basics.map(basic => {
                     return <div key={basic.id}>
-                        <div className="probability-card-name"><div className='probability-card-name-count'>{basic.count}</div> &times; <CardPreviewIcon cardInfo={basic} /> {basic.name} {basic.supertype === 'Pokémon' ? `${basic.set_code} ${basic.number}` : ''}</div>
+                        <ProbabilityCardName card={basic} />
                         <div>
                             <Probability label={"In Starting 7"} value={pBasicInStartingHand(basic.count, numBasics)} />
                             <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
@@ -73,7 +89,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
             </div>
             {cardList.map(card => {
                 return <div key={card.id}>
-                    <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
+                    <ProbabilityCardName card={card} />
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
@@ -150,7 +166,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
             </div>
             {cardList.map(card => {
                 return <div key={card.id}>
-                    <div className="probability-card-name"><div className='probability-card-name-count'>{card.count}</div> &times; <CardPreviewIcon cardInfo={card} /> {card.name} {card.supertype === 'Pokémon' ? `${card.set_code} ${card.number}` : ''}</div>
+                    <ProbabilityCardName card={card} />
                     <div>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
