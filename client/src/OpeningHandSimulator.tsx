@@ -29,7 +29,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
 
         let hand;
         let drawForTurn;
-        let prizes
+        let prizes;
         let hasBasic = false;
 
         // Keep drawing until we get a hand with at least one basic
@@ -42,8 +42,8 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
             }
             // Draw 7 cards
             hand = shuffled.slice(0, 7);
-            drawForTurn = shuffled[7];
-            prizes = shuffled.slice(8, 13);
+            prizes = shuffled.slice(7, 13);
+            drawForTurn = shuffled[13];
 
             // Check if hand has at least one basic pokemon
             hasBasic = hand.some(card =>
@@ -51,13 +51,17 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
             );
         }
 
-        return hand;
+        return {
+            openingHand: hand,
+            drawForTurn,
+            prizes,
+        };
     }
 
     const [hands, setHands] = useState(() => [
         ...Array.from({ length: MAX_HANDS }, (_, i) => ({
             id: i + 1,
-            cards: getNewHand(),
+            example: getNewHand(),
         }))
     ]);
 
@@ -66,7 +70,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
         const newHandId = (hands.length > 0 ? hands[hands.length - 1].id : 0) + 1;
 
         // Add new hand to the end of the list
-        let updatedHands = [...hands, { id: newHandId, cards: newHand }];
+        let updatedHands = [...hands, { id: newHandId, example: newHand }];
 
         // If we exceed MAX_HANDS, remove the first one
         if (updatedHands.length > MAX_HANDS) {
@@ -94,15 +98,41 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
                                 transition={{ duration: 0.6, type: "spring" }}
                                 exit={{ opacity: 0, x: 400, scale: 0.5 }}
                                 style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: reversedIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
-                                <div style={{ display: 'flex', gap: '6px', maxWidth: '600px', flexDirection: 'row' }}>
-                                    {handObj.cards.map((card, cardIndex) => (
-                                        <div key={cardIndex} style={{
-                                            flex: 1,
-                                            minWidth: 0
-                                        }}>
-                                            <CardImageForID id={card.id} cardDatabase={cardDatabase} />
+                                <div className="opening-hand-example">
+                                    <div className="opening-hand-example-section opening-hand-main-section">
+                                        <div className="opening-hand-example-label">Opening Hand</div>
+                                        <div className="opening-hand-example-panel">
+                                            <div className="opening-hand-card-row">
+                                                {handObj.example.openingHand.map((card, cardIndex) => (
+                                                    <div key={cardIndex} className="opening-hand-card-slot">
+                                                        <CardImageForID id={card.id} cardDatabase={cardDatabase} />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    ))}
+                                    </div>
+                                    <div className="opening-hand-example-sidebar">
+                                        <div className="opening-hand-example-section opening-hand-prizes-section">
+                                            <div className="opening-hand-example-label">Prizes</div>
+                                            <div className="opening-hand-example-panel">
+                                                <div className="opening-hand-prize-grid">
+                                                    {handObj.example.prizes.map((card, cardIndex) => (
+                                                        <div key={cardIndex} className="opening-hand-prize-slot">
+                                                            <CardImageForID id={card.id} cardDatabase={cardDatabase} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="opening-hand-example-section opening-hand-draw-section">
+                                            <div className="opening-hand-example-label">Draw</div>
+                                            <div className="opening-hand-example-panel">
+                                                <div className="opening-hand-draw-slot">
+                                                    <CardImageForID id={handObj.example.drawForTurn.id} cardDatabase={cardDatabase} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         );

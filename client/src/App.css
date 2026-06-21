@@ -206,3 +206,100 @@ hr {
   margin-bottom: 16px;
   height: 56px;
 }
+
+.opening-hand-example {
+  --section-gap: 12px;
+  --card-gap: 6px;
+  --panel-chrome: 6px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, calc((((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) * 2) + var(--card-gap) + var(--panel-chrome)))
+    minmax(0, calc((((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) * 3) + (2 * var(--card-gap)) + var(--panel-chrome)))
+    minmax(0, calc(((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) + var(--panel-chrome)));
+  grid-template-areas: "prizes hand draw";
+  gap: var(--section-gap);
+  align-items: start;
+}
+
+.opening-hand-example-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opening-hand-example-label {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.opening-hand-example-panel {
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  background: #2b2b2b;
+}
+
+.opening-hand-prizes-section {
+  grid-area: prizes;
+}
+
+.opening-hand-main-section {
+  grid-area: hand;
+}
+
+.opening-hand-draw-section {
+  grid-area: draw;
+}
+
+.opening-hand-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--card-gap);
+  width: 100%;
+}
+
+.opening-hand-card-slot {
+  min-width: 0;
+}
+
+.opening-hand-example-sidebar {
+  display: contents;
+}
+
+.opening-hand-draw-slot {
+  width: 100%;
+}
+
+.opening-hand-prize-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--card-gap);
+  width: 100%;
+}
+
+.opening-hand-prize-slot {
+  min-width: 0;
+}
+
+.opening-hand-card-slot:nth-child(7) {
+  grid-column: 1;
+}
+
+@media (max-width: 700px) {
+  .opening-hand-example {
+    --section-gap: 8px;
+    --card-gap: 4px;
+  }
+
+  .opening-hand-example-section {
+    min-width: 0;
+  }
+
+  .opening-hand-example-label {
+    font-size: 0.82rem;
+  }
+
+  .opening-hand-card-row {
+  }
+}
