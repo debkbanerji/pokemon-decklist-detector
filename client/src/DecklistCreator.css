@@ -363,6 +363,11 @@ h3 {
     height: 56px;
 }
 
+.export-modal-open-button-icon {
+    font-size: 1.05em;
+    line-height: 1;
+}
+
 .export-modal-open-button-success {
     background-color: rgb(15, 149, 0);
     color: white;

@@ -8,7 +8,7 @@ import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
-import { MdCameraAlt, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
+import { MdCameraAlt, MdIosShare, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -970,7 +970,9 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 setTimeout(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 100);
-            }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={cardInfoListNonNull.length === 0}>Export</button>
+            }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={cardInfoListNonNull.length === 0}>
+                <MdIosShare className='export-modal-open-button-icon' /> Export
+            </button>
             <button
                 onClick={saveChanges}
                 className='scanner-save-changes-button'
