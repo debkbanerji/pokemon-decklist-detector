@@ -77,7 +77,7 @@ function DecklistImage({
             </div>)}
         </div>
         <div className='decklist-image-force-low-rarity-row'>
-            <span className='decklist-image-force-low-rarity-label'>Show low rarity</span>
+            <span className='decklist-image-force-low-rarity-label'>Show min rarity</span>
             <label className={`toggle-switch ${forceLowRarity ? 'checked' : ''}`}>
                 <input
                     className="toggle-input"
@@ -87,7 +87,7 @@ function DecklistImage({
                         const checked = (e.target as HTMLInputElement).checked;
                         setForceLowRarity(checked);
                     }}
-                    aria-label="Force low rarity decklist image"
+                    aria-label="Force min rarity decklist image"
                 />
                 <span className="toggle-track" aria-hidden="true">
                     <span className="toggle-knob" />
