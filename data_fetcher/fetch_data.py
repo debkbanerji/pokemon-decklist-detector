@@ -1,12 +1,14 @@
 import pandas as pd
 import urllib
 import urllib.request
+import urllib.parse
 import os
 import re
 import shutil
 import json
 import math
 import hashlib
+import html
 from PIL import Image, ImageDraw, ImageOps
 
 DATA_DIRECTORY = './data'
@@ -44,15 +46,23 @@ sprite_url_replacement_regex = re.compile(r"(\'|\.|:)", re.IGNORECASE)
 
 owner_replacement_regex = re.compile(r"^((N|Iono|Lillie|Hop|Marnie|Steven|Arven|Misty|Ethan|Cynthia|Team Rocket|Erika|Larry)'s )*", re.IGNORECASE)
 
+
+def normalize_apostrophes_in_card_text(value):
+    if value is None:
+        return None
+    return value.replace("’", "'")
+
 # If the card is a pokemon, remove the owner name from the beginning
 # Leave in owner names for trainers
 # Note that the owner name is part of the card name for decklist purposes, so should not always be stripped out
 def get_maybe_trainer_removed_name(name, supertype):
+    name = normalize_apostrophes_in_card_text(name)
     return re.sub(owner_replacement_regex, '', name) if supertype == 'Pokémon' else name
 
 
 # Does basic name processing, but does not remove prefix/postfixes that should be part of the core name
 def get_processed_name(name):
+    name = normalize_apostrophes_in_card_text(name)
     if professors_research_named_regex.match(name):
         return "Professor's Research"
     if boss_orders_named_regex.match(name):
@@ -158,6 +168,356 @@ def convert_int_or_infinity(s):
     return i
 
 
+PROMO_SET_CONFIG = {
+    "svp": {
+        "set_code": "SVP",
+        "set_name": "Scarlet & Violet Black Star Promos",
+        "set_slug": "scarlet-violet-promos",
+    },
+    "mep": {
+        "set_code": "MEP",
+        "set_name": "Mega Evolution Black Star Promos",
+        "set_slug": "mega-evolution-promos",
+    },
+}
+
+PROMO_TYPE_SYMBOL_TO_NAME = {
+    "G": "Grass",
+    "R": "Fire",
+    "W": "Water",
+    "L": "Lightning",
+    "P": "Psychic",
+    "F": "Fighting",
+    "D": "Darkness",
+    "M": "Metal",
+    "N": "Dragon",
+    "Y": "Fairy",
+    "C": "Colorless",
+}
+
+promo_species_number_cache = {}
+
+
+def open_url(url):
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "script"}
+    )
+    return urllib.request.urlopen(request, timeout=20)
+
+
+def fetch_text_url(url):
+    with open_url(url) as response:
+        return response.read().decode('utf-8')
+
+
+def download_url_to_file(url, destination_path):
+    with open_url(url) as response, open(destination_path, 'wb') as output_file:
+        shutil.copyfileobj(response, output_file)
+
+
+def try_download_url_to_file(url, destination_path):
+    try:
+        download_url_to_file(url, destination_path)
+        return True
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return False
+        raise
+
+
+def search_first_regex_match(pattern, text, flags=0, default=None):
+    match = re.search(pattern, text, flags)
+    if match is None:
+        return default
+    if match.lastindex is None:
+        return match.group(0)
+    if match.lastindex == 1:
+        return match.group(1)
+    return match.groups()
+
+
+def html_to_normalized_text(value):
+    if value is None:
+        return None
+    value = re.sub(r'<br\s*/?>', '\n', value, flags=re.IGNORECASE)
+    value = re.sub(r'<[^>]+>', '', value)
+    value = html.unescape(value)
+    return re.sub(r'\s+', ' ', value).strip()
+
+
+def normalize_pokeapi_species_slug(slug):
+    normalized_slug = slug.lower()
+    normalized_slug = normalized_slug.replace("♀", "-f").replace("♂", "-m")
+    normalized_slug = normalized_slug.replace("’", "").replace("'", "")
+    return normalized_slug
+
+
+def normalize_name_for_sprite_filename(value):
+    return (
+        value.lower()
+        .replace("’", "")
+        .replace("'", "")
+        .replace(" ", "-")
+        .replace("é", "e")
+        .replace("-♀", "-f")
+        .replace("-♂", "-m")
+        .replace("♀", "-f")
+        .replace("♂", "-m")
+    )
+
+
+def get_pokeapi_species_slug_candidates(species_slug):
+    normalized_slug = normalize_pokeapi_species_slug(species_slug)
+    candidates = [normalized_slug]
+
+    generic_fallbacks = {
+        "nidoran-female": "nidoran-f",
+        "nidoran-male": "nidoran-m",
+        "mr-mime": "mr-mime",
+        "mime-jr": "mime-jr",
+        "type-null": "type-null",
+        "farfetchd": "farfetchd",
+    }
+    if normalized_slug in generic_fallbacks and generic_fallbacks[normalized_slug] not in candidates:
+        candidates.append(generic_fallbacks[normalized_slug])
+
+    return candidates
+
+
+def get_national_pokedex_numbers_for_species_slug(species_slug):
+    for candidate_slug in get_pokeapi_species_slug_candidates(species_slug):
+        if candidate_slug in promo_species_number_cache:
+            return promo_species_number_cache[candidate_slug]
+
+        species_url = f"https://pokeapi.co/api/v2/pokemon-species/{urllib.parse.quote(candidate_slug)}/"
+        try:
+            species_data = json.load(open_url(species_url))
+            promo_species_number_cache[candidate_slug] = [species_data['id']]
+            return promo_species_number_cache[candidate_slug]
+        except urllib.error.HTTPError as error:
+            if error.code != 404:
+                raise
+
+    raise ValueError(f"Could not resolve PokeAPI species slug for {species_slug}")
+
+
+def promo_set_printed_total_from_card_number(set_id, number):
+    return int(number)
+
+
+def parse_promo_retreat_cost(retreat_value):
+    if retreat_value is None or retreat_value == '0':
+        return []
+    try:
+        retreat_count = int(retreat_value)
+    except ValueError:
+        return []
+    return ['Colorless'] * retreat_count
+
+
+def parse_promo_card_page(card_html, set_id):
+    config = PROMO_SET_CONFIG[set_id]
+
+    title = search_first_regex_match(r'<h1 class="card-title"[^>]*>([^<]+)</h1>', card_html)
+    if title is None:
+        raise ValueError(f"Could not parse promo card title for set {set_id}")
+
+    card_name_raw, card_number = search_first_regex_match(
+        r'^(.*?) · .*?#(\d+)$',
+        html_to_normalized_text(title)
+    )
+
+    supertype = html_to_normalized_text(search_first_regex_match(
+        r'<span class="type"[^>]*>(.*?)</span>',
+        card_html,
+        flags=re.DOTALL
+    ))
+
+    hp = search_first_regex_match(
+        r'<span class="hp"[^>]*>(?:<a [^>]*>)?(\d+)\s*HP(?:</a>)?</span>',
+        card_html,
+        flags=re.DOTALL
+    )
+
+    type_symbols = re.findall(
+        r'<span class="color"[^>]*>.*?<abbr title="[^"]+" class="ptcg-font ptcg-symbol-name"><span class="vh">\{</span>([A-Z])',
+        card_html,
+        re.DOTALL
+    )
+    types = [PROMO_TYPE_SYMBOL_TO_NAME[symbol] for symbol in type_symbols if symbol in PROMO_TYPE_SYMBOL_TO_NAME]
+
+    type_evolves_html = search_first_regex_match(
+        r'<div class="type-evolves-is">(.*?)</div>',
+        card_html,
+        flags=re.DOTALL,
+        default=''
+    )
+    stage = html_to_normalized_text(search_first_regex_match(r'<span class="stage"[^>]*>(.*?)</span>', type_evolves_html, flags=re.DOTALL))
+    evolves_from = html_to_normalized_text(search_first_regex_match(
+        r'<span class="evolves">Evolves from (.*?)</span>',
+        type_evolves_html,
+        flags=re.DOTALL
+    ))
+    trainer_subtype = html_to_normalized_text(search_first_regex_match(
+        r'<span class="sub-type"[^>]*>(.*?)</span>',
+        type_evolves_html,
+        flags=re.DOTALL
+    ))
+    is_value = html_to_normalized_text(search_first_regex_match(
+        r'<span class="is"[^>]*>is:\s*(.*?)</span>',
+        type_evolves_html,
+        flags=re.DOTALL
+    ))
+
+    subtypes = []
+    if supertype == 'Pokémon':
+        subtypes = [stage] if stage is not None else []
+        if is_value is not None:
+            if 'ex' in is_value.lower():
+                subtypes.append('ex')
+            if 'tera' in is_value.lower():
+                subtypes.append('Tera')
+    elif trainer_subtype is not None:
+        subtypes = [trainer_subtype]
+
+    text_section = search_first_regex_match(
+        r'<div class="text">(.*?)</div>\s*(?:<div class="weak-resist-retreat">|<div class="rules minor-text">|<div class="mark-formats)',
+        card_html,
+        flags=re.DOTALL,
+        default=''
+    )
+    ability_names = [
+        html_to_normalized_text(match)
+        for match in re.findall(r'Ability</a>\s*⇢\s*([^<]+)<br', text_section, re.DOTALL)
+    ]
+    attack_names = [
+        html_to_normalized_text(match)
+        for match in re.findall(r'→\s*<span>([^<]+)</span>', text_section, re.DOTALL)
+    ]
+
+    weakness_type = weakness_value = resistance_type = resistance_value = None
+    retreat_value = '0'
+    if supertype == 'Pokémon':
+        weakness_type, weakness_value = search_first_regex_match(
+            r'<span class="weak"[^>]*>weak:\s*.*?<abbr title="([^"]+)".*?<span title="Weakness Modifier">([^<]+)</span>',
+            card_html,
+            flags=re.DOTALL,
+            default=(None, None)
+        )
+        resistance_section = search_first_regex_match(
+            r'<span class="resist"[^>]*>(.*?)</span>',
+            card_html,
+            flags=re.DOTALL,
+            default=''
+        )
+        if 'No Resistance' not in resistance_section:
+            resistance_type, resistance_value = search_first_regex_match(
+                r'<abbr title="([^"]+)".*?<span title="Resistance Modifier">([^<]+)</span>',
+                resistance_section,
+                flags=re.DOTALL,
+                default=(None, None)
+            )
+        retreat_value = search_first_regex_match(
+            r'<span class="retreat"[^>]*>retreat:\s*.*?<abbr title="[^"]*">(\d+)</abbr>',
+            card_html,
+            flags=re.DOTALL,
+            default='0'
+        )
+    regulation_mark = html_to_normalized_text(search_first_regex_match(
+        r'Mark:\s*<a [^>]*>([^<]+)</a>',
+        card_html,
+        flags=re.DOTALL
+    ))
+    small_image_url = search_first_regex_match(
+        r'<a href="([^"]+)" class="card-image-link"',
+        card_html
+    )
+    species_href = None
+    if supertype == 'Pokémon':
+        species_href = search_first_regex_match(
+            r'<span class="pokemon"[^>]*><a href="https://pkmncards\.com/pokemon/([^"/]+)/"',
+            card_html
+        )
+        if species_href is None:
+            species_href = search_first_regex_match(
+                r'<span class="pokemon"[^>]*><a href="https://pkmncards\.com/pokemon/([^"/]+)/?"',
+                card_html
+            )
+        if species_href is None:
+            raise ValueError(f"Could not parse species slug for promo card {title}")
+
+    card = {
+        "id": f"{set_id}-{int(card_number)}",
+        "name": get_processed_name(card_name_raw),
+        "name_without_prefix": re.sub(
+            prefix_replacement_regex,
+            '',
+            get_maybe_trainer_removed_name(get_processed_name(card_name_raw), supertype)
+        ),
+        "name_without_prefix_and_postfix": re.sub(
+            prefix_replacement_regex,
+            '',
+            re.sub(
+                postfix_replacement_regex,
+                '',
+                get_maybe_trainer_removed_name(get_processed_name(card_name_raw), supertype)
+            )
+        ),
+        "supertype": supertype,
+        "subtypes": subtypes,
+        "rarity": "Promo",
+        "rarity_for_mismatch_correction": get_rarity_for_mismatch_correction(f"{set_id}-{int(card_number)}", "Promo"),
+        "hp": hp,
+        "set_id": set_id,
+        "set_code": config['set_code'],
+        "regulation_mark": regulation_mark,
+        "set_name": config['set_name'],
+        "number": str(int(card_number)),
+        "set_printed_total": promo_set_printed_total_from_card_number(set_id, card_number),
+        "small_image_url": small_image_url,
+        "types": types if len(types) > 0 else None,
+        "national_pokedex_numbers": get_national_pokedex_numbers_for_species_slug(species_href) if species_href is not None else None,
+        "evolves_from": get_processed_name(evolves_from) if evolves_from is not None and supertype == 'Pokémon' else None,
+        "concatenated_attack_names": '_'.join(attack_names) if len(attack_names) > 0 and supertype == 'Pokémon' else None,
+        "abilities": [{'name': ability_name} for ability_name in ability_names],
+        "attacks": [{'name': attack_name} for attack_name in attack_names],
+        "weaknesses": [{'type': weakness_type, 'value': weakness_value}] if weakness_type is not None else [],
+        "resistances": [{'type': resistance_type, 'value': resistance_value}] if resistance_type is not None else [],
+        "retreatCost": parse_promo_retreat_cost(retreat_value),
+    }
+    card["cardMechanicsHash"] = get_card_mechanics_hash(card) if supertype == 'Pokémon' else None
+    return card
+
+
+def fetch_promo_cards_df(existing_card_ids=None):
+    promo_cards = []
+
+    for set_id, config in PROMO_SET_CONFIG.items():
+        set_url = f"https://pkmncards.com/set/{config['set_slug']}/?display=text"
+        set_html = fetch_text_url(set_url)
+        set_entries = re.findall(
+            r'<a href="(https://pkmncards\.com/card/[^"]+/)" class="card-link" title="[^"]+\(' + config['set_code'] + r'\) #(\d+)"',
+            set_html
+        )
+        print(f"Found {len(set_entries)} entries for {set_id}")
+
+        selected_entries = []
+        for card_url, card_number in set_entries:
+            card_id = f"{set_id}-{int(card_number)}"
+            if existing_card_ids is not None and card_id in existing_card_ids:
+                continue
+            selected_entries.append((card_url, card_number))
+
+        for index, (card_url, card_number) in enumerate(selected_entries, start=1):
+            card_html = fetch_text_url(card_url)
+            parsed_card = parse_promo_card_page(card_html, set_id)
+            if parsed_card is not None:
+                promo_cards.append(parsed_card)
+
+    return pd.DataFrame(promo_cards)
+
+
 # Around 5000 cards last time I ran this!
 def get_cards(): # Returns dataframe
     dfs_list = []
@@ -167,16 +527,18 @@ def get_cards(): # Returns dataframe
     
     # get the set info directly from github, to avoid computationally expensive calls to the API
     sets_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/sets/en.json"
-    sets_data = json.load(urllib.request.urlopen(sets_url))
+    sets_data = json.load(open_url(sets_url))
     
     # only Scarlet & Violet and Mega Evolution sets are currently supported 
     sets_data = [s for s in sets_data if s['series'] == 'Scarlet & Violet' or s['series'] == 'Mega Evolution']
 
     for set_data in sets_data:
         set_id = set_data['id']
+        if set_id in PROMO_SET_CONFIG:
+            continue
         print("Downloading info for set " + set_id + " (" + set_data['name'] + ")")
         set_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/cards/en/" + set_id + ".json"
-        cards_in_set = json.load(urllib.request.urlopen(set_url))
+        cards_in_set = json.load(open_url(set_url))
         processed_cards = [
             {
                 "id": card.get('id'),
@@ -201,7 +563,7 @@ def get_cards(): # Returns dataframe
                 # weird hack - we only use this to match between cards in order to warn users about similar cards that *may* only differ by set info
                 "concatenated_attack_names": 
                     '_'.join([attack.get('name') for attack in card.get('attacks')]) if card.get('attacks') and len(card.get('attacks')) > 0 else None,
-                "cardMechanicsHash": get_card_mechanics_hash(card),
+                "cardMechanicsHash": get_card_mechanics_hash(card) if card.get('supertype') == 'Pokémon' else None,
             } for card in cards_in_set
         ]
         dfs_list.append(pd.DataFrame(processed_cards))
@@ -209,1034 +571,9 @@ def get_cards(): # Returns dataframe
         total_downloaded_cards = total_downloaded_cards + len(processed_cards)
         print("Downloaded info for " + str(total_downloaded_cards) + " cards")
 
-    
-    # Some promos missing from the DB! Add it in manually:
-    manual_fixes_df = pd.DataFrame([
-        {
-            "id": 'svp-166',
-            "name": "Teal Mask Ogerpon ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Teal Mask Ogerpon ex"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'Tera', 'ex'],
-            "rarity": "Promo",
-            "hp": "210",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "H",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "166",
-            "concatenated_attack_names": "Myriad Leaf Shower", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 177, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/596439_in_1000x1000.jpg",
-            "types": ['Grass'],
-            "national_pokedex_numbers": [1017]
-        },
-        {
-            "id": 'svp-173',
-            "name": "Eevee",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "50",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "H",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "173",
-            "set_printed_total": 173,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_173_std.jpg",
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [133]
-        },
-        {
-            "id": 'svp-177',
-            "name": "Bloodmoon Ursaluna ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Bloodmoon Ursaluna ex"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "260",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "H",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "177",
-            "concatenated_attack_names": "Blood Moon", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 177, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/595473_in_1000x1000.jpg",
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [901]
-        },
-        {
-            "id": 'svp-181',
-            "name": "N's Darmanitan",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Darmanitan"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Darmanitan"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "140",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "181",
-            "set_printed_total": 181,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_181_std.jpg",
-            "types": ['Fire'],
-            "national_pokedex_numbers": [555]
-        },
-        {
-            "id": 'svp-182',
-            "name": "Iono's Kilowattrel",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Kilowattrel"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Kilowattrel"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "120",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "182",
-            "set_printed_total": 182,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_182_std.jpg",
-            "types": ['Lightning'],
-            "national_pokedex_numbers": [941]
-        },
-        {
-            "id": 'svp-183',
-            "name": "Lillie's Ribombee",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Ribombee"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Ribombee"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "183",
-            "set_printed_total": 183,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_183_std.jpg",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [743]
-        },
-        {
-            "id": 'svp-184',
-            "name": "Hop's Snorlax",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Snorlax"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Snorlax"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "150",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "184",
-            "set_printed_total": 184,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_184_std.jpg",
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [143]
-        },
-        {
-            "id": 'svp-196',
-            "name": "Charizard ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Charizard ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Charizard ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2', 'ex'],
-            "rarity": "Promo",
-            "hp": "330",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "G",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "196",
-            "set_printed_total": 196,
-            "concatenated_attack_names": "Burning Darkness", # used to match the card to the very similar looking regular set version
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_196_std.jpg",
-            "types": ['Darkness'],
-            "national_pokedex_numbers": [6]
-        },
-        {
-            "id": 'svp-193',
-            "name": "Hop's Zacian ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Hop's Zacian ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "230",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "193",
-            "concatenated_attack_names": "Insta Strike_Brave Slash", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 193, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_193_std.jpg",
-            "types": ['Metal'],
-            "national_pokedex_numbers": [888]
-        },
-        {
-            "id": 'svp-194',
-            "name": "Iono's Bellibolt ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Iono's Bellibolt ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1', 'ex'],
-            "rarity": "Promo",
-            "hp": "280",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "194",
-            "concatenated_attack_names": "Thunderous Bolt", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 194, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_194_std.jpg",
-            "types": ['Electric'],
-            "national_pokedex_numbers": [939]
-        },
-        {
-            "id": 'svp-195',
-            "name": "Lillie's Clefairy ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lillie's Clefairy ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "190",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "195",
-            "concatenated_attack_names": "Full Moon Rondo", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 195, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_195_std.jpg",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [35]
-        },
-        {
-            "id": 'svp-189',
-            "name": "N's Zorua",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("N's Zorua"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "189",
-            "set_printed_total": 189, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_189_std.jpg",
-            "types": ['Darkness'],
-            "national_pokedex_numbers": [570]
-        },
-        {
-            "id": 'svp-174',
-            "name": "Eevee ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Eevee ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'Tera', 'ex'],
-            "rarity": "Promo",
-            "hp": "200",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "H",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "174",
-            "set_printed_total": 174, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/632083_in_1000x1000.jpg",
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [133]
-        },
-        {
-            "id": 'svp-198',
-            "name": "Zacian ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "220",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "H",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "198",
-            "set_printed_total": 198, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/3/34/ZacianexSVPPromo198.jpg/270px-ZacianexSVPPromo198.jpg",
-            "types": ['Metal'],
-            "national_pokedex_numbers": [888]
-        },
-        {
-            "id": 'svp-203',
-            "name": "Team Rocket's Wobbuffet",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Wobbuffet"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "110",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "203",
-            "set_printed_total": 203, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://bulbapedia.bulbagarden.net/wiki/File:TeamRocketWobbuffetSVPPromo203.jpg",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [202]
-        },
-        {
-            "id": 'svp-204',
-            "name": "Cynthia's Garchomp ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Cynthia's Garchomp ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2', 'ex'],
-            "rarity": "Promo",
-            "hp": "330",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "204",
-            "concatenated_attack_names": "Corkscrew Dive_Draconic Buster", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 204, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.cardtrader.com/uploads/blueprints/image/327135/show_cynthia-s-garchomp-204-sv-p-sv-black-star-promos(2).jpg",
-            "types": ['Fighting'],
-            "national_pokedex_numbers": [445]
-        },
-        {
-            "id": 'svp-205',
-            "name": "Team Rocket's Mewtwo ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "280",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "205",
-            "concatenated_attack_names": "Erasure Ball", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 205, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/SVP/SVP_EN_205.png",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [150]
-        },
-        {
-            "id": 'svp-206',
-            "name": "Marnie's Morpeko",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Marnie's Morpeko"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Marnie's Morpeko"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "206",
-            "set_printed_total": 206,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_206_std.jpg",
-            "types": ['Darkness'],
-            "national_pokedex_numbers": [877]
-        },
-        {
-            "id": 'svp-207',
-            "name": "Steven's Beldum",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Steven's Beldum"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Steven's Beldum"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "207",
-            "set_printed_total": 207,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/svbsp_en_207_std.jpg",
-            "types": ['Metal'],
-            "national_pokedex_numbers": [374]
-        },
-        {
-            "id": 'svp-216',
-            "name": "Team Rocket's Mewtwo ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Team Rocket's Mewtwo ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "280",
-            "set_id": "svp",
-            "set_code": "SVP",
-            "regulation_mark": "I",
-            "set_name": "Scarlet & Violet Black Star Promos",
-            "number": "216",
-            "concatenated_attack_names": "Erasure Ball", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 216, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/SVP/SVP_EN_216.png",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [150]
-        },
-        {
-            "id": 'mep-1',
-            "name": "Meganium",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Meganium"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Meganium"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2',],
-            "rarity": "Promo",
-            "hp": "160",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "1",
-            "set_printed_total": 1, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/me01-build-battle-box/inline/web/MEP_EN_1.png",
-            "types": ['Grass'],
-            "national_pokedex_numbers": [154]
-        },
-        {
-            "id": 'mep-2',
-            "name": "Inteleon",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Inteleon"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Inteleon"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2',],
-            "rarity": "Promo",
-            "hp": "150",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "2",
-            "set_printed_total": 2, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/me01-build-battle-box/inline/web/MEP_EN_2.png",
-            "types": ['Water'],
-            "national_pokedex_numbers": [818]
-        },
-        {
-            "id": 'mep-3',
-            "name": "Alakazam",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Alakazam"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Alakazam"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2',],
-            "rarity": "Promo",
-            "hp": "140",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "3",
-            "set_printed_total": 3, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/me01-build-battle-box/inline/web/MEP_EN_3.png",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [65]
-        },
-        {
-            "id": 'mep-4',
-            "name": "Lunatone",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lunatone"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Lunatone"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic',],
-            "rarity": "Promo",
-            "hp": "110",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "4",
-            "set_printed_total": 4, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/me01-build-battle-box/inline/web/MEP_EN_4.png",
-            "types": ['Fighting'],
-            "national_pokedex_numbers": [337]
-        },
-        {
-            "id": 'mep-7',
-            "name": "Psyduck",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Psyduck")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Psyduck"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic',],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "7",
-            "concatenated_attack_names": "Ram", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 7, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEP/MEP_007_R_EN_LG.png",
-            "types": ['Water'],
-            "national_pokedex_numbers": [54]
-        },
-        {
-            "id": 'mep-8',
-            "name": "Golduck",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("Golduck")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("Golduck"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1',],
-            "rarity": "Promo",
-            "hp": "120",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "8",
-            "concatenated_attack_names": "Hydro Pump", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 8, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEP/MEP_008_R_EN_LG.png",
-            "types": ['Water'],
-            "national_pokedex_numbers": [55]
-        },
-        {
-            "id": 'mep-9',
-            "name": "Alakazam",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Alakazam"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Alakazam"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2',],
-            "rarity": "Promo",
-            "hp": "140",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "9",
-            "set_printed_total": 9, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/0/09/AlakazamMEPPromo9.jpg/270px-AlakazamMEPPromo9.jpg",
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [65]
-        },
-        {
-            "id": 'mep-10',
-            "name": "Riolu",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Riolu"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Riolu"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic',],
-            "rarity": "Promo",
-            "hp": "80",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "10",
-            "set_printed_total": 10, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/8/83/RioluMEPPromo10.jpg/270px-RioluMEPPromo10.jpg",
-            "types": ['Fighting'],
-            "national_pokedex_numbers": [447]
-        },
-        {
-            "id": 'mep-11',
-            "name": "Mega Latias ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Latias ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Latias ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "280",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "11",
-            "concatenated_attack_names": "Strafe_Illusory Impulse", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 11, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/657846_in_1000x1000.jpg",
-            "types": ['Dragon'],
-            "national_pokedex_numbers": [380]
-        },
-        {
-            "id": 'mep-12',
-            "name": "Mega Lucario ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Lucario ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Lucario ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1', 'ex'],
-            "rarity": "Promo",
-            "hp": "340",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "12",
-            "concatenated_attack_names": "Aura Jab_Mega Brave", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 12, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/663177_in_1000x1000.jpg",
-            "types": ['Fighting'],
-            "national_pokedex_numbers": [448]
-        },
-        {
-            "id": 'mep-13',
-            "name": "Mega Venusaur ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Venusaur ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Venusaur ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2', 'ex'],
-            "rarity": "Promo",
-            "hp": "380",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "13",
-            "concatenated_attack_names": "Jungle Dump", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 13,
-            "small_image_url": "https://assets.pokemon.com/static-assets/content-assets/cms2/img/cards/web/MEP/MEP_EN_13.png",
-            "types": ['Grass'],
-            "national_pokedex_numbers": [3]
-        },
-        {
-            "id": 'mep-14',
-            "name": "Ceruledge",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Ceruledge"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Ceruledge"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "140",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "14",
-            "set_printed_total": 27, # The total printed on the card - excludes secret rares
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_014_std.jpg",
-            "types": ['Fire'],
-            "national_pokedex_numbers": [937]
-        },
-        {
-            "id": 'mep-15',
-            "name": "Zacian",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Zacian"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "130",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "15",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_015_std.jpg",
-            "types": ['Metal'],
-            "national_pokedex_numbers": [888]
-        },
-        {
-            "id": 'mep-16',
-            "name": "Flygon",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Flygon"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Flygon"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2'],
-            "rarity": "Promo",
-            "hp": "150",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "16",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_016_std.jpg",
-            "types": ['Dragon'],
-            "national_pokedex_numbers": [330]
-        },
-        {
-            "id": 'mep-17',
-            "name": "Toxtricity",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Toxtricity"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Toxtricity"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "140",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "17",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_017_std.jpg",
-            "types": ['Electric'],
-            "national_pokedex_numbers": [849]
-        },
-        {
-            "id": 'mep-22',
-            "name": "Charcadet",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Charcadet"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Charcadet"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "22",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_022_std.jpg",
-            "types": ['Fire'],
-            "national_pokedex_numbers": [935]
-        },
-        {
-            "id": 'mep-23',
-            "name": "Mega Charizard X ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Charizard X ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Charizard X ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 2', 'ex'],
-            "rarity": "Promo",
-            "hp": "360",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "23",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_023_std.jpg",
-            "types": ['Fire'],
-            "national_pokedex_numbers": [6]
-        },
-        {
-            "id": 'mep-24',
-            "name": "Oricorio ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Oricorio ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Oricorio ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "190",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "24",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_024_std.jpg",
-            "types": ['Fire'],
-            "national_pokedex_numbers": [741]
-        },
-        {
-            "id": 'mep-25',
-            "name": "Mega Kangaskhan ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Kangaskhan ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Mega Kangaskhan ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic', 'ex'],
-            "rarity": "Promo",
-            "hp": "300",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "25",
-            "concatenated_attack_names": "Rapid-Fire Combo", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_025_std.jpg",  
-            "types": ['Colorless'],
-            "national_pokedex_numbers": [115]
-        },
-        {
-            "id": 'mep-26',
-            "name": "Meloetta",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Meloetta"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Meloetta"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "90",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "26",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_026_std.jpg",  
-            "types": ['Psychic'],
-            "national_pokedex_numbers": [648]
-        },
-        {
-            "id": 'mep-27',
-            "name": "Haunter",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Haunter"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Haunter"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Stage 1'],
-            "rarity": "Promo",
-            "hp": "100",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "27",
-            "set_printed_total": 27,
-            "small_image_url": "https://pkmncards.com/wp-content/uploads/mebsp_en_027_std.jpg",  
-            "types": ['Darkness'],
-            "national_pokedex_numbers": [93]
-        },
-                {
-            "id": "mep-29",
-            "name": "Mega Charizard X ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Charizard X ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Charizard X ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "360",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "29",
-            "concatenated_attack_names": "Inferno X",
-            "set_printed_total": 36,
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/680639_in_1000x1000.jpg",
-            "types": ["Fire"],
-            "national_pokedex_numbers": [6]
-        },
-        {
-            "id": "mep-30",
-            "name": "Mega Charizard Y ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Charizard Y ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Charizard Y ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "360",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "J",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "30",
-            "concatenated_attack_names": "Explosion Y",
-            "set_printed_total": 36,
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/680640_in_1000x1000.jpg",
-            "types": ["Fire"],
-            "national_pokedex_numbers": [6]
-        },
-        {
-            "id": "mep-31",
-            "name": "N's Zekrom",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("N's Zekrom"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("N's Zekrom"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Basic"],
-            "rarity": "Promo",
-            "hp": "130", 
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I", 
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "31",
-            "concatenated_attack_names": "Shred_Rampaging Thunder",
-            "set_printed_total": 36,
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/680480_in_1000x1000.jpg",
-            "types": ["Dragon"],
-            "national_pokedex_numbers": [644]
-        },
-        {
-            "id": "mep-32",
-            "name": "Mega Gardevoir ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Gardevoir ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Gardevoir ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "360",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "32",
-            "concatenated_attack_names": "Overflowing Wishes_Mega Symphonia",
-            "set_printed_total": 36,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/f/fc/MegaGardevoirexMEPPromo32.jpg/300px-MegaGardevoirexMEPPromo32.jpg",
-            "types": ["Psychic"],
-            "national_pokedex_numbers": [282]
-        },
-        {
-            "id": "mep-33",
-            "name": "Mega Lucario ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Lucario ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Lucario ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 1", "ex"],
-            "rarity": "Promo",
-            "hp": "340",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "33",
-            "concatenated_attack_names": "Aura Jab_Mega Brave", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 36,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/e/e2/MegaLucarioexMEPPromo33.jpg/300px-MegaLucarioexMEPPromo33.jpg",
-            "types": ["Fighting"],
-            "national_pokedex_numbers": [448]
-        },
-        {
-            "id": "mep-34",
-            "name": "Mega Meganium ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Meganium ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Meganium ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "360",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "J",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "34",
-            "concatenated_attack_names": "Giant Bouquet",
-            "set_printed_total": 36,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/8/8c/MegaMeganiumexMEPPromo34.jpg/270px-MegaMeganiumexMEPPromo34.jpg",
-            "types": ["Grass"],
-            "national_pokedex_numbers": [154]
-        },
-        {
-            "id": "mep-35",
-            "name": "Mega Emboar ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Emboar ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Emboar ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "380",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "J",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "35",
-            "concatenated_attack_names": "Crimson Blast",
-            "set_printed_total": 36,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/b/b7/MegaEmboarexMEPPromo35.jpg/300px-MegaEmboarexMEPPromo35.jpg",
-            "types": ["Fire"],
-            "national_pokedex_numbers": [500]
-        },
-        {
-            "id": "mep-36",
-            "name": "Mega Feraligatr ex",
-            "name_without_prefix": re.sub(prefix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Feraligatr ex"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, "", re.sub(postfix_replacement_regex, "", get_maybe_trainer_removed_name(get_processed_name("Mega Feraligatr ex"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ["Stage 2", "ex"],
-            "rarity": "Promo",
-            "hp": "370",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "J",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "36",
-            "concatenated_attack_names": "Mortal Crunch",
-            "set_printed_total": 36,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/e/ec/MegaFeraligatrexMEPPromo36.jpg/270px-MegaFeraligatrexMEPPromo36.jpg",
-            "types": ["Water"],
-            "national_pokedex_numbers": [160]
-        },
-        {
-            "id": 'mep-68',
-            "name": "Makuhita",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Makuhita"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Makuhita"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "80",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "68",
-            "concatenated_attack_names": "Corkscrew Punch_Confront", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 68,
-            "small_image_url": "https://archives.bulbagarden.net/media/upload/thumb/f/f1/MakuhitaMEPPromo68.jpg/270px-MakuhitaMEPPromo68.jpg",
-            "types": ['Fighting'],
-            "national_pokedex_numbers": [296]
-        },
-        {
-            "id": 'mep-69',
-            "name": "Chikorita",
-            "name_without_prefix": re.sub(prefix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Chikorita"), "Pokémon")),
-            "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_maybe_trainer_removed_name(get_processed_name("Chikorita"), "Pokémon"))),
-            "supertype": "Pokémon",
-            "subtypes": ['Basic'],
-            "rarity": "Promo",
-            "hp": "70",
-            "set_id": "mep",
-            "set_code": "MEP",
-            "regulation_mark": "I",
-            "set_name": "Mega Evolution Black Star Promos",
-            "number": "69",
-            "concatenated_attack_names": "Razor Leaf", # used to match the card to the very similar looking regular set version
-            "set_printed_total": 69,
-            "small_image_url": "https://tcgplayer-cdn.tcgplayer.com/product/686342_in_1000x1000.jpg",
-            "types": ['Grass'],
-            "national_pokedex_numbers": [152]
-        }
-        # {
-        #     "id": '???',
-        #     "name": "???",
-        #     "name_without_prefix": re.sub(prefix_replacement_regex, '', get_processed_name("???"), "Pokémon"),
-        #     "name_without_prefix_and_postfix": re.sub(prefix_replacement_regex, '', re.sub(postfix_replacement_regex, '', get_processed_name("???"), "Pokémon")),
-        #     "supertype": "Pokémon",
-        #     "hp": "???",
-        #     "set_id": "mep",
-        #     "set_code": "MEP",
-        #     "regulation_mark": "???",
-        #     "set_name": "Mega Evolution Black Star Promos",
-        #     "number": "???"",
-        #     "set_printed_total": ???, # The total printed on the card - excludes secret rares
-        #     "small_image_url": "???",
-        #     "types": ['???'],
-        #     "national_pokedex_numbers": [???]
-        # }
-    ])
-    # Add in rarity_for_mismatch_correction to manual fixes
-    manual_fixes_df = manual_fixes_df.assign(
-        rarity_for_mismatch_correction = manual_fixes_df.apply(
-            lambda row: get_rarity_for_mismatch_correction(row['id'], row['rarity']),
-            axis=1
-        ),
-        evolves_from = None,
-        cardMechanicsHash = manual_fixes_df.apply(
-            lambda row: get_card_mechanics_hash(row),
-            axis=1
-        )
-    )
-    dfs_list.append(manual_fixes_df)
+    promo_cards_df = fetch_promo_cards_df()
+    if not promo_cards_df.empty:
+        dfs_list.append(promo_cards_df)
 
     concatenated_df = pd.concat(dfs_list, ignore_index=True)
 
@@ -1402,19 +739,36 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
         img_path = CARD_IMAGES_DIRECTORY + "/" + file_name
         if not os.path.isfile(img_path):
             print("#" + str(index + 1) + ": Downloading " + card["small_image_url"] + " to " + img_path)
-            urllib.request.urlretrieve(card["small_image_url"], img_path)
+            download_url_to_file(card["small_image_url"], img_path)
         # else:
         #     print("#" + str(index + 1) + ": " + img_path + " already exists; skipping download")
         shutil.copy(img_path, CLIENT_CARD_IMAGES_DIRECTORY + "/" + file_name)
 
         if card["supertype"] == 'Pokémon':
             name_without_prefix_and_postfix = card["name_without_prefix_and_postfix"]
-            sprite_file_name = re.sub(sprite_url_replacement_regex, '', name_without_prefix_and_postfix.lower().replace(" ", "-").replace("'", "").replace("é", "e").replace("-♀", "-f").replace("-♂", "-m").replace("♀", "-f").replace("♂", "-m")) + ".png"
+            sprite_file_name = re.sub(
+                sprite_url_replacement_regex,
+                '',
+                normalize_name_for_sprite_filename(name_without_prefix_and_postfix)
+            ) + ".png"
             sprite_path = SPRITES_DIRECTORY + '/' + sprite_file_name
             sprite_url = 'https://r2.limitlesstcg.net/pokemon/gen9/' + sprite_file_name
             if not os.path.isfile(sprite_path):
                 print("#" + str(index + 1) + ": Downloading " + sprite_url + " to " + sprite_path)
-                urllib.request.urlretrieve(sprite_url, sprite_path)
+                downloaded = try_download_url_to_file(sprite_url, sprite_path)
+                if not downloaded:
+                    national_pokedex_numbers = card.get('national_pokedex_numbers') or []
+                    if len(national_pokedex_numbers) == 0:
+                        raise ValueError(f"No national pokedex number available for sprite fallback: {card['id']}")
+                    fallback_sprite_url = (
+                        "https://raw.githubusercontent.com/PokeAPI/sprites/master/"
+                        f"sprites/pokemon/other/home/{national_pokedex_numbers[0]}.png"
+                    )
+                    print(
+                        "#" + str(index + 1) + ": Sprite not found by name, "
+                        + "falling back to " + fallback_sprite_url
+                    )
+                    download_url_to_file(fallback_sprite_url, sprite_path)
             # else:
             #     print("#" + str(index + 1) + ": " + sprite_path + " already exists; skipping download")
             shutil.copy(sprite_path, CLIENT_SPRITES_DIRECTORY + "/" + sprite_file_name)
@@ -1497,18 +851,28 @@ if __name__ == '__main__':
     cards_df = add_detection_keywords_to_df(cards_df)
     cards_df =  add_similar_card_ids_to_df(cards_df)
     
-    # delete the 'concatenated_attack_names' and 'rarity_for_mismatch_correction' columns; we don't need these in the final output
-    if 'concatenated_attack_names' in cards_df.columns:
-        cards_df = cards_df.drop(columns=['concatenated_attack_names'])
-        
-    if 'rarity_for_mismatch_correction' in cards_df.columns:
-        cards_df = cards_df.drop(columns=['rarity_for_mismatch_correction'])
+    # Drop intermediate mechanics fields before export; only the hash is used by the client.
+    export_only_columns_to_drop = [
+        'concatenated_attack_names',
+        'rarity_for_mismatch_correction',
+        'abilities',
+        'attacks',
+        'weaknesses',
+        'resistances',
+        'retreatCost',
+    ]
+    cards_df = cards_df.drop(
+        columns=[column for column in export_only_columns_to_drop if column in cards_df.columns]
+    )
 
     download_missing_card_images_and_sprites_for_df(cards_df)
 
     cards_dict = {}
     for i, card in cards_df.iterrows():
-        cards_dict[card['id']] = card.to_dict()
+        card_dict = card.to_dict()
+        if card_dict.get('supertype') != 'Pokémon':
+            card_dict.pop('cardMechanicsHash', None)
+        cards_dict[card['id']] = card_dict
     with open('../client/public/card_database.json', 'w') as f:
         json.dump(cards_dict, f)
 

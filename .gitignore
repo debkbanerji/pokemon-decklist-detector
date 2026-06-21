@@ -1,3 +1,5 @@
 pokemontcg_api_key.txt
 data
 examples
+__pycache__/
+*.py[cod]
