@@ -4,6 +4,20 @@ import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTarg
 import DecklistImage from './DecklistImage';
 import OpeningHandSimulator from './OpeningHandSimulator';
 
+const UNSUPPORTED_PROBABILITY_CARD_IDS = new Set(['me1-28']);
+
+function getProbabilityUnavailableReason(cardList, numCards, numBasics) {
+    if (numCards !== 60) {
+        return 'Probability analysis is only available for 60-card decks.';
+    } else if (numBasics < 1) {
+        return 'Probability analysis is only available for decks with at least 1 Basic Pokemon.';
+    } else if (cardList.some(card => UNSUPPORTED_PROBABILITY_CARD_IDS.has(card?.id))) {
+        return 'Probability analysis is not yet supported for decks containing Cinderace MEG 28';
+    } else {
+        return null;
+    }
+}
+
 function formatPercentage(probability) {
     const numDigits = 2;
     if (probability < Math.pow(0.1, 2 + numDigits)) {
@@ -31,6 +45,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
     const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
     const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
     const numBasics = basics.reduce((sum, card) => sum + card.count, 0);
+    const unavailableReason = getProbabilityUnavailableReason(cardList, numCards, numBasics);
     const [mode, setMode] = useState(modes[0]);
     let innerContent = null;
     if (mode === 'setup') {
@@ -173,9 +188,9 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
         innerContent = <OpeningHandSimulator cardList={cardList} cardDatabase={cardDatabase} />;
     }
 
-    if (numCards !== 60 || numBasics < 1) {
+    if (unavailableReason != null) {
         return <div className='probability-content'>
-            <p>Probability analysis is only available for standard 60-card decks with at least 1 basic</p>
+            <p>{unavailableReason}</p>
         </div>;
     }
 
@@ -213,3 +228,4 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
 }
 
 export default ProbabilityModal;
+export { getProbabilityUnavailableReason };

@@ -8,7 +8,7 @@ import DecklistImage from './DecklistImage.tsx';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
-import ProbabilityModal, { ProbabilityContent } from './ProbabilityModal.tsx';
+import { ProbabilityContent } from './ProbabilityModal.tsx';
 import { MdOutlineBarChart, MdOutlineSave } from 'react-icons/md';
 import { sortDecklistCards } from './DecklistSort.ts';
 
@@ -393,7 +393,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         + numTrainers
         + numEnergies;
     const totalCountValid = totalCount === 60;
-
     const fullCardNameToIDs = useMemo(() => {
         const result = {};
         Object.keys(cardDatabase).forEach(id => {
