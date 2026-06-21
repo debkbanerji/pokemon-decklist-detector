@@ -36,6 +36,7 @@ function App() {
   const [cardDatabase, setCardDatabase] = useState(null);
   const savedDecklists = useLiveQuery(() => getDecklists());
 
+  const headerRef = useRef(null);
   const exportModalRef = useRef(null);
   const [decklistForModal, setDecklistForModal] = useState(null);
   const [coverPokemonForModal, setCoverPokemonForModal] = useState('');
@@ -152,13 +153,19 @@ function App() {
 
   const isPortraitMobile = window.innerHeight > window.innerWidth;
 
+  function scrollToTop() {
+    setTimeout(() => {
+      headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
   return <>
-    <div className="header">
+    <div ref={headerRef} className="header">
       {hasStarted ? <a className='home-button' href={window.location.origin} style={{ fontSize: 25 }}>&#x25c0;&#xFE0E;</a> : <span></span>}
       <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     </div>
     {hasStarted ? <ErrorBoundary>
-      {cardDatabase != null ? <DecklistCreator cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} /> : 'Loading...'}
+      {cardDatabase != null ? <DecklistCreator cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} scrollToTop={scrollToTop} /> : 'Loading...'}
     </ErrorBoundary> : <div>
       <div className='top-description'>
         Beautiful decklists in minutes
@@ -170,7 +177,7 @@ function App() {
       <video className='demo-video' autoPlay loop muted playsInline>
         <source src="demo-video.mp4" type="video/mp4" />
       </video>
-      <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Start Scanning!</button>
+      <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Create List</button>
       <br />
       {cardDatabase != null ? <button onClick={importFromClipboard}>{clipboardButtonText}</button> : null}
       {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>

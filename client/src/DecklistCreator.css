@@ -11,11 +11,18 @@ h3 {
 }
 
 .video-feed-container {
-    width: 90%;
+    width: min(92vw, 28rem);
     position: relative;
     overflow: hidden;
-    display: inline-block;
+    display: block;
     border-radius: 16px;
+    margin-inline: auto;
+    background: #f8f8f8;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.22);
+}
+
+.video-feed-container-active {
+    background: #000;
 }
 
 .video-feed-viewport {
@@ -50,39 +57,39 @@ h3 {
 }
 
 .similar-card-ids-notice {
-    top: 2%;
-    width: 100%;
-    font-size: small;
+    top: 10px;
+    left: 0;
+    right: 0;
+    width: 92%;
+    font-size: 0.95rem;
     font-weight: bold;
     color: white;
     position: absolute;
     margin-inline: auto;
-    z-index: 1;
+    z-index: 5;
     display: flex;
     flex-direction: column;
     text-align: center;
     justify-content: center;
+    gap: 6px;
 }
 
 .similar-card-ids-notice>div {
-    margin-top: 2px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 6px;
 }
 
 .similar-card-ids-notice *>button {
-    margin-top: 1px;
-    margin-right: 2px;
-    margin-left: 2px;
-    padding: 2px 6px;
-    font-size: small;
+    padding: 4px 8px;
+    font-size: 0.95rem;
 }
 
 .detected-card-name {
-    top: 60%;
-    font-size: larger;
+    top: 16%;
+    font-size: 1.35rem;
     font-weight: bold;
     color: white;
     position: absolute;
@@ -90,19 +97,21 @@ h3 {
     right: 0;
     margin-inline: auto;
     width: fit-content;
-    z-index: 1;
+    z-index: 4;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    text-shadow: 2px 2px 4px black;
 }
 
 .detected-card-in-feed {
-    top: 15%;
+    top: 9%;
     position: absolute;
     left: 0;
     right: 0;
     margin-inline: auto;
-    width: 50%;
-    z-index: 1;
+    width: 42%;
+    z-index: 3;
     margin-bottom: 0;
     border-radius: 10px;
     color: white;
@@ -111,9 +120,13 @@ h3 {
     text-shadow: 2px 2px 4px black;
 }
 
+.video-feed-container-has-similar .detected-card-in-feed {
+    top: 18%;
+}
+
 
 .video-feed-instructions {
-    top: 30%;
+    top: 27%;
     font-size: large;
     font-weight: bold;
     color: white;
@@ -121,8 +134,10 @@ h3 {
     left: 0;
     right: 0;
     margin-inline: auto;
-    width: fit-content;
-    z-index: 1;
+    width: 90%;
+    z-index: 4;
+    text-align: center;
+    text-shadow: 2px 2px 4px black;
 }
 
 .successfully-added-card-text {
@@ -139,15 +154,16 @@ h3 {
 }
 
 .video-feed-sub-instructions {
-    top: 37%;
+    top: 36%;
     font-size: smaller;
     color: grey;
     position: absolute;
     left: 0;
     right: 0;
     margin-inline: auto;
-    width: fit-content;
-    z-index: 1;
+    width: 90%;
+    z-index: 4;
+    text-align: center;
 }
 
 .video-feed-lighting-instructions {
@@ -202,7 +218,7 @@ h3 {
     right: 0;
     margin-inline: auto;
     width: fit-content;
-    z-index: 1;
+    z-index: 4;
     width: 80%;
 }
 
@@ -238,6 +254,91 @@ h3 {
     /* dumb hack to get rid of a buggy strip of grey at the bottom: */
     /* (hopefully doesn't mess with cropping logic lol) */
     margin-bottom: -5px;
+}
+
+.manual-count-selector {
+    width: min(92vw, 28rem);
+    margin: 8px auto 18px;
+}
+
+.manual-count-card {
+    width: min(58%, 13rem);
+    margin-inline: auto;
+    color: #213547;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.manual-count-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.manual-count-set-info {
+    margin-bottom: 4px;
+}
+
+.manual-count-controls {
+    margin-top: 10px;
+}
+
+.manual-count-instructions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #213547;
+    font-size: 1.35rem;
+    font-weight: bold;
+}
+
+.manual-count-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 10px;
+    overflow-x: visible;
+    padding: 1px;
+}
+
+.manual-count-buttons-energy {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-inline: 2px;
+}
+
+.manual-count-buttons button {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 3.6rem;
+    font-size: 1.1rem;
+}
+
+.manual-count-buttons-energy button {
+    flex: 0 0 4.2rem;
+}
+
+.scanner-activate-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    align-self: center;
+    font-size: 20px;
+    width: 95%;
+    height: 56px;
+}
+
+.scanner-activate-button-top {
+    display: flex;
+    margin: 8px auto 16px;
+}
+
+.scanner-activate-button:hover {
+    filter: none;
+}
+
+.scanner-activate-button-icon {
+    font-size: 1rem;
 }
 
 .storage-info {
@@ -295,10 +396,63 @@ h3 {
     padding: 4px;
 }
 
+.manual-art-selector-container {
+    margin-top: 8px;
+}
+
+.manual-art-selector-container h3,
+.card-name-selector-container h3 {
+    margin-bottom: 10px;
+}
+
+.manual-art-selector-container h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .card-name-selector-container {
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 0;
+    margin-right: 0;
     margin-bottom: 8px;
+}
+
+.name-selector {
+    width: 95%;
+    margin: 0 auto 16px;
+    text-align: left;
+}
+
+.name-selector__control {
+    min-height: 56px !important;
+    border-radius: 8px !important;
+    border-color: #218af3 !important;
+    box-shadow: none !important;
+}
+
+.name-selector__control:hover {
+    border-color: #218af3 !important;
+}
+
+.name-selector__value-container {
+    padding-left: 16px !important;
+}
+
+.name-selector__placeholder {
+    color: #218af3 !important;
+    font-size: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+.name-selector__input-container {
+    font-size: 20px;
+}
+
+.name-selector__indicator {
+    color: #218af3 !important;
+    font-size: 22px;
+    padding-right: 14px !important;
 }
 
 .select-name-manually-instructions {
@@ -539,6 +693,11 @@ background: rgb(51, 170, 255);
   transform: translateX(20px);
 }
 
+.scanned-cards-heading {
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+}
+
 .progress-bar {
     background-color: lightgrey;
     height: 6px;
@@ -546,6 +705,8 @@ background: rgb(51, 170, 255);
     width: 88%;
     margin-left: 6%;
     margin-right: 6%;
+    margin-top: 0;
+    margin-bottom: 18px;
 }
 
 .progress-bar>div {

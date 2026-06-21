@@ -3,12 +3,12 @@ import './DecklistCreator.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import { addDecklistToDB, seralizeDecklist } from './StorageManager';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
-import { MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz } from "react-icons/md";
+import { MdCameraAlt, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -83,6 +83,12 @@ const BASIC_ENERGY_INFO = [
 ]
 
 const BASIC_ENERGY_NAMES = BASIC_ENERGY_INFO.map(energy => energy.name);
+
+function SearchDropdownIndicator(props) {
+    return <components.DropdownIndicator {...props}>
+        <MdSearch />
+    </components.DropdownIndicator>
+}
 
 
 function contrastImage(imgData, contrast) {  //input range [-100..100]
@@ -198,7 +204,7 @@ function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
     }
 }
 
-function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp }) {
+function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp, scrollToTop }) {
     const videoRef = useRef(null);
     const tesseractCanvasRef = useRef(null);
     // const tesseractDebugCanvasRef = useRef(null);
@@ -210,6 +216,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     const [deckName, setDeckName] = useState(startingDeckName);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isArtSwapModalOpen, setIsArtSwapModalOpen] = useState(false);
+    const [isScannerActive, setIsScannerActive] = useState(false);
     const [artSwapSourceOriginalIndex, setArtSwapSourceOriginalIndex] = useState(null);
     const [showBasicEnergySelector, setShowBasicEnergySelector] = useState(false);
     const [saveChangesButtonText, setSaveChangesButtonText] = useState('Save Changes');
@@ -342,6 +349,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     function setCardNameWrapped(cardName) {
         setShowBasicEnergySelector(false); // clear this
         setCurrentDetectedCardName(cardName);
+        scrollToTop();
         const cardSample = cardDatabase[cardNameToIDs[cardName][0]];
         if (cardSample?.supertype !== 'Pokémon') {
             // not a Pokemon - directly set card ID since art doesn't matter
@@ -353,6 +361,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 }
             });
             setCurrentDetectedCardID(cardID);
+            scrollToTop();
         }
     }
 
@@ -386,55 +395,100 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
 
 
     useEffect(() => {
-        if (videoRef != null) {
-            const video = videoRef.current;
-            video.setAttribute('autoplay', '');
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
-
-            navigator.mediaDevices
-                .getUserMedia({
-                    'audio': false,
-                    'video': {
-                        facingMode: 'environment',
-                    },
-                })
-                .then((stream) => {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = function (e) {
-                        const isLandscape = video.videoHeight < video.videoWidth;
-                        if (isLandscape) { // because some mobile devices are dumb, we need to reverse stuff
-                            navigator.mediaDevices
-                                .getUserMedia({
-                                    'audio': false,
-                                    'video': {
-                                        facingMode: 'environment',
-                                        // reverse height/width because the OS was not kind the first time
-                                    },
-                                })
-                                .then((stream) => {
-                                    video.srcObject = stream;
-                                    video.onloadedmetadata = function (e) {
-                                        video.play();
-                                        requestAnimationFrame(tesseractTick);
-                                    };
-                                })
-                                .catch((err) => {
-                                    setErrorMessage(`An error occurred: ${err}`);
-                                    console.error(`An error occurred: ${err}`);
-                                });
-                        } else {
-                            video.play();
-                            requestAnimationFrame(tesseractTick);
-                        }
-                    };
-                })
-                .catch((err) => {
-                    setErrorMessage(`An error occurred: ${err}`);
-                    console.error(`An error occurred: ${err}`);
-                });
+        if (!isScannerActive) {
+            return;
         }
-    }, [videoRef]);
+
+        setErrorMessage(null);
+
+        const video = videoRef.current;
+        if (video == null) {
+            return;
+        }
+
+        let cancelled = false;
+        let activeStream = null;
+
+        const attachStream = (stream) => {
+            if (cancelled) {
+                stream.getTracks().forEach(track => track.stop());
+                return;
+            }
+
+            activeStream = stream;
+            video.srcObject = stream;
+            video.onloadedmetadata = function () {
+                if (cancelled) {
+                    return;
+                }
+
+                const isLandscape = video.videoHeight < video.videoWidth;
+                if (isLandscape) {
+                    navigator.mediaDevices
+                        .getUserMedia({
+                            audio: false,
+                            video: {
+                                facingMode: 'environment',
+                            },
+                        })
+                        .then((replacementStream) => {
+                            if (cancelled) {
+                                replacementStream.getTracks().forEach(track => track.stop());
+                                return;
+                            }
+
+                            if (activeStream != null) {
+                                activeStream.getTracks().forEach(track => track.stop());
+                            }
+                            activeStream = replacementStream;
+                            video.srcObject = replacementStream;
+                            video.onloadedmetadata = function () {
+                                if (cancelled) {
+                                    return;
+                                }
+                                video.play();
+                                requestAnimationFrame(() => tesseractTick(() => !cancelled));
+                            };
+                        })
+                        .catch((err) => {
+                            setErrorMessage('Could not access device camera');
+                            setIsScannerActive(false);
+                            console.error(`An error occurred: ${err}`);
+                        });
+                } else {
+                    video.play();
+                    requestAnimationFrame(() => tesseractTick(() => !cancelled));
+                }
+            };
+        };
+
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+
+        navigator.mediaDevices
+            .getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: 'environment',
+                },
+            })
+            .then(attachStream)
+            .catch((err) => {
+                setErrorMessage('Could not access device camera');
+                setIsScannerActive(false);
+                console.error(`An error occurred: ${err}`);
+            });
+
+        return () => {
+            cancelled = true;
+            video.pause();
+            video.srcObject = null;
+            if (activeStream != null) {
+                activeStream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [isScannerActive]);
 
     // listen to changes to the tesseract output
     useEffect(() => {
@@ -492,6 +546,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 if (lowercaseText.match(setInfoRegex)) {
                     setShowBasicEnergySelector(false); // clear this
                     setCurrentDetectedCardID(id);
+                    scrollToTop();
                 }
             });
         }
@@ -540,7 +595,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     useEffect(() => {
         // dynamically reduce tesseract tick rate to save CPU if we're not actively searching for something
         // if we have cpu pressure data, and the system is behaving normally, go with a higher tick rate
-        if (currentDetectedCardID != null || totalCards >= 60) {
+        if (!isScannerActive || currentDetectedCardID != null || totalCards >= 60) {
             // scan not required
             tesseractTickrateRef.current = 500;
         } else if (pressureData?.state === 'nominal' || pressureData?.state === 'fair') {
@@ -550,9 +605,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         } else {
             tesseractTickrateRef.current = 70;
         }
-    }, [currentDetectedCardID, totalCards, tesseractTickrateRef, pressureData]);
+    }, [isScannerActive, currentDetectedCardID, totalCards, tesseractTickrateRef, pressureData]);
 
-    async function tesseractTick() {
+    async function tesseractTick(shouldContinue = () => true) {
+        if (!shouldContinue()) {
+            return;
+        }
+
         const canvas = tesseractCanvasRef.current;
         const video = videoRef.current;
         const context = canvas.getContext("2d", { willReadFrequently: true });
@@ -591,18 +650,24 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             // debugContext.putImageData(pixels, 0, 0);
 
             setTimeout(async () => {
+                if (!shouldContinue()) {
+                    return;
+                }
                 const imageUrl = canvas.toDataURL("image/png");
 
                 const { data: { text } } = await tesseractWorker.recognize(imageUrl, { rotateAuto: true });
                 setTesseractOutput(text);
 
-                requestAnimationFrame(tesseractTick);
+                if (shouldContinue()) {
+                    requestAnimationFrame(() => tesseractTick(shouldContinue));
+                }
             }, tesseractTickrateRef.current);
         }, tesseractTickrateRef.current);
     }
 
     const addCard = (cardInfo, count) => {
         setShowBasicEnergySelector(false); // clear this
+        scrollToTop();
 
         // if the card is a pokemon, match by id
         // else, match by card name
@@ -688,6 +753,11 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         }
     }
 
+    const creatorStageClass = 'video-feed-container-active';
+    const countButtons = currentDetectedCardID != null ? Array.from(Array(
+        BASIC_ENERGY_NAMES.includes(currentDetectedCardName) ? 30 : 4
+    ).keys()).map(countMinusOne => countMinusOne + 1) : [];
+
     return <div>
         <div className="subtitle">
             <small>
@@ -699,39 +769,47 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         <div>{errorMessage} </div>
         <canvas ref={tesseractCanvasRef} hidden></canvas>
 
-        <motion.div className="video-feed-container" >
+        {!isScannerActive && currentDetectedCardID == null ? <button onClick={() => setIsScannerActive(true)} className='scanner-activate-button scanner-activate-button-top'>
+            <MdCameraAlt className='scanner-activate-button-icon' /> Use Scanner
+        </button> : null}
+
+        {isScannerActive ? <motion.div className={`video-feed-container ${creatorStageClass}${numSimilarCards > 0 ? ' video-feed-container-has-similar' : ''}`} >
             <video className="video-feed" ref={videoRef}>Video stream not available.</video>
             {
-                currentDetectedCardName != null && currentDetectedCardID == null ?
+                isScannerActive && currentDetectedCardName != null && currentDetectedCardID == null ?
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='detected-card-name'>
-                        <button onClick={cancelScan} className='cancel-scan-button' style={{ passingTop: 2 }}>&#10006;&#xFE0E;</button>
+                        <button onClick={cancelScan} className='cancel-scan-button' style={{ paddingTop: 2 }}>&#10006;&#xFE0E;</button>
                         {currentDetectedCardName}
                     </motion.div> :
                     null
             }
-            <div className={`video-feed-viewport ${currentDetectedCardID == null ? 'video-feed-viewport-scanning' : ''}`} style={{
-                top: (viewportTop * 100) + '%',
-                height: (viewportHeight * 100) + '%',
-                left: (viewportLeft * 100) + '%',
-                width: (viewportWidth * 100) + '%',
-            }
-            }></div>
-            {currentDetectedCardID == null ? <div className="video-feed-viewport-line" style={{
-                top: ((viewportTop + viewportHeight * 0.8) * 100) + '%',
-                left: ((viewportLeft + viewportWidth * 0.1) * 100) + '%',
-                width: (viewportWidth * 80) + '%',
-            }
-            }></div> : null}
+            {isScannerActive ? <>
+                <div className={`video-feed-viewport ${currentDetectedCardID == null ? 'video-feed-viewport-scanning' : ''}`} style={{
+                    top: (viewportTop * 100) + '%',
+                    height: (viewportHeight * 100) + '%',
+                    left: (viewportLeft * 100) + '%',
+                    width: (viewportWidth * 100) + '%',
+                }
+                }></div>
+                {currentDetectedCardID == null ? <div className="video-feed-viewport-line" style={{
+                    top: ((viewportTop + viewportHeight * 0.8) * 100) + '%',
+                    left: ((viewportLeft + viewportWidth * 0.1) * 100) + '%',
+                    width: (viewportWidth * 80) + '%',
+                }
+                }></div> : null}
+            </> : null}
             <div className='video-feed-instructions'>{
-                currentDetectedCardName == null ? <div key="card-name-scan-instruction" >Scan the card name</div> : (
-                    currentDetectedCardID == null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="set-number-scan-instruction" >Scan the set number</motion.div> : null
-                )
+                isScannerActive && currentDetectedCardID == null ? (
+                    currentDetectedCardName == null ? <div key="card-name-scan-instruction" >Scan the card name</div> : (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} key="set-number-scan-instruction" >Scan the set number</motion.div>
+                    )
+                ) : null
             }</div>
             <div className='video-feed-sub-instructions'>{
-                currentDetectedCardID == null ? 'Hold the text within the box' : null
+                isScannerActive && currentDetectedCardID == null ? 'Hold the text within the box' : null
             }</div>
             <div className='video-feed-lighting-instructions'>{
-                currentDetectedCardID == null ? <div>
+                isScannerActive && currentDetectedCardID == null ? <div>
                     Avoid shadows if possible!
                     <br />Well lit cards lead to easier scanning
                 </div> : null
@@ -748,6 +826,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         const onClick = () => {
                             setCurrentDetectedCardName(energyInfo.name);
                             setCurrentDetectedCardID(energyInfo.idSample);
+                            scrollToTop();
                         }
                         return <img key={energyInfo.name} onClick={onClick} src={energyInfo.iconUri} width={30} height={30}></img>
                     })}
@@ -763,8 +842,10 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         <div>{cardDatabase[currentDetectedCardID].similar_card_ids
                             .map((similarID) => {
                                 const similarCard = cardDatabase[similarID];
-                                return <button key={similarID} onClick={() =>
-                                    setCurrentDetectedCardID(similarID)} > {similarCard.set_code} {similarCard.number}</button>;
+                                return <button key={similarID} onClick={() => {
+                                    setCurrentDetectedCardID(similarID);
+                                    scrollToTop();
+                                }} > {similarCard.set_code} {similarCard.number}</button>;
                             }
                             )}
                         </div>
@@ -782,7 +863,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 </motion.div>
             </div> : null
             }
-            {currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='card-count-selector'>
+            {isScannerActive && currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='card-count-selector'>
                 <div className='card-count-selector-instructions'>
                     <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
                     &nbsp;
@@ -791,10 +872,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 <div className={BASIC_ENERGY_NAMES.includes(currentDetectedCardName)
                     ? 'card-count-selector-buttons-energy' : 'card-count-selector-buttons-4'}>
                     {
-                        Array.from(Array(
-                            BASIC_ENERGY_NAMES.includes(currentDetectedCardName) ? 30 : 4
-                        ).keys()).map(countMinusOne => {
-                            const count = countMinusOne + 1;
+                        countButtons.map(count => {
                             const onClick = () => {
                                 addCard(cardDatabase[currentDetectedCardID], count);
                             }
@@ -811,22 +889,42 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         : null
                 }
             </AnimatePresence>
-        </motion.div>
-        <div className="progress-bar">
-            <motion.div layout className={totalCards === 60 ? 'progress-bar-green' : 'progress-bar-blue'}
-                style={{ 'width': `${100 * Math.min(totalCards, 60) / 60}%` }}
-            >
-            </motion.div>
-        </div>
+        </motion.div> : null}
         {/* <canvas ref={tesseractDebugCanvasRef}></canvas> */}
 
-        {candidateCardIDs != null && currentDetectedCardID == null ? <div>
-            <h3> Or, select the art directly:</h3>
+        {!isScannerActive && currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='manual-count-selector'>
+            <div className='manual-count-card'>
+                {cardDatabase[currentDetectedCardID].supertype === 'Pokémon' ?
+                    <div className='manual-count-set-info'>
+                        {cardDatabase[currentDetectedCardID].set_code}&nbsp;
+                        {cardDatabase[currentDetectedCardID].number}
+                    </div> : null}
+                <CardImageForID id={currentDetectedCardID} />
+            </div>
+            <div className='manual-count-controls'>
+                <div className='manual-count-instructions'>
+                    <button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>
+                    <span>{currentDetectedCardIDCount === 0 ? 'How many?' : `${currentDetectedCardIDCount} already scanned`}</span>
+                </div>
+                <div className={BASIC_ENERGY_NAMES.includes(currentDetectedCardName)
+                    ? 'manual-count-buttons manual-count-buttons-energy' : 'manual-count-buttons'}>
+                    {countButtons.map(count => {
+                        const onClick = () => {
+                            addCard(cardDatabase[currentDetectedCardID], count);
+                        }
+                        return <button key={count} onClick={onClick}>{currentDetectedCardIDCount > 0 ? '+' : ''}{count}</button>
+                    })}
+                </div>
+            </div>
+        </motion.div> : null}
+
+        {candidateCardIDs != null && currentDetectedCardID == null ? <div className='manual-art-selector-container'>
+            <h3>{isScannerActive ? 'Or, select the art directly:' : <><button onClick={cancelScan} className='cancel-scan-button'>&#10006;&#xFE0E;</button>{currentDetectedCardName}</>}</h3>
             <div className='candidate-card-ids'>
                 {candidateCardIDs.map((id, index) => {
                     return <motion.div onClick={() => {
                         setCurrentDetectedCardID(id);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        scrollToTop();
                     }} whileTap={{ y: 4 }} key={id}>
                         <motion.div
                             initial={{ opacity: 0, x: -400, scale: 0.5 }}
@@ -842,30 +940,37 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         </div> : null}
         {
             currentDetectedCardName == null ? <div className='card-name-selector-container'>
-                <div className='select-name-manually-instructions'>
+                {isScannerActive ? <div className='select-name-manually-instructions'>
                     Scanning can be imperfect! Please make sure you have the right card before proceeding
-                </div>
+                </div> : null}
                 <Select
                     options={cardNameOptions}
+                    components={{ DropdownIndicator: SearchDropdownIndicator }}
                     defaultValue={null}
                     onChange={({ value }) => {
                         setCardNameWrapped(value);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     name={'manual-name-selector'}
                     className="name-selector"
-                    placeholder="Name not scanning? Select it manually"
+                    classNamePrefix="name-selector"
+                    placeholder={isScannerActive ? "Not scanning? Search for it" : "Find card"}
                 />
             </div> : null
         }
-        <hr />
+        <h3 className='scanned-cards-heading'>Scanned Cards: {totalCards}</h3>
+        <div className="progress-bar">
+            <motion.div className={totalCards === 60 ? 'progress-bar-green' : 'progress-bar-blue'}
+                style={{ 'width': `${100 * Math.min(totalCards, 60) / 60}%` }}
+            >
+            </motion.div>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <button onClick={() => {
                 setIsExportModalOpen(true);
                 setTimeout(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 100);
-            }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={totalCards != 60 && false}>Export</button>
+            }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={cardInfoListNonNull.length === 0}>Export</button>
             <button
                 onClick={saveChanges}
                 className='scanner-save-changes-button'
@@ -874,14 +979,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 <MdOutlineSave className='scanner-save-changes-button-icon' /> {saveChangesButtonText}
             </button>
         </div>
-        <h3>Scanned Cards: {totalCards}</h3>
         {totalCards > 0 ?
             <div>
                 <DecklistImage
                     decklist={cardInfoListNonNull}
                     cardDatabase={cardDatabase}
                 />
-                <h4 style={{ marginBottom: 7, marginTop: 14 }}>Edit</h4>
+                <h4 style={{ marginBottom: 7, marginTop: 14 }}>Edit List</h4>
             </div> : null
         }
         <div className='scans-feed'>
