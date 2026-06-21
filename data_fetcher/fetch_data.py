@@ -406,7 +406,7 @@ def parse_promo_card_page(card_html, set_id):
             default=(None, None)
         )
         resistance_section = search_first_regex_match(
-            r'<span class="resist"[^>]*>(.*?)</span>',
+            r'<span class="resist"[^>]*>.*?</span>\s*\|\s*<span class="retreat"',
             card_html,
             flags=re.DOTALL,
             default=''
