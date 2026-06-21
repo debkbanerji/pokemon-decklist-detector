@@ -60,7 +60,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                             {new Date(createdTimestamp).toLocaleString()}
                         </div>
                     </div>
-                    <div>
+                    <div className={isNested ? 'decklist-row-action-row-nested' : ''}>
 
                         <button
                             className={isNested ? 'previous-decklist-row-button ' : ''}
