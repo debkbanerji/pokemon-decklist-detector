@@ -646,6 +646,14 @@ h3 {
     gap: 4px;
 }
 
+.export-deck-info-heading {
+    margin-bottom: 0;
+}
+
+.export-deck-info-divider {
+    margin-bottom: 8px;
+}
+
 
 /* Toggle switch used in ExportModal */
 .toggle-switch {

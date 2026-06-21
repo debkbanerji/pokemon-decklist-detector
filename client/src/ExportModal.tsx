@@ -1060,7 +1060,21 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             <button onClick={() => setShowProbabilityContent(true)}><MdOutlineBarChart /> Probability {enableSaving ? '' : ' Analysis'}</button>
             {enableSaving && <button onClick={onSaveChangesManually}> <MdOutlineSave /> {saveChangesButtonManuallyText}</button>}
         </div>
-        <hr style={{ marginTop: 16 }} />
+        <hr className='export-deck-info-divider' style={{ marginTop: 16 }} />
+        {coverPokemon.length > 0 && deckName.length > 0 ? <h3 className='export-deck-info-heading'>✓ Deck Info</h3> : <h3 className='warning-text export-deck-info-heading'>⚠ Deck Info</h3>}
+        <div className='export-pdf-field'>
+            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
+                <option value={''} key="unset">(none)</option>
+                {Object.keys(pokemonNameToSpriteUrl).map(name =>
+                    <option value={name} key={name}>{name}</option>
+                )}
+            </select>
+            {coverPokemon != null && coverPokemon.length > 0 ? <img style={{ marginLeft: 5 }} src={pokemonNameToSpriteUrl[coverPokemon]}></img> : null}
+        </div>
+        <div className='export-pdf-field'>
+            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
+        </div>
+        <hr />
         <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <br />
         {
@@ -1119,20 +1133,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     <button onClick={() => setPlayerSpriteFile('')}>✖</button>
                 </div>
             }
-        </div>
-        <hr />
-        {coverPokemon.length > 0 && deckName.length > 0 ? <h3>✓ Deck Info</h3> : <h3 className='warning-text'>⚠ Deck Info</h3>}
-        <div className='export-pdf-field'>
-            Cover Pokemon: <select onChange={e => setCoverPokemonWrapped(e.target.value)} value={coverPokemon}>
-                <option value={''} key="unset">(none)</option>
-                {Object.keys(pokemonNameToSpriteUrl).map(name =>
-                    <option value={name} key={name}>{name}</option>
-                )}
-            </select>
-            {coverPokemon != null && coverPokemon.length > 0 ? <img style={{ marginLeft: 5 }} src={pokemonNameToSpriteUrl[coverPokemon]}></img> : null}
-        </div>
-        <div className='export-pdf-field'>
-            Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
         <hr />
         <div>
