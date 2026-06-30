@@ -193,8 +193,7 @@ button[disabled] {
 
 .probability-row {
   display: grid;
-  grid-template-columns: calc(50vw - 20px) auto;
-  /* left column ends near center of viewport */
+  grid-template-columns: calc(50vw - 4px) auto;
   column-gap: 8px;
   align-items: baseline;
 }

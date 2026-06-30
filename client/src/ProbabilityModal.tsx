@@ -171,9 +171,26 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
+                                    <Probability label="None in First 8" value={
+                                        pTargetBasicsInFirstEight(
+                                            card.count,
+                                            numBasics,
+                                            0
+                                        )
+                                    } />
+                                    {card.count > 1 ?
+                                        <Probability label="At Least 1 in First 8" value={
+                                            1 - pTargetBasicsInFirstEight(
+                                                card.count,
+                                                numBasics,
+                                                0
+                                            )
+                                        } />
+                                        : null
+                                    }
                                     {
-                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(copies =>
-                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies === 0 ? 'None' : copies} in First 8`} key={copies} value={
+                                        [...Array(Math.min(card.count, 6)).keys()].map(i => i + 1).map(copies =>
+                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies} in First 8`} key={copies} value={
                                                 pTargetBasicsInFirstEight(
                                                     card.count,
                                                     numBasics,
@@ -183,9 +200,26 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                                         )
                                     }
                                 </div> : <div>
+                                    <Probability label="None in First 8" value={
+                                        pTargetNonBasicsInFirstEight(
+                                            card.count,
+                                            numBasics,
+                                            0
+                                        )
+                                    } />
+                                    {card.count > 1 ?
+                                        <Probability label="At Least 1 in First 8" value={
+                                            1 - pTargetNonBasicsInFirstEight(
+                                                card.count,
+                                                numBasics,
+                                                0
+                                            )
+                                        } />
+                                        : null
+                                    }
                                     {
-                                        [...Array(Math.min(card.count, 6) + 1).keys()].map(copies =>
-                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies === 0 ? 'None' : copies} in First 8`} key={copies} value={
+                                        [...Array(Math.min(card.count, 6)).keys()].map(i => i + 1).map(copies =>
+                                            <Probability label={`${copies === card.count && copies > 1 ? 'All ' : ''}${copies} in First 8`} key={copies} value={
                                                 pTargetNonBasicsInFirstEight(
                                                     card.count,
                                                     numBasics,
