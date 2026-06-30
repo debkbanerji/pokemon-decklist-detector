@@ -167,11 +167,12 @@ function App() {
     {hasStarted ? <ErrorBoundary>
       {cardDatabase != null ? <DecklistCreator cardDatabase={cardDatabase} startingDecklist={startingDecklist} startingDeckName={startingDeckName} startingCoverPokemon={startingCoverPokemon} startingDecklistTimestamp={startingDecklistTimestamp} scrollToTop={scrollToTop} /> : 'Loading...'}
     </ErrorBoundary> : <div>
-      <div className='top-description'>
-        Beautiful decklists in minutes
-        <br />
-        Now with probability analysis!
-        <br />
+      <div className='subtitle top-description'>
+        <small>
+          <span>Made with ♥</span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+          <a href="https://github.com/debkbanerji/pokemon-decklist-detector" target="_blank">Source Code</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+          <a href="https://github.com/debkbanerji#contact-me" target="_blank">Contact</a>
+        </small>
       </div>
       {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
       <video className='demo-video' autoPlay loop muted playsInline>
