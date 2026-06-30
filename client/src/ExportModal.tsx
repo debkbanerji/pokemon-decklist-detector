@@ -3,7 +3,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
@@ -319,6 +319,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     const [showProbabilityContent, setShowProbabilityContent] = useState(false);
+    const [hadBlankCoverPokemonOnOpen] = useState(() => !(coverPokemon?.length));
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -404,6 +405,18 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }
         return result;
     }, [cardDatabase]);
+
+    // ExportModal mounts fresh each time it opens, so auto-populate the cover
+    // Pokemon here if the field was blank on open and the deck is complete.
+    useEffect(() => {
+        const shouldAutoPopulateCoverPokemon = hadBlankCoverPokemonOnOpen && totalCount === 60;
+        if (shouldAutoPopulateCoverPokemon) {
+            const autoCoverPokemonName = getAutoCoverPokemonName(undeletedCardData.map(card => card.cardInfo), cardDatabase);
+            if (autoCoverPokemonName != null) {
+                setCoverPokemonWrapped(autoCoverPokemonName);
+            }
+        }
+    }, [cardDatabase, hadBlankCoverPokemonOnOpen, totalCount, undeletedCardData]);
 
     const [clipboardButtonText, setClipboardButtonText] = useState('Copy to Clipboard');
     const pokemonText = `Pokémon: ${numPokemon}\n${pokemon.filter(row => row[1] > 0).map(row => {

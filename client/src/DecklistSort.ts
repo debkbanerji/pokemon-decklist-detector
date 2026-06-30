@@ -1,4 +1,4 @@
-type CardInfo = {
+export type CardInfo = {
     id: string;
     name: string;
     name_without_prefix_and_postfix?: string;
@@ -12,7 +12,7 @@ type CardInfo = {
     rarity_order?: number;
 };
 
-type CardDatabase = Record<string, CardInfo>;
+export type CardDatabase = Record<string, CardInfo>;
 
 function getCardTypeSortWeight(card: CardInfo) {
     if (card.supertype === 'Pokémon') {

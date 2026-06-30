@@ -1,4 +1,5 @@
 import { db } from './db';
+import type { CardInfo, CardDatabase } from './DecklistSort';
 
 const SERIALIZED_COUNT_SEPERATOR = '__';
 const SERIALIZED_ENTRY_SEPARATOR = '___';
@@ -34,6 +35,30 @@ const ENERGY_SYMBOL_TO_FULL_NAME = {
     '{R}': 'Fire',
 };
 
+const EXCLUDED_ATTACKER_CANDIDATE_REFERENCE_IDS = [
+    'sv6pt5-38', // Fezandipiti ex
+    'me3-62', // Meowth ex
+];
+
+const INCLUDED_SINGLE_PRIZE_ATTACKER_CANDIDATE_REFERENCE_IDS = [
+    'sv10-12', // Crustle
+    'sv7-58', // Slowking
+    'me1-56', // Alakazam
+    'sv6-18', // Dipplin
+    'me2pt5-96', // Hop's Trevenant
+    'sv10-34', // Ethan's Typhlosion
+    'sv5-114', // Metang
+    'sv8pt5-40', // Sylveon
+    'me2pt5-127', // Team Rocket's Honchkrow
+    'me2-68', // Toxtricity
+    'sv6-111', // Okidogi
+    'sv7-50', // Joltik
+];
+
+function getCardMechanicsHashSet(cardDatabase: CardDatabase, exampleIDs: string[]) {
+    return new Set(exampleIDs.map(id => cardDatabase[id]?.cardMechanicsHash).filter(hash => hash != null));
+}
+
 function seralizeDecklist(cardData) {
     return cardData.map(({ cardInfo }) => `${cardInfo['id']}${SERIALIZED_COUNT_SEPERATOR}${cardInfo['count']}`).join(SERIALIZED_ENTRY_SEPARATOR);
 }
@@ -46,6 +71,71 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
         const name = cardDatabase[id]['name'];
         return { cardInfo: { id, count, name } };
     });
+}
+
+function getAutoCoverPokemonName(cards: CardInfo[], cardDatabase: CardDatabase) {
+    const excludedAttackerCandidateHashes = getCardMechanicsHashSet(cardDatabase, EXCLUDED_ATTACKER_CANDIDATE_REFERENCE_IDS);
+    const includedSinglePrizeAttackerCandidateHashes = getCardMechanicsHashSet(cardDatabase, INCLUDED_SINGLE_PRIZE_ATTACKER_CANDIDATE_REFERENCE_IDS);
+    const candidateStatsByMechanicsKey = new Map<string, {
+        totalCount: number;
+        firstSeenIndex: number;
+        coverPokemonName: string;
+    }>();
+
+    cards.forEach((card, index) => {
+        if (card.supertype !== 'Pokémon') {
+            return;
+        }
+
+        if (
+            !includedSinglePrizeAttackerCandidateHashes.has(card.cardMechanicsHash)
+            && (
+                !/ ex$/i.test(card.name ?? '')
+                || excludedAttackerCandidateHashes.has(card.cardMechanicsHash)
+            )
+        ) {
+            return;
+        }
+
+        const coverPokemonName = card.name_without_prefix_and_postfix ?? card.name ?? '';
+        if (coverPokemonName.length === 0) {
+            return;
+        }
+
+        const mechanicsKey = card.cardMechanicsHash ?? card.id;
+        const existingStats = candidateStatsByMechanicsKey.get(mechanicsKey);
+        if (existingStats == null) {
+            candidateStatsByMechanicsKey.set(mechanicsKey, {
+                totalCount: card.count ?? 0,
+                firstSeenIndex: index,
+                coverPokemonName,
+            });
+            return;
+        }
+
+        existingStats.totalCount += card.count ?? 0;
+    });
+
+    let bestCandidate: null | {
+        totalCount: number;
+        firstSeenIndex: number;
+        coverPokemonName: string;
+    } = null;
+
+    candidateStatsByMechanicsKey.forEach(candidateStats => {
+        if (
+            bestCandidate == null
+            || candidateStats.totalCount > bestCandidate.totalCount
+            || (
+                candidateStats.totalCount === bestCandidate.totalCount
+                && candidateStats.firstSeenIndex < bestCandidate.firstSeenIndex
+            )
+        ) {
+            bestCandidate = candidateStats;
+        }
+    });
+
+    return bestCandidate?.coverPokemonName ?? null;
 }
 
 // The created timestamp is the source of truth
@@ -190,4 +280,4 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
     return dedupedRows;
 }
 
-export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist };
+export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist, getAutoCoverPokemonName };
