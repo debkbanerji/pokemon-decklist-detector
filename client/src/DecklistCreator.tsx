@@ -8,7 +8,7 @@ import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
-import { MdCameraAlt, MdIosShare, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
+import { MdCameraAlt, MdIosShare, MdOutlineClose, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
@@ -1094,11 +1094,12 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         <div className="art-swap-modal-content">
                             <div className='art-swap-modal-header'>
                                 <b>Swap Art</b>
-                                <div onClick={() => {
+                                <button onClick={() => {
                                     setIsArtSwapModalOpen(false);
                                     setArtSwapSourceOriginalIndex(null);
-                                }} className='modal-header-row-button'>
-                                </div>
+                                }} className='modal-header-row-button' aria-label='Close swap art'>
+                                    <MdOutlineClose />
+                                </button>
                             </div>
                             <div className='candidate-card-ids art-swap-options-grid'>
                                 {(mechanicallyIdenticalCardIDsByHash[cardInfoList[artSwapSourceOriginalIndex].cardMechanicsHash] ?? []).map(cardID => {

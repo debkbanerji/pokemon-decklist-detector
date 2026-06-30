@@ -9,7 +9,7 @@ import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
 import { ProbabilityContent } from './ProbabilityModal.tsx';
-import { MdOutlineBarChart, MdOutlineSave } from 'react-icons/md';
+import { MdOutlineArrowBack, MdOutlineBarChart, MdOutlineClose, MdOutlineSave } from 'react-icons/md';
 import { sortDecklistCards } from './DecklistSort.ts';
 
 function getDisplaySetCode(card) {
@@ -1047,11 +1047,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         return (
             <div>
                 <div className='modal-header-row'>
-                    <div> <a
-                        className='home-button'
-                        style={{ position: 'relative', top: 0, left: 0, marginRight: 16, color: 'black', fontSize: 20 }}
+                    <div> <button
+                        className='modal-header-nav-button'
+                        aria-label='Back to export decklist'
                         onClick={() => setShowProbabilityContent(false)}
-                    >&#x25c0;&#xFE0E;</a></div>
+                    ><MdOutlineArrowBack /></button></div>
                     <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>Probability Analysis</h3>
                 </div>
                 <ProbabilityContent cardList={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
@@ -1064,8 +1064,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <div className='modal-header-row'>
             <div>
                 <h2>Export Decklist</h2>&nbsp;
-                <div onClick={onClose} className='modal-header-row-button'>
-                </div>
+                <button onClick={onClose} className='modal-header-row-button' aria-label='Close export decklist'>
+                    <MdOutlineClose />
+                </button>
             </div>
         </div>
         <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>

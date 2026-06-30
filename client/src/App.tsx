@@ -7,7 +7,7 @@ import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, parseFormattedDecklist } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "motion/react"
-import { i } from 'motion/react-client';
+import { MdOutlineArrowBack } from 'react-icons/md';
 
 
 const TITLE_ADJECTIVES = [
@@ -161,7 +161,7 @@ function App() {
 
   return <>
     <div ref={headerRef} className="header">
-      {hasStarted ? <a className='home-button' href={window.location.origin} style={{ fontSize: 25 }}>&#x25c0;&#xFE0E;</a> : <span></span>}
+      {hasStarted ? <a className='home-button modal-header-nav-button' href={window.location.origin} aria-label='Back to home'><MdOutlineArrowBack /></a> : <span></span>}
       <h3 className="title">Deb's {titleAdjective}<br /> Decklist Detector</h3>
     </div>
     {hasStarted ? <ErrorBoundary>

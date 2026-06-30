@@ -3,6 +3,7 @@ import CardPreviewIcon from './CardPreviewIcon';
 import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTargetBasic, pPrizedTargetNonBasic, pTargetBasicsInFirstEight, pTargetBasicsInOpeningHand, pTargetNonBasicsInFirstEight } from './ProbabilityUtils';
 import DecklistImage from './DecklistImage';
 import OpeningHandSimulator from './OpeningHandSimulator';
+import { MdOutlineClose } from 'react-icons/md';
 
 const UNSUPPORTED_PROBABILITY_CARD_IDS = new Set(['me1-28']);
 
@@ -268,8 +269,9 @@ function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
         <div className='modal-header-row'>
             <div>
                 <h3>Probability Analysis</h3>&nbsp;
-                <div onClick={onClose} className='modal-header-row-button'>
-                </div>
+                <button onClick={onClose} className='modal-header-row-button' aria-label='Close probability analysis'>
+                    <MdOutlineClose />
+                </button>
             </div>
         </div>
         <DecklistImage decklist={cardList} cardDatabase={cardDatabase} />
