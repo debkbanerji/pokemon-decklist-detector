@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
 import { MdOutlineClose } from 'react-icons/md';
 import CardImageForID from './CardImageForID';
-import { buildDeckVennSections } from './DeckComparison';
+import { buildDeckVennSections, buildMinRarityDecklist } from './DeckComparison';
 
 function DeckSection({ title, metadata, subtitle, cards, className }) {
     return <section className={`deck-venn-section ${className}`}>
@@ -36,10 +35,9 @@ function VennDiagramModal({
     const rightDeckName = rightDeck.name || 'Unnamed Deck';
     const leftDeckMetadata = leftDeck.createdTimestamp != null ? new Date(leftDeck.createdTimestamp).toLocaleString() : null;
     const rightDeckMetadata = rightDeck.createdTimestamp != null ? new Date(rightDeck.createdTimestamp).toLocaleString() : null;
-    const { deckAOnly, shared, deckBOnly } = useMemo(
-        () => buildDeckVennSections(leftDeck.cards, rightDeck.cards, cardDatabase),
-        [leftDeck.cards, rightDeck.cards, cardDatabase]
-    );
+    const minRarityLeftDeck = buildMinRarityDecklist(leftDeck.cards, cardDatabase);
+    const minRarityRightDeck = buildMinRarityDecklist(rightDeck.cards, cardDatabase);
+    const { deckAOnly, shared, deckBOnly } = buildDeckVennSections(minRarityLeftDeck, minRarityRightDeck, cardDatabase);
 
     const leftOnlyCount = deckAOnly.reduce((sum, card) => sum + card.count, 0);
     const sharedCount = shared.reduce((sum, card) => sum + card.count, 0);

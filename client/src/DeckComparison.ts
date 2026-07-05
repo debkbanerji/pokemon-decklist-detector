@@ -80,7 +80,7 @@ export function buildDeckVennSections(deckA: CardInfo[], deckB: CardInfo[], card
     const groupsByKey = new Map<string, {
         deckACount: number;
         deckBCount: number;
-        candidates: CardInfo[];
+        representativeCard: CardInfo;
     }>();
 
     const addCardsToGroup = (deck: CardInfo[], countField: 'deckACount' | 'deckBCount') => {
@@ -92,15 +92,12 @@ export function buildDeckVennSections(deckA: CardInfo[], deckB: CardInfo[], card
                 groupsByKey.set(comparisonKey, {
                     deckACount: countField === 'deckACount' ? card.count : 0,
                     deckBCount: countField === 'deckBCount' ? card.count : 0,
-                    candidates: [card],
+                    representativeCard: card,
                 });
                 return;
             }
 
             existingGroup[countField] += card.count;
-            if (!existingGroup.candidates.some(candidate => candidate.id === card.id)) {
-                existingGroup.candidates.push(card);
-            }
         });
     };
 
@@ -112,14 +109,13 @@ export function buildDeckVennSections(deckA: CardInfo[], deckB: CardInfo[], card
     const deckBOnly: DeckComparisonCard[] = [];
 
     groupsByKey.forEach((group, comparisonKey) => {
-        const representativeCard = [...group.candidates].sort((a, b) => compareCardsForLowRarity(a, b, cardDatabase))[0];
         const sharedCount = Math.min(group.deckACount, group.deckBCount);
         const deckAOnlyCount = group.deckACount - sharedCount;
         const deckBOnlyCount = group.deckBCount - sharedCount;
 
         if (deckAOnlyCount > 0) {
             deckAOnly.push({
-                ...representativeCard,
+                ...group.representativeCard,
                 comparisonKey,
                 count: deckAOnlyCount,
             });
@@ -127,7 +123,7 @@ export function buildDeckVennSections(deckA: CardInfo[], deckB: CardInfo[], card
 
         if (sharedCount > 0) {
             shared.push({
-                ...representativeCard,
+                ...group.representativeCard,
                 comparisonKey,
                 count: sharedCount,
             });
@@ -135,7 +131,7 @@ export function buildDeckVennSections(deckA: CardInfo[], deckB: CardInfo[], card
 
         if (deckBOnlyCount > 0) {
             deckBOnly.push({
-                ...representativeCard,
+                ...group.representativeCard,
                 comparisonKey,
                 count: deckBOnlyCount,
             });
