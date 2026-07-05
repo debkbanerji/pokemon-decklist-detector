@@ -1076,6 +1076,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                                 setDeckName={setDeckName}
                                 enableSaving={true}
                                 previousDecklistTimestamp={startingDecklistTimestamp}
+                                currentDeckCreatedTimestamp={startingDecklistTimestamp}
                                 onClose={() => setIsExportModalOpen(false)}
                             />
                         </div>

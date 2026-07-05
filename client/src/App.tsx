@@ -225,6 +225,7 @@ function App() {
                 setDeckName={setDeckNameForModal}
                 enableSaving={true}
                 previousDecklistTimestamp={startingDecklistTimestamp}
+                currentDeckCreatedTimestamp={startingDecklistTimestamp}
                 onClose={() => {
                   setDecklistForModal(null);
 

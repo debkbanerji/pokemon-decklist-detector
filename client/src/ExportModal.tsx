@@ -3,14 +3,16 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
 import { ProbabilityContent } from './ProbabilityModal.tsx';
-import { MdOutlineArrowBack, MdOutlineBarChart, MdOutlineClose, MdOutlineSave } from 'react-icons/md';
+import { MdCompareArrows, MdOutlineArrowBack, MdOutlineBarChart, MdOutlineClose, MdOutlineContentPaste, MdOutlineSave } from 'react-icons/md';
 import { sortDecklistCards } from './DecklistSort.ts';
+import { useLiveQuery } from 'dexie-react-hooks';
+import VennDiagramModal from './VennDiagramModal.tsx';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -314,12 +316,58 @@ function processStringForPDFCompatibility(str) {
     return str;
 }
 
+function CompareChooser({
+    currentDeckName,
+    savedDecklists,
+    onCompareSavedDeck,
+    onCompareClipboard,
+    clipboardButtonText,
+}) {
+    const selectableDecklists = [...(savedDecklists ?? [])].sort((a, b) => b.createdTimestamp - a.createdTimestamp);
 
-function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, onClose }) {
+    return <div>
+        <div className='deck-venn-description'>
+            Choose a deck to compare card counts
+        </div>
+        <div className='storage-info modal-action-row compare-chooser-actions'>
+            <button onClick={onCompareClipboard}>
+                <MdOutlineContentPaste /> {clipboardButtonText}
+            </button>
+        </div>
+        <h4 className='compare-chooser-heading'>Saved Decks</h4>
+        {selectableDecklists.length > 0 ? <div className='compare-saved-deck-list'>
+            {selectableDecklists.map(decklist => <button
+                type='button'
+                className='compare-saved-deck-button'
+                key={decklist.createdTimestamp}
+                onClick={() => onCompareSavedDeck(decklist)}
+            >
+                {decklist.coverPokemonSpriteUrl ? <img
+                    className='compare-saved-deck-icon'
+                    src={decklist.coverPokemonSpriteUrl}
+                    alt=''
+                /> : null}
+                <span className='compare-saved-deck-text'>
+                    <strong>{decklist.name || 'Unnamed Deck'}</strong>
+                    <span className='metadata-text'>{new Date(decklist.createdTimestamp).toLocaleString()}</span>
+                </span>
+            </button>)}
+        </div> : <div className='compare-chooser-empty'>No saved decks available.</div>}
+    </div>;
+}
+
+
+function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, currentDeckCreatedTimestamp, onClose }) {
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     const [showProbabilityContent, setShowProbabilityContent] = useState(false);
+    const [showCompareContent, setShowCompareContent] = useState(false);
+    const [compareTargetDeck, setCompareTargetDeck] = useState(null);
+    const [compareClipboardButtonText, setCompareClipboardButtonText] = useState('Import from Clipboard');
     const [hadBlankCoverPokemonOnOpen] = useState(() => !(coverPokemon?.length));
+    const savedDecklists = useLiveQuery(() => getDecklists());
+    const currentDeckName = deckName?.length > 0 ? deckName : 'Primary Deck';
+    const currentDeckCards = useMemo(() => undeletedCardData.map(card => card.cardInfo), [undeletedCardData]);
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -456,12 +504,16 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         await saveDecklistToStorage();
     }
 
+    const saveSuccessTooltipText = previousDecklistTimestamp == null ? 'Saved to My Decks' : 'Changes Saved';
     const [saveChangesButtonManuallyText, setSaveChangesButtonManuallyText] = useState(previousDecklistTimestamp == null ? 'Save to My Decks' : 'Save Changes');
+    const [showSaveTooltip, setShowSaveTooltip] = useState(false);
     async function onSaveChangesManually() {
         await saveDecklistToStorage();
-        setSaveChangesButtonManuallyText('Saved!');
+        setSaveChangesButtonManuallyText(saveSuccessTooltipText);
+        setShowSaveTooltip(true);
         setTimeout(() =>
             setSaveChangesButtonManuallyText(previousDecklistTimestamp == null ? 'Save to My Decks' : 'Save Changes'), 1000);
+        setTimeout(() => setShowSaveTooltip(false), 1400);
     }
 
     const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(undeletedCardData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
@@ -1059,6 +1111,89 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         );
     }
 
+    async function onCompareClipboard() {
+        setCompareClipboardButtonText('Importing...');
+
+        setTimeout(async () => {
+            try {
+                const clipboardContents = await navigator.clipboard.readText();
+                const parsedDecklist = parseFormattedDecklist(clipboardContents, cardDatabase);
+                if (parsedDecklist.length < 1) {
+                    throw new Error('Empty decklist');
+                }
+
+                setCompareTargetDeck({
+                    name: 'Clipboard Import',
+                    cards: parsedDecklist.map(({ cardInfo }, index) => ({
+                        originalIndex: index,
+                        ...cardInfo,
+                        ...cardDatabase[cardInfo.id]
+                    }))
+                });
+                setCompareClipboardButtonText('Import from Clipboard');
+            } catch (e) {
+                console.error(e);
+                alert('Unable to read comparison deck from clipboard :/');
+                setCompareClipboardButtonText('Import from Clipboard');
+            }
+        }, 100);
+    }
+
+    function onCompareSavedDeck(savedDeck) {
+        setCompareTargetDeck({
+            name: savedDeck.name || 'Unnamed Deck',
+            createdTimestamp: savedDeck.createdTimestamp,
+            cards: deserializeDecklist(savedDeck.serializedDecklist, cardDatabase).map(({ cardInfo }, index) => {
+                const { id, count } = cardInfo;
+                return {
+                    originalIndex: index,
+                    count,
+                    id,
+                    ...cardDatabase[id]
+                };
+            })
+        });
+    }
+
+    if (showCompareContent) {
+        return (
+            <div>
+                <div className='modal-header-row'>
+                    <div>
+                        <button
+                            className='modal-header-nav-button'
+                            aria-label={compareTargetDeck == null ? 'Back to export decklist' : 'Back to deck choosing'}
+                            onClick={() => {
+                                if (compareTargetDeck == null) {
+                                    setShowCompareContent(false);
+                                    setCompareClipboardButtonText('Import from Clipboard');
+                                } else {
+                                    setCompareTargetDeck(null);
+                                }
+                            }}
+                        ><MdOutlineArrowBack /></button>
+                    </div>
+                    <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>
+                        Venn Diagram
+                    </h3>
+                </div>
+                {compareTargetDeck == null ? <CompareChooser
+                    currentDeckName={currentDeckName}
+                    savedDecklists={savedDecklists}
+                    onCompareSavedDeck={onCompareSavedDeck}
+                    onCompareClipboard={onCompareClipboard}
+                    clipboardButtonText={compareClipboardButtonText}
+                /> : <VennDiagramModal
+                    embedded={true}
+                    cardDatabase={cardDatabase}
+                    leftDeck={{ name: currentDeckName, createdTimestamp: currentDeckCreatedTimestamp, cards: currentDeckCards }}
+                    rightDeck={compareTargetDeck}
+                    onClose={() => setCompareTargetDeck(null)}
+                />}
+            </div>
+        );
+    }
+
 
     return <div>
         <div className='modal-header-row'>
@@ -1069,9 +1204,22 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 </button>
             </div>
         </div>
-        <div className='storage-info' style={{ display: 'flex', gap: '16px', alignItems: 'center', justifyContent: 'center', margin: '16px 0' }}>
+        <div className='storage-info modal-action-row'>
+            {enableSaving ? <div className='export-modal-save-button-container'>
+                <button
+                    onClick={onSaveChangesManually}
+                    className='export-modal-save-button'
+                    title={saveChangesButtonManuallyText}
+                    aria-label={saveChangesButtonManuallyText}
+                >
+                    <MdOutlineSave /> Save
+                </button>
+                {showSaveTooltip ? <div className='export-modal-save-tooltip' role='status' aria-live='polite'>
+                    {saveSuccessTooltipText}
+                </div> : null}
+            </div> : null}
             <button onClick={() => setShowProbabilityContent(true)}><MdOutlineBarChart /> Probability {enableSaving ? '' : ' Analysis'}</button>
-            {enableSaving && <button onClick={onSaveChangesManually}> <MdOutlineSave /> {saveChangesButtonManuallyText}</button>}
+            <button onClick={() => setShowCompareContent(true)}><MdCompareArrows /> Compare</button>
         </div>
         <hr className='export-deck-info-divider' style={{ marginTop: 16 }} />
         {coverPokemon.length > 0 && deckName.length > 0 ? <h3 className='export-deck-info-heading'>✓ Deck Info</h3> : <h3 className='warning-text export-deck-info-heading'>⚠ Deck Info</h3>}

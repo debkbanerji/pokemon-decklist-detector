@@ -1,58 +1,7 @@
 import { useMemo, useState } from 'react';
 import './DecklistImage.css';
 import CardImageForID from './CardImageForID.tsx';
-
-function getLowRarityRank(card, cardDatabase) {
-    return card?.rarity_order ?? cardDatabase?.[card?.id]?.rarity_order ?? 999;
-}
-
-function compareCardsForLowRarity(a, b, cardDatabase) {
-    return getLowRarityRank(a, cardDatabase) - getLowRarityRank(b, cardDatabase)
-        || (a.set_code ?? cardDatabase?.[a?.id]?.set_code ?? '').localeCompare(b.set_code ?? cardDatabase?.[b?.id]?.set_code ?? '')
-        || (a.number ?? cardDatabase?.[a?.id]?.number ?? '').localeCompare(b.number ?? cardDatabase?.[b?.id]?.number ?? '')
-        || (a.id ?? '').localeCompare(b.id ?? '');
-}
-
-function coalesceDecklistForDisplay(decklist, cardDatabase, forceLowRarity) {
-    const groupedCards = new Map();
-    decklist.forEach((card, index) => {
-        const groupKey = card.cardMechanicsHash ?? card.id ?? `${index}`;
-        const existingGroup = groupedCards.get(groupKey);
-        if (!existingGroup) {
-            groupedCards.set(groupKey, {
-                displayKey: groupKey,
-                representativeCard: card,
-                count: card.count,
-                mechanicHash: card.cardMechanicsHash ?? null,
-            });
-            return;
-        }
-
-        existingGroup.count += card.count;
-    });
-
-    return Array.from(groupedCards.values()).map(group => {
-        if (forceLowRarity && group.mechanicHash != null) {
-            const databaseCandidates = Object.values(cardDatabase).filter(card =>
-                card?.cardMechanicsHash === group.mechanicHash && card?.supertype === 'Pokémon'
-            );
-            if (databaseCandidates.length > 0) {
-                const lowRarityRepresentative = [...databaseCandidates].sort((a, b) => compareCardsForLowRarity(a, b, cardDatabase))[0];
-                return {
-                    ...lowRarityRepresentative,
-                    count: group.count,
-                    displayKey: group.displayKey,
-                };
-            }
-        }
-
-        return {
-            ...group.representativeCard,
-            count: group.count,
-            displayKey: group.displayKey,
-        };
-    });
-}
+import { buildMinRarityDecklist } from './DeckComparison';
 
 function DecklistImage({
     decklist,
@@ -60,7 +9,12 @@ function DecklistImage({
 }) {
     const [forceLowRarity, setForceLowRarity] = useState(false);
     const displayDecklist = useMemo(
-        () => coalesceDecklistForDisplay(decklist, cardDatabase, forceLowRarity),
+        () => forceLowRarity
+            ? buildMinRarityDecklist(decklist, cardDatabase)
+            : decklist.map((card, index) => ({
+                ...card,
+                displayKey: `${card.id ?? 'index'}-${index}`,
+            })),
         [decklist, cardDatabase, forceLowRarity]
     );
 
