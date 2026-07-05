@@ -11,6 +11,10 @@ function getCardComparisonKey(card: CardInfo, fallbackIndex?: number) {
         return `mechanics:${card.cardMechanicsHash}`;
     }
 
+    if (card.supertype === 'Trainer' || card.supertype === 'Energy') {
+        return `name:${card.name}`;
+    }
+
     if (card.id != null) {
         return `id:${card.id}`;
     }
@@ -35,6 +39,8 @@ export function buildMinRarityDecklist(decklist: CardInfo[], cardDatabase: CardD
         representativeCard: CardInfo;
         count: number;
         mechanicHash: string | null;
+        supertype: string;
+        name: string;
     }>();
 
     decklist.forEach((card, index) => {
@@ -46,6 +52,8 @@ export function buildMinRarityDecklist(decklist: CardInfo[], cardDatabase: CardD
                 representativeCard: card,
                 count: card.count,
                 mechanicHash: card.cardMechanicsHash ?? null,
+                supertype: card.supertype,
+                name: card.name,
             });
             return;
         }
@@ -57,6 +65,20 @@ export function buildMinRarityDecklist(decklist: CardInfo[], cardDatabase: CardD
         if (group.mechanicHash != null) {
             const databaseCandidates = Object.values(cardDatabase).filter(card =>
                 card?.cardMechanicsHash === group.mechanicHash && card?.supertype === 'Pokémon'
+            );
+            if (databaseCandidates.length > 0) {
+                const lowRarityRepresentative = [...databaseCandidates].sort((a, b) => compareCardsForLowRarity(a, b, cardDatabase))[0];
+                return {
+                    ...lowRarityRepresentative,
+                    count: group.count,
+                    displayKey: group.displayKey,
+                };
+            }
+        }
+
+        if (group.supertype === 'Trainer' || group.supertype === 'Energy') {
+            const databaseCandidates = Object.values(cardDatabase).filter(card =>
+                card?.supertype === group.supertype && card?.name === group.name
             );
             if (databaseCandidates.length > 0) {
                 const lowRarityRepresentative = [...databaseCandidates].sort((a, b) => compareCardsForLowRarity(a, b, cardDatabase))[0];
