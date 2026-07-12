@@ -64,8 +64,132 @@ h3 {
   margin-top: 0;
 }
 
-.demo-video {
-  width: 80%;
+.landing-preview {
+  position: relative;
+  isolation: isolate;
+  width: min(94vw, 760px);
+  aspect-ratio: 1.06;
+  margin: 7px auto 20px;
+  border-radius: 28px;
+  background: #fff;
+  overflow: visible;
+}
+
+.landing-card-cluster {
+  position: absolute;
+  top: 4%;
+  left: 9%;
+  width: 53%;
+  height: 64%;
+}
+
+.landing-preview-card {
+  position: absolute;
+  width: 44%;
+  display: block;
+  border-radius: var(--card-corner-radius);
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.16);
+  object-fit: cover;
+}
+
+.landing-preview-card-1 {
+  top: 8%;
+  left: 0;
+  transform: rotate(-16deg);
+}
+
+.landing-preview-card-2 {
+  top: 0;
+  left: 24%;
+  z-index: 2;
+  transform: rotate(-1deg);
+}
+
+.landing-preview-card-3 {
+  top: 22%;
+  left: 6%;
+  z-index: 1;
+  transform: rotate(15deg);
+}
+
+.landing-process-copy {
+  position: absolute;
+  left: 3%;
+  bottom: 16%;
+  width: 27%;
+  text-align: left;
+  opacity: 0.78;
+}
+
+.landing-process-copy p {
+  margin: 0;
+  color: #1f2937;
+  font-size: clamp(0.88rem, 2.05vw, 1.12rem);
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.landing-arrow-wrap {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  width: 28%;
+  transform: rotate(100deg);
+  transform-origin: center;
+}
+
+.landing-arrow {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform: translate(22%, -18%) rotate(-30deg) scale(1.14);
+  transform-origin: center;
+}
+
+.landing-arrow-camera {
+  position: absolute;
+  left: 83%;
+  top: 69%;
+  display: grid;
+  place-items: center;
+  width: clamp(36px, 7.4vw, 56px);
+  height: clamp(36px, 7.4vw, 56px);
+  color: #3f3f46;
+  transform: translate(-50%, -50%) rotate(-85deg);
+}
+
+.landing-arrow-camera svg {
+  width: 100%;
+  height: 100%;
+}
+
+.landing-pdf-placeholder {
+  position: absolute;
+  right: 10.5%;
+  bottom: 5.5%;
+  width: 31%;
+}
+
+.landing-pdf-sheet {
+  position: relative;
+  aspect-ratio: 0.78;
+  padding-top: 6%;
+  text-align: left;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 7px 12px rgba(15, 23, 42, 0.1);
+  transform: rotate(11deg);
+  overflow: hidden;
+}
+
+.landing-pdf-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top center;
 }
 
 .top-description {
@@ -73,6 +197,37 @@ h3 {
   font-weight: 560;
   margin-bottom: 8px;
   margin-top: 8px;
+}
+
+@media (min-width: 760px) {
+  .landing-preview {
+    aspect-ratio: 1.7;
+  }
+
+  .landing-card-cluster {
+    top: 10%;
+    left: 9%;
+    width: 40%;
+    height: 60%;
+  }
+
+  .landing-process-copy {
+    left: 10%;
+    bottom: 15%;
+    width: 18%;
+  }
+
+  .landing-arrow-wrap {
+    left: 38%;
+    top: 27%;
+    width: 20%;
+  }
+
+  .landing-pdf-placeholder {
+    right: 12%;
+    bottom: 11%;
+    width: 20%;
+  }
 }
 
 .saved-decklists-heading {
@@ -371,7 +526,7 @@ hr {
 
 .deck-venn-card-image img {
   width: 100%;
-  border-radius: 6px;
+  border-radius: var(--card-corner-radius);
 }
 
 .deck-venn-card-name {

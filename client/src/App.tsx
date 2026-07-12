@@ -7,12 +7,64 @@ import './App.css';
 import { deserializeDecklist, deleteDecklist, getDecklists, parseFormattedDecklist } from './StorageManager';
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "motion/react"
-import { MdOutlineArrowBack } from 'react-icons/md';
+import { MdCameraAlt, MdOutlineArrowBack } from 'react-icons/md';
 
 
 const TITLE_ADJECTIVES = [
   'Dubious', 'Dazzling', 'Dope', 'Decent', 'Deluxe', 'Distinguished', 'Divine', 'Dynamic', 'Dastardly', 'Diabolical', 'Demure', 'Duplicitous', 'Dilapidated', 'Distinctive'
 ];
+
+const LANDING_PREVIEW_CARDS = [
+  { id: 'sv6pt5-20', name: 'Dusknoir' },
+  { id: 'sv8pt5-14', name: 'Flareon ex' },
+  { id: 'sv6-200', name: 'Dragapult ex' },
+
+];
+
+function LandingPreviewGraphic() {
+  return (
+    <section className="landing-preview" aria-label="Three cards turned into a decklist PDF">
+      <div className="landing-card-cluster" aria-hidden="true">
+        {LANDING_PREVIEW_CARDS.map(({ id, name }, index) => (
+          <img
+            key={id}
+            className={`landing-preview-card landing-preview-card-${index + 1}`}
+            src={`/cards/${id}.png`}
+            alt={name}
+          />
+        ))}
+      </div>
+
+      <div className="landing-process-copy">
+        <p>⚡ Scan your decks</p>
+        <p>🧠 Run probability analysis</p>
+        <p>📄 Create beautiful lists</p>
+      </div>
+
+      <div className="landing-arrow-wrap" aria-hidden="true">
+        <svg className="landing-arrow" viewBox="-18 -18 274 284">
+          <path
+            d="M238.136 80.452 140.024 0l16.6 49.075C59.435 63.831-11.074 147.386 1.44 248.064c0 0 10.5-58.171 65.268-103.175a144.579 144.579 0 0 1 76.628-31.35c4.236-.386 8.645-.605 13.019-.595l-16.331 47.961Z"
+            fill="none"
+            stroke="#3f3f46"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <div className="landing-arrow-camera">
+          <MdCameraAlt />
+        </div>
+      </div>
+
+      <div className="landing-pdf-placeholder" aria-label="Output PDF placeholder">
+        <div className="landing-pdf-sheet">
+          <img className="landing-pdf-preview" src="/example-decklist.svg" alt="Example exported decklist" />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function getNestedSavedDecklists(savedDecklists) {
   // For each saved decklist, squish the previous version into a 'previousDecklistInfo' field
@@ -175,9 +227,7 @@ function App() {
         </small>
       </div>
       {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
-      <video className='demo-video' autoPlay loop muted playsInline>
-        <source src="demo-video.mp4" type="video/mp4" />
-      </video>
+      <LandingPreviewGraphic />
       <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Create List</button>
       <br />
       {cardDatabase != null ? <button onClick={importFromClipboard}>{clipboardButtonText}</button> : null}
