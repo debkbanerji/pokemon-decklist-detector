@@ -83,10 +83,18 @@ h3 {
   height: 64%;
 }
 
-.landing-preview-card {
+.landing-preview-card-wrap {
   position: absolute;
   width: 44%;
+}
+
+.landing-preview-card-pop {
+  width: 100%;
+}
+
+.landing-preview-card {
   display: block;
+  width: 100%;
   border-radius: var(--card-corner-radius);
   box-shadow: 0 12px 20px rgba(15, 23, 42, 0.16);
   object-fit: cover;
@@ -148,6 +156,11 @@ h3 {
   transform-origin: center;
 }
 
+.landing-arrow-pop {
+  position: relative;
+  width: 100%;
+}
+
 .landing-arrow-camera {
   position: absolute;
   left: 83%;
@@ -182,6 +195,10 @@ h3 {
   box-shadow: 0 7px 12px rgba(15, 23, 42, 0.1);
   transform: rotate(11deg);
   overflow: hidden;
+}
+
+.landing-pdf-pop {
+  width: 100%;
 }
 
 .landing-pdf-preview {
