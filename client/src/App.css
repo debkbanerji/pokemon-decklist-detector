@@ -88,10 +88,6 @@ h3 {
   width: 44%;
 }
 
-.landing-preview-card-pop {
-  width: 100%;
-}
-
 .landing-preview-card {
   display: block;
   width: 100%;
@@ -156,8 +152,7 @@ h3 {
   transform-origin: center;
 }
 
-.landing-arrow-pop {
-  position: relative;
+.landing-arrow-node {
   width: 100%;
 }
 
@@ -174,6 +169,13 @@ h3 {
 }
 
 .landing-arrow-camera svg {
+  width: 100%;
+  height: 100%;
+}
+
+.landing-arrow-camera-pop {
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
 }
