@@ -40,91 +40,95 @@ const landingPopTransition = (delay = 0) => ({
 
 function LandingPreviewGraphic() {
   return (
-    <motion.section
-      className="landing-preview"
-      aria-label="Three cards turned into a decklist PDF"
-    >
-      <div
-        className="landing-card-cluster"
-        aria-hidden="true"
+    <div className="landing-preview-stage">
+      <motion.section
+        className="landing-preview"
+        aria-label="Three cards turned into a decklist PDF"
       >
-        {LANDING_PREVIEW_CARDS.map(({ id, name, slot }, index) => (
+        <div
+          className="landing-card-cluster"
+          aria-hidden="true"
+        >
+          {LANDING_PREVIEW_CARDS.map(({ id, name, slot }, index) => (
+            <div
+              key={id}
+              className={`landing-preview-card-wrap landing-preview-card-${slot}`}
+            >
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={LANDING_POP_VARIANTS}
+                transition={landingPopTransition(0.02 + index * 0.06)}
+              >
+                <img
+                  className="landing-preview-card"
+                  src={`/cards/${id}.png`}
+                  alt={name}
+                />
+              </motion.div>
+            </div>
+          ))}
+        </div>
+
+        <div className="landing-process-copy">
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.2)}>⚡ Scan your decks</motion.p>
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.26)}>🧠 Run probability analysis</motion.p>
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.32)}>📄 Create beautiful lists</motion.p>
+        </div>
+
+        <div className="landing-output-flow">
+          <div className="landing-arrow-wrap" aria-hidden="true">
+            <div className="landing-arrow-node">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={LANDING_POP_VARIANTS}
+                transition={landingPopTransition(0.38)}
+              >
+                <svg className="landing-arrow" viewBox="-18 -18 274 284">
+                  <path
+                    d="M238.136 80.452 140.024 0l16.6 49.075C59.435 63.831-11.074 147.386 1.44 248.064c0 0 10.5-58.171 65.268-103.175a144.579 144.579 0 0 1 76.628-31.35c4.236-.386 8.645-.605 13.019-.595l-16.331 47.961Z"
+                    fill="none"
+                    stroke="#3f3f46"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.div>
+            </div>
+            <div className="landing-arrow-camera">
+              <motion.div
+                className="landing-arrow-camera-pop"
+                initial="hidden"
+                animate="visible"
+                variants={LANDING_POP_VARIANTS}
+                transition={landingPopTransition(0.5)}
+              >
+                <MdCameraAlt />
+              </motion.div>
+            </div>
+          </div>
+
           <div
-            key={id}
-            className={`landing-preview-card-wrap landing-preview-card-${slot}`}
+            className="landing-pdf-placeholder"
+            aria-label="Output PDF placeholder"
           >
             <motion.div
+              className="landing-pdf-pop"
               initial="hidden"
               animate="visible"
               variants={LANDING_POP_VARIANTS}
-              transition={landingPopTransition(0.02 + index * 0.06)}
+              transition={landingPopTransition(0.56)}
             >
-              <img
-                className="landing-preview-card"
-                src={`/cards/${id}.png`}
-                alt={name}
-              />
+              <div className="landing-pdf-sheet">
+                <img className="landing-pdf-preview" src="/example-decklist.svg" alt="Example exported decklist" />
+              </div>
             </motion.div>
           </div>
-        ))}
-      </div>
-
-      <div className="landing-process-copy">
-        <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.2)}>⚡ Scan your decks</motion.p>
-        <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.26)}>🧠 Run probability analysis</motion.p>
-        <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.32)}>📄 Create beautiful lists</motion.p>
-      </div>
-
-      <div className="landing-arrow-wrap" aria-hidden="true">
-        <div className="landing-arrow-node">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={LANDING_POP_VARIANTS}
-            transition={landingPopTransition(0.38)}
-          >
-            <svg className="landing-arrow" viewBox="-18 -18 274 284">
-              <path
-                d="M238.136 80.452 140.024 0l16.6 49.075C59.435 63.831-11.074 147.386 1.44 248.064c0 0 10.5-58.171 65.268-103.175a144.579 144.579 0 0 1 76.628-31.35c4.236-.386 8.645-.605 13.019-.595l-16.331 47.961Z"
-                fill="none"
-                stroke="#3f3f46"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </motion.div>
         </div>
-        <div className="landing-arrow-camera">
-          <motion.div
-            className="landing-arrow-camera-pop"
-            initial="hidden"
-            animate="visible"
-            variants={LANDING_POP_VARIANTS}
-            transition={landingPopTransition(0.5)}
-          >
-            <MdCameraAlt />
-          </motion.div>
-        </div>
-      </div>
-
-      <div
-        className="landing-pdf-placeholder"
-        aria-label="Output PDF placeholder"
-      >
-        <motion.div
-          className="landing-pdf-pop"
-          initial="hidden"
-          animate="visible"
-          variants={LANDING_POP_VARIANTS}
-          transition={landingPopTransition(0.56)}
-        >
-          <div className="landing-pdf-sheet">
-            <img className="landing-pdf-preview" src="/example-decklist.svg" alt="Example exported decklist" />
-          </div>
-        </motion.div>
-      </div>
-    </motion.section>
+      </motion.section>
+    </div>
   );
 }
 

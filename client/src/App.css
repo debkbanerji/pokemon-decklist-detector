@@ -64,12 +64,17 @@ h3 {
   margin-top: 0;
 }
 
+.landing-preview-stage {
+  container-type: inline-size;
+  width: min(94vw, 430px);
+  margin: 7px auto 48px;
+}
+
 .landing-preview {
   position: relative;
   isolation: isolate;
-  width: min(94vw, 760px);
+  width: 100%;
   aspect-ratio: 1.06;
-  margin: 7px auto 20px;
   border-radius: 28px;
   background: #fff;
   overflow: visible;
@@ -118,7 +123,7 @@ h3 {
 
 .landing-process-copy {
   position: absolute;
-  left: 3%;
+  left: 1%;
   bottom: 16%;
   width: 27%;
   text-align: left;
@@ -128,17 +133,25 @@ h3 {
 .landing-process-copy p {
   margin: 0;
   color: #1f2937;
-  font-size: clamp(0.88rem, 2.05vw, 1.12rem);
+  font-size: clamp(0.82rem, 3.8cqw, 0.94rem);
   font-weight: 500;
   line-height: 1.3;
   white-space: nowrap;
 }
 
-.landing-arrow-wrap {
+.landing-output-flow {
   position: absolute;
   left: 50%;
   top: 10%;
-  width: 28%;
+  width: 39%;
+  height: 78%;
+}
+
+.landing-arrow-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 72%;
   transform: rotate(100deg);
   transform-origin: center;
 }
@@ -182,9 +195,9 @@ h3 {
 
 .landing-pdf-placeholder {
   position: absolute;
-  right: 10.5%;
-  bottom: 5.5%;
-  width: 31%;
+  left: 14%;
+  top: 49%;
+  width: 91%;
 }
 
 .landing-pdf-sheet {
@@ -216,37 +229,6 @@ h3 {
   font-weight: 560;
   margin-bottom: 8px;
   margin-top: 8px;
-}
-
-@media (min-width: 760px) {
-  .landing-preview {
-    aspect-ratio: 1.7;
-  }
-
-  .landing-card-cluster {
-    top: 10%;
-    left: 9%;
-    width: 40%;
-    height: 60%;
-  }
-
-  .landing-process-copy {
-    left: 10%;
-    bottom: 15%;
-    width: 18%;
-  }
-
-  .landing-arrow-wrap {
-    left: 38%;
-    top: 27%;
-    width: 20%;
-  }
-
-  .landing-pdf-placeholder {
-    right: 12%;
-    bottom: 11%;
-    width: 20%;
-  }
 }
 
 .saved-decklists-heading {
