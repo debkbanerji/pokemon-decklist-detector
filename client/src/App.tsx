@@ -34,8 +34,8 @@ const LANDING_POP_VARIANTS = {
 const landingPopTransition = (delay = 0) => ({
   delay,
   type: 'spring',
-  stiffness: 420,
-  damping: 20,
+  stiffness: 560,
+  damping: 24,
 });
 
 function LandingPreviewGraphic() {
@@ -58,7 +58,7 @@ function LandingPreviewGraphic() {
                 initial="hidden"
                 animate="visible"
                 variants={LANDING_POP_VARIANTS}
-                transition={landingPopTransition(0.02 + index * 0.06)}
+                transition={landingPopTransition(0.01 + index * 0.04)}
               >
                 <img
                   className="landing-preview-card"
@@ -71,9 +71,9 @@ function LandingPreviewGraphic() {
         </div>
 
         <div className="landing-process-copy">
-          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.2)}>⚡ Scan your decks</motion.p>
-          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.26)}>🧠 Run probability analysis</motion.p>
-          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.32)}>📄 Create beautiful lists</motion.p>
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.13)}>⚡ Scan your decks</motion.p>
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.17)}>🧠 Run probability analysis</motion.p>
+          <motion.p initial="hidden" animate="visible" variants={LANDING_POP_VARIANTS} transition={landingPopTransition(0.21)}>📄 Create beautiful lists</motion.p>
         </div>
 
         <div className="landing-output-flow">
@@ -83,7 +83,7 @@ function LandingPreviewGraphic() {
                 initial="hidden"
                 animate="visible"
                 variants={LANDING_POP_VARIANTS}
-                transition={landingPopTransition(0.38)}
+                transition={landingPopTransition(0.25)}
               >
                 <svg className="landing-arrow" viewBox="-18 -18 274 284">
                   <path
@@ -103,7 +103,7 @@ function LandingPreviewGraphic() {
                 initial="hidden"
                 animate="visible"
                 variants={LANDING_POP_VARIANTS}
-                transition={landingPopTransition(0.5)}
+                transition={landingPopTransition(0.33)}
               >
                 <MdCameraAlt />
               </motion.div>
@@ -119,7 +119,7 @@ function LandingPreviewGraphic() {
               initial="hidden"
               animate="visible"
               variants={LANDING_POP_VARIANTS}
-              transition={landingPopTransition(0.56)}
+              transition={landingPopTransition(0.37)}
             >
               <div className="landing-pdf-sheet">
                 <img className="landing-pdf-preview" src="/example-decklist.svg" alt="Example exported decklist" />
