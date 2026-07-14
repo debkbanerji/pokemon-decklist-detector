@@ -566,10 +566,10 @@ h3 {
 /* Modal Content/Box */
 .export-modal-content {
     background-color: #fefefe;
-    margin: clamp(56px, 12vh, 112px) auto;
+    margin: 2% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 84%;
     border-radius: 6px;
 }
 
