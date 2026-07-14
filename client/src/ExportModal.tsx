@@ -1241,6 +1241,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         {
             totalCountValid ?
                 <>
+                    <div><b className='success-text'>✓ Your list has {totalCount} cards</b></div>
+                    <br />
                     <div><b className='warning-text'>Ensure the cards and counts are correct, </b>
                         <b className='error-text'>especially for Pokémon versions</b></div>
                     <br />
@@ -1248,7 +1250,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     <div><b className='warning-text'>You are responsible for the correctness of your own decklist!</b></div>
                 </> :
                 <b>
-                    <div><b className='error-text'>WARNING: Your list doesn't have exactly 60 cards</b></div>
+                    <div><b className='error-text'>WARNING: Your list {totalCount < 60 ? 'only ' : ''}has {totalCount} cards</b></div>
                 </b>
         }
         <hr />

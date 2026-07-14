@@ -573,6 +573,12 @@ h3 {
     border-radius: 6px;
 }
 
+.export-modal-content hr {
+    height: 0;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
 /* Modal Content/Box */
 .delete-modal-content {
     background-color: #fefefe;
