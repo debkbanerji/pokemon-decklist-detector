@@ -233,15 +233,16 @@ h3 {
 
 .saved-decklists-heading {
   margin-top: 16px;
+  margin-bottom: 8px;
 }
 
 .saved-decklists {
   width: 100%;
   margin-bottom: 24px;
   padding-bottom: 8px;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column-reverse;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: 12px;
 }
 
 .saved-decklists-empty {
@@ -258,24 +259,31 @@ h3 {
 }
 
 .decklist-row-container {
-  margin-top: 8px;
+  --decklist-action-width: 11rem;
+  --previous-decklists-center-nudge: 1.5rem;
+  width: 100%;
   padding-top: 8px;
   padding-left: 8px;
   padding-right: 8px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.4);
+  border: 0.5px solid rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
 }
 
 .decklist-row-container>div {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-width: 0;
 }
 
 .decklist-name-timestamp-container {
   flex-grow: 1;
+  min-width: 0;
 }
 
 .decklist-row button {
@@ -307,8 +315,12 @@ h3 {
 }
 
 .previous-decklists-container>summary {
+  position: relative;
+  left: calc((100% - var(--decklist-action-width)) / 2 + var(--previous-decklists-center-nudge));
+  transform: translateX(-50%);
   text-align: left;
-  margin-left: 25px;
+  width: fit-content;
+  cursor: pointer;
 }
 
 .previous-decklists-container {

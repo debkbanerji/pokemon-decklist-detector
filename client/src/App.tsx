@@ -300,7 +300,7 @@ function App() {
       {savedDecklists != null && cardDatabase != null ? <div>
         <h3 className='saved-decklists-heading'>My Lists</h3>
         {savedDecklists.length > 0 ? <div className='saved-decklists'>
-          {getNestedSavedDecklists(savedDecklists).map(({
+          {[...getNestedSavedDecklists(savedDecklists)].sort((a, b) => b.createdTimestamp - a.createdTimestamp).map(({
             serializedDecklist,
             name,
             createdTimestamp,
