@@ -152,7 +152,7 @@ button[disabled] {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 100%;
+  width: min(100%, 24rem);
   font-size: 1.125rem;
   margin: 8px 0 4px 0;
   font-weight: 550;
@@ -187,6 +187,36 @@ button[disabled] {
   font-weight: 750;
 }
 
+.probability-summary-row {
+  width: min(100%, 24rem);
+  margin: 0 auto 8px;
+}
+
+.probability-card-analysis-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px 16px;
+  width: 100%;
+  max-width: 86rem;
+  margin-top: 8px;
+  margin-inline: auto;
+}
+
+.probability-card-analysis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 24rem;
+  max-width: min(100%, 28rem);
+  min-width: min(100%, 20rem);
+}
+
+.probability-card-values {
+  width: min(100%, 24rem);
+}
+
 .probability-modal-content .modal-content {
   display: flex;
   flex-direction: column;
@@ -195,13 +225,13 @@ button[disabled] {
 
 .probability-row {
   display: grid;
-  grid-template-columns: calc(50vw - 4px) auto;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
   column-gap: 8px;
   align-items: baseline;
+  width: 100%;
 }
 
 .probability-label {
-  justify-self: end;
   text-align: right;
   color: #333;
   padding-right: 6px;
@@ -216,7 +246,6 @@ button[disabled] {
 
 .probability-value {
   text-align: left;
-  min-width: 64px;
   font-size: 1rem;
   font-weight: 600;
 }

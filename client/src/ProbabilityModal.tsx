@@ -72,26 +72,31 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                 What's the probability of seeing a basic when setting up the game?
             </div>
                 <h4 style={{ marginTop: '10px' }}>{numBasics} Basic Pokémon</h4>
-                <Probability label="Mulligan" value={pMulligan(numBasics)} />
+                <div className='probability-summary-row'>
+                    <Probability label="Mulligan" value={pMulligan(numBasics)} />
+                </div>
+                <div className='probability-card-analysis-list'>
                 {basics.map(basic => {
-                    return <div key={basic.id}>
+                    return <div className='probability-card-analysis' key={basic.id}>
                         <ProbabilityCardName card={basic} />
-                        <div>
+                        <div className='probability-card-values'>
                             <Probability label={"In Starting 7"} value={pBasicInStartingHand(basic.count, numBasics)} />
                             <Probability label={"Only Starter"} value={pOnlyStartWithTargetBasic(basic.count, numBasics)} />
                         </div>
                     </div>;
                 })}
+                </div>
             </div>;
     } else if (mode === 'prizing') {
         innerContent = <div className='probability-section'>
             <div className='probability-section-description'>
                 What's the probability of prizing a card?
             </div>
+            <div className='probability-card-analysis-list'>
             {cardList.map(card => {
-                return <div key={card.id}>
+                return <div className='probability-card-analysis' key={card.id}>
                     <ProbabilityCardName card={card} />
-                    <div>
+                    <div className='probability-card-values'>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
@@ -159,16 +164,18 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                     </div>
                 </div>;
             })}
+            </div>
         </div>;
     } else if (mode === 'openingHandPlusOne') {
         innerContent = <div className='probability-section'>
             <div className='probability-section-description'>
                 Assuming no mulligans, what's the probability of seeing a card by your turn 1 draw?
             </div>
+            <div className='probability-card-analysis-list'>
             {cardList.map(card => {
-                return <div key={card.id}>
+                return <div className='probability-card-analysis' key={card.id}>
                     <ProbabilityCardName card={card} />
-                    <div>
+                    <div className='probability-card-values'>
                         {
                             card.supertype === 'Pokémon' && card.subtypes.includes('Basic') ?
                                 <div>
@@ -234,6 +241,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                     </div>
                 </div>;
             })}
+            </div>
         </div>;
     } else if (mode === 'openingHandSimulator') {
         innerContent = <OpeningHandSimulator cardList={cardList} cardDatabase={cardDatabase} />;
