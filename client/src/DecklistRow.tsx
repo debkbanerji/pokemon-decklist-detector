@@ -151,7 +151,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
             }
             {
                 isDeleteModalOpen ?
-                    <div ref={deleteModalRef} className="modal">
+                    <div ref={deleteModalRef} className="modal delete-modal">
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                             <div className="delete-modal-content">
                                 <b>Delete this decklist?</b>

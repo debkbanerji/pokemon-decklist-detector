@@ -546,6 +546,16 @@ h3 {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
+.delete-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-modal>div {
+    width: 100%;
+}
+
 /* Modal Content/Box */
 .export-modal-content {
     background-color: #fefefe;
@@ -560,11 +570,10 @@ h3 {
 /* Modal Content/Box */
 .delete-modal-content {
     background-color: #fefefe;
-    margin: 10% auto;
-    margin-top: 50%;
+    margin: 0 auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: min(80%, 360px);
     border-radius: 12px;
 }
 

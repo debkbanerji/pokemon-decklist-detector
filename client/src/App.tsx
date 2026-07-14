@@ -297,9 +297,9 @@ function App() {
       <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Create List</button>
       <br />
       {cardDatabase != null ? <button onClick={importFromClipboard}>{clipboardButtonText}</button> : null}
-      {savedDecklists != null && savedDecklists.length > 0 && cardDatabase != null ? <div>
-        <h3 className='saved-decklists-heading'>Saved Lists</h3>
-        <div className='saved-decklists'>
+      {savedDecklists != null && cardDatabase != null ? <div>
+        <h3 className='saved-decklists-heading'>My Lists</h3>
+        {savedDecklists.length > 0 ? <div className='saved-decklists'>
           {getNestedSavedDecklists(savedDecklists).map(({
             serializedDecklist,
             name,
@@ -325,7 +325,7 @@ function App() {
                 isNested={false}
               /></ErrorBoundary>;
           })}
-        </div>
+        </div> : <p className='saved-decklists-empty'>No lists created yet</p>}
       </div> : null}
     </div >}
     {

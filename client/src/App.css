@@ -244,6 +244,12 @@ h3 {
   flex-direction: column-reverse;
 }
 
+.saved-decklists-empty {
+  color: #616161;
+  font-size: 0.95rem;
+  margin: 8px 0 24px;
+}
+
 .decklist-row {
   display: flex;
   flex-direction: row;
