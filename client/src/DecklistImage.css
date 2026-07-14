@@ -1,18 +1,19 @@
 .decklist-image {
+    --decklist-min-columns: 6;
+    --decklist-card-max-width: 8rem;
     width: 100%;
     margin: 2px;
 }
 
 .decklist-image-cards {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(calc(100% / var(--decklist-min-columns)), var(--decklist-card-max-width)), 1fr));
     background-color: black;
     border-radius: 4px;
 }
 
 .decklist-image-card-container {
-    width: 16.66%;
     position: relative;
 }
 

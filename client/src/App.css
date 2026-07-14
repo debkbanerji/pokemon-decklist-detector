@@ -559,7 +559,7 @@ hr {
 
 .start-scanning-button {
   font-size: 20px;
-  width: 95%;
+  width: min(95%, var(--app-control-max-width));
   margin-bottom: 10px;
   margin-top: 8px;
   margin-bottom: 16px;

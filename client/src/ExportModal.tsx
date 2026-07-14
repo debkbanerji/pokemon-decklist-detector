@@ -1261,7 +1261,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
         </div>
         <div className='export-pdf-field'>
-            Date of Birth: <DatePicker value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
+            Date of Birth: <DatePicker className='export-date-picker' value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
         </div>
         <div className='export-pdf-field'>
             Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>

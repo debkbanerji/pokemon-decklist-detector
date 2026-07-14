@@ -324,7 +324,7 @@ h3 {
     justify-content: center;
     align-self: center;
     font-size: 20px;
-    width: 95%;
+    width: min(95%, var(--app-control-max-width));
     height: 56px;
 }
 
@@ -356,7 +356,7 @@ h3 {
 
 .export-modal-open-button {
     font-size: 20px;
-    width: 95%;
+    width: min(95%, var(--app-control-max-width));
     margin-bottom: 10px;
     margin-top: 8px;
     margin-bottom: 16px;
@@ -423,7 +423,7 @@ h3 {
 }
 
 .name-selector {
-    width: 95%;
+    width: min(95%, var(--app-control-max-width));
     margin: 0 auto 16px;
     text-align: left;
 }
@@ -559,8 +559,7 @@ h3 {
 /* Modal Content/Box */
 .export-modal-content {
     background-color: #fefefe;
-    margin: 10% auto;
-    /* 15% from the top and centered */
+    margin: clamp(56px, 12vh, 112px) auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -646,11 +645,15 @@ h3 {
 
 .export-pdf-field {
     margin-top: 3px;
-    display: flex   ;
+    display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 4px;
+}
+
+.export-date-picker.rs-picker {
+    width: 11.5rem;
 }
 
 .export-deck-info-heading {
@@ -717,9 +720,9 @@ background: rgb(51, 170, 255);
     background-color: lightgrey;
     height: 6px;
     border-radius: 3px;
-    width: 88%;
-    margin-left: 6%;
-    margin-right: 6%;
+    width: min(88%, var(--app-control-max-width));
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 0;
     margin-bottom: 18px;
 }

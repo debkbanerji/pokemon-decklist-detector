@@ -3,6 +3,7 @@
   line-height: 1.5;
   font-weight: 400;
   --card-corner-radius: 4.5%;
+  --app-control-max-width: 28rem;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
