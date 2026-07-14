@@ -269,8 +269,6 @@ function App() {
   },
     [exportModalRef, setDecklistForModal]);
 
-  const isPortraitMobile = window.innerHeight > window.innerWidth;
-
   function scrollToTop() {
     setTimeout(() => {
       headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -292,7 +290,6 @@ function App() {
           <a href="https://github.com/debkbanerji#contact-me" target="_blank">Contact</a>
         </small>
       </div>
-      {!isPortraitMobile ? <div><b className='error-text'>Warning: this site is designed to be used on mobile devices in portrait mode</b></div> : null}
       <LandingPreviewGraphic />
       <button onClick={() => setHasStarted(true)} className='start-scanning-button'>Create List</button>
       <br />
