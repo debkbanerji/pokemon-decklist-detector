@@ -476,13 +476,20 @@ h3 {
     flex-direction: column;
 }
 
+.scans-feed>div {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-inline: auto;
+}
+
 .scan-row {
-    max-width: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-direction: row;
     border: solid 0.5px rgb(214, 217, 220);
     border-radius: 5px;
-    margin-bottom: 12px;
     padding-left: 3px;
     padding-right: 3px;
     padding-top: 4px;
