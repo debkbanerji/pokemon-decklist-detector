@@ -147,6 +147,7 @@ set_id_to_official_code_overrides = {
   "me2pt5": "ASC",
   "me3": "POR",
   "me4": "CRI",
+  "me5": "PBL",
 }
 
 BASIC_ENERGY_NAMES = [
@@ -504,12 +505,14 @@ def fetch_promo_cards_df(existing_card_ids=None):
 
         selected_entries = []
         for card_url, card_number in set_entries:
+            print(f"Processing {card_url} for {set_id}")
             card_id = f"{set_id}-{int(card_number)}"
             if existing_card_ids is not None and card_id in existing_card_ids:
                 continue
             selected_entries.append((card_url, card_number))
 
         for index, (card_url, card_number) in enumerate(selected_entries, start=1):
+            print(f"Downloading promo card {index}/{len(selected_entries)}: {card_url}")
             card_html = fetch_text_url(card_url)
             parsed_card = parse_promo_card_page(card_html, set_id)
             if parsed_card is not None:
