@@ -738,18 +738,85 @@ h3 {
     width: 11.5rem;
 }
 
-.rs-picker-toggle {
+.export-date-picker,
+.export-date-picker-menu {
+    --rs-primary-500: var(--color-accent);
+    --rs-primary-600: var(--color-accent);
+    --rs-primary-700: var(--color-accent-hover);
+    --rs-input-bg: var(--color-surface-raised);
+    --rs-input-focus-border: var(--color-accent);
+    --rs-text-primary: var(--color-text);
+    --rs-text-secondary: var(--color-text-muted);
+    --rs-text-tertiary: var(--color-text-muted);
+    --rs-text-heading: var(--color-text-strong);
+    --rs-border-primary: var(--color-border);
+    --rs-border-secondary: var(--color-border-subtle);
+    --rs-bg-overlay: var(--color-surface-raised);
+    --rs-bg-card: var(--color-surface-raised);
+    --rs-bg-well: var(--color-surface);
+    --rs-btn-default-bg: var(--color-control-background);
+    --rs-btn-default-text: var(--color-text);
+    --rs-btn-default-hover-bg: var(--color-surface-active);
+    --rs-btn-default-active-bg: var(--color-surface-active);
+    --rs-btn-default-active-text: var(--color-text-strong);
+    --rs-state-hover-bg: var(--color-surface-active);
+    --rs-listbox-option-hover-bg: var(--color-surface-active);
+    --rs-listbox-option-hover-text: var(--color-text);
+    --rs-calendar-today-bg: var(--color-accent);
+    --rs-calendar-today-text: var(--color-text-on-accent);
+    --rs-calendar-range-bg: color-mix(in srgb, var(--color-accent) 20%, transparent);
+    --rs-calendar-time-unit-bg: var(--color-surface);
+    --rs-calendar-date-selected-text: var(--color-text-on-accent);
+    --rs-calendar-cell-selected-hover-bg: var(--color-accent-hover);
+    --rs-shadow-overlay: 0 8px 24px var(--color-modal-shadow);
+}
+
+.export-date-picker.rs-picker-default .rs-picker-toggle.rs-btn {
     color: var(--color-text) !important;
     background-color: var(--color-surface-raised) !important;
     border-color: var(--color-border) !important;
 }
 
-.rs-picker-toggle-value {
+.export-date-picker.rs-picker-default:not(.rs-picker-disabled) .rs-picker-toggle-active,
+.export-date-picker.rs-picker-default:not(.rs-picker-disabled) .rs-picker-toggle:focus,
+.export-date-picker.rs-picker-default:not(.rs-picker-disabled) .rs-picker-toggle:hover {
+    border-color: var(--color-accent) !important;
+}
+
+.export-date-picker .rs-picker-toggle-textbox {
+    color: var(--color-text) !important;
+    background-color: var(--color-surface-raised) !important;
+}
+
+.export-date-picker .rs-picker-toggle-value,
+.export-date-picker .rs-picker-toggle-indicator,
+.export-date-picker .rs-picker-caret-icon {
     color: var(--color-text) !important;
 }
 
-.rs-picker-toggle-placeholder {
+.export-date-picker .rs-picker-toggle-placeholder {
     color: var(--color-text-muted) !important;
+}
+
+.export-date-picker-menu.rs-picker-popup {
+    color: var(--color-text);
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+}
+
+.export-date-picker-menu .rs-calendar-header-title,
+.export-date-picker-menu .rs-calendar-table-cell-content,
+.export-date-picker-menu .rs-calendar-table-header-cell-content {
+    color: var(--color-text);
+}
+
+.export-date-picker-menu .rs-calendar-table-cell-disabled .rs-calendar-table-cell-content {
+    color: var(--color-text-disabled);
+}
+
+.export-date-picker-menu .rs-calendar-table-cell-is-today .rs-calendar-table-cell-content,
+.export-date-picker-menu .rs-calendar-table-cell-selected .rs-calendar-table-cell-content {
+    color: var(--color-text-on-accent);
 }
 
 .export-deck-info-heading {
