@@ -4,6 +4,43 @@
   font-weight: 400;
   --card-corner-radius: 4.5%;
   --app-control-max-width: 28rem;
+  --color-accent: #218af3;
+  --color-accent-hover: #1b6ef3;
+  --color-text: #213547;
+  --color-text-strong: #1f2937;
+  --color-text-muted: #616161;
+  --color-text-subtle: #777;
+  --color-text-disabled: grey;
+  --color-text-on-accent: #fff;
+  --color-text-overlay: #fff;
+  --color-surface: #fff;
+  --color-surface-raised: #fefefe;
+  --color-surface-soft: #f9f9f9;
+  --color-surface-muted: #f8f8f8;
+  --color-surface-active: #f4f4f4;
+  --color-control-background: #f9f9f9;
+  --color-control-disabled-background: #fefefe;
+  --color-border: rgb(214, 217, 220);
+  --color-border-strong: #888;
+  --color-border-subtle: #ccc;
+  --color-divider: rgba(0, 0, 0, 0.2);
+  --color-landing-graphic: #3f3f46;
+  --color-landing-copy: #1f2937;
+  --color-document-surface: #fff;
+  --color-card-shadow: rgba(15, 23, 42, 0.16);
+  --color-paper-shadow: rgba(15, 23, 42, 0.1);
+  --color-modal-shadow: rgba(0, 0, 0, 0.2);
+  --color-venn-section-background: rgba(255, 255, 255, 0.78);
+  --color-venn-section-border: rgba(0, 0, 0, 0.08);
+  --color-count-badge-background: rgba(0, 0, 0, 0.08);
+  --color-progress-track: lightgrey;
+  --color-toggle-track: #ccc;
+  --color-toggle-knob: #fff;
+  --color-loading-shimmer: linear-gradient(-45deg, #aaa 40%, #fafafa 50%, #aaa 60%);
+
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  color-scheme: light;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -11,14 +48,48 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #e7edf5;
+    --color-text-strong: #f3f7fb;
+    --color-text-muted: #a7b0bb;
+    --color-text-subtle: #8f9aa7;
+    --color-text-disabled: #7f8894;
+    --color-surface: #101418;
+    --color-surface-raised: #171d23;
+    --color-surface-soft: #1d242c;
+    --color-surface-muted: #151b21;
+    --color-surface-active: #222a33;
+    --color-control-background: #17202a;
+    --color-control-disabled-background: #151b21;
+    --color-border: #303842;
+    --color-border-strong: #4b5563;
+    --color-border-subtle: #303842;
+    --color-divider: rgba(255, 255, 255, 0.14);
+    --color-landing-graphic: #9aa6b2;
+    --color-landing-copy: #e7edf5;
+    --color-card-shadow: rgba(0, 0, 0, 0.42);
+    --color-paper-shadow: rgba(0, 0, 0, 0.34);
+    --color-modal-shadow: rgba(0, 0, 0, 0.5);
+    --color-venn-section-background: rgba(23, 29, 35, 0.84);
+    --color-venn-section-border: rgba(255, 255, 255, 0.1);
+    --color-count-badge-background: rgba(255, 255, 255, 0.12);
+    --color-progress-track: #2d3641;
+    --color-toggle-track: #3a4652;
+    --color-toggle-knob: #f8fafc;
+    --color-loading-shimmer: linear-gradient(-45deg, #36404c 40%, #5c6673 50%, #36404c 60%);
+    color-scheme: dark;
+  }
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-accent);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--color-accent-hover);
 }
 
 body {
@@ -26,6 +97,8 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
+  color: var(--color-text);
+  background-color: var(--color-surface);
 }
 
 button {
@@ -35,11 +108,11 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #218af3;
+  color: var(--color-accent);
   cursor: pointer;
   transition: border-color 0.25s;
-  outline: 0.8px solid #218af3;
-  background-color: #fefefe;
+  outline: 0.8px solid var(--color-accent);
+  background-color: var(--color-control-background);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -52,14 +125,14 @@ button:hover {
 
 button:active {
   transform: translateY(1px);
-  background-color: #f4f4f4;
+  background-color: var(--color-surface-active);
 }
 
 button[disabled] {
   transform: none;
-  background-color: #fefefe;
-  outline: 0.8px solid grey;
-  color: grey;
+  background-color: var(--color-control-disabled-background);
+  outline: 0.8px solid var(--color-text-disabled);
+  color: var(--color-text-disabled);
 }
 
 .home-button {
@@ -67,19 +140,17 @@ button[disabled] {
   cursor: pointer;
 }
 
-@media {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+input,
+select,
+textarea {
+  color: var(--color-text);
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+}
 
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
 }
 
 .filter-blur {
@@ -92,14 +163,14 @@ button[disabled] {
 }
 
 .probability-modal-content {
-  background-color: #fefefe;
+  background-color: var(--color-surface-raised);
   margin: 2% auto;
   padding: 20px;
   width: 84%;
   overflow-y: auto;
-  border: 1px solid #888;
+  border: 1px solid var(--color-border-strong);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px var(--color-modal-shadow);
 }
 
 .probability-modal-mode-select-button {
@@ -112,8 +183,8 @@ button[disabled] {
   margin-top: 10px;
   padding-top: 10px;
   padding-bottom: 10px;
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
@@ -121,8 +192,8 @@ button[disabled] {
 
 .probability-modal-mode-select-button.selected,
 .probability-modal-mode-select-button.active {
-  background-color: #218af3;
-  color: white;
+  background-color: var(--color-accent);
+  color: var(--color-text-on-accent);
 }
 
 .card-preview-icon {
@@ -144,7 +215,7 @@ button[disabled] {
   margin-top: 8px;
   padding-bottom: 6px;
   text-align: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .probability-card-name {
@@ -233,7 +304,7 @@ button[disabled] {
 
 .probability-label {
   text-align: right;
-  color: #333;
+  color: var(--color-text-strong);
   padding-right: 6px;
   font-size: 1rem;
   font-weight: 400;

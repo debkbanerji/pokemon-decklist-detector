@@ -1291,6 +1291,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     }}
                     placeholder="(none)"
                     className='sprite-selector'
+                    classNamePrefix="sprite-selector"
                 /> : <div>
                     <img src={"customization_sprites/" + playerSpriteFile}></img>&nbsp;
                     <button onClick={() => setPlayerSpriteFile('')}>✖</button>

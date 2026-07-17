@@ -83,7 +83,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
     return (
         <div className="opening-hand-simulator-section" style={{ padding: '10px' }}>
             <h4>Opening Examples</h4>
-            <div style={{ fontSize: '0.9em', color: '#888', marginBottom: '8px' }}>Excludes Mulligans</div>
+            <div style={{ fontSize: '0.9em', color: 'var(--color-text-muted)', marginBottom: '8px' }}>Excludes Mulligans</div>
             <button onClick={drawNewHand} style={{ width: '100%' }}>Generate New Example</button>
             <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column-reverse' }}>
                 <AnimatePresence>
@@ -97,7 +97,7 @@ function OpeningHandSimulator({ cardList, cardDatabase }) {
                                 animate={{ opacity: reversedIndex === 0 ? 1 : 0.4, x: 0, scale: 1 }}
                                 transition={{ duration: 0.6, type: "spring" }}
                                 exit={{ opacity: 0, x: 400, scale: 0.5 }}
-                                style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: reversedIndex < hands.length - 1 ? '1px solid #ccc' : 'none' }}>
+                                style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: reversedIndex < hands.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                                 <div className="opening-hand-example">
                                     <div className="opening-hand-example-section opening-hand-main-section">
                                         <div className="opening-hand-example-label">Opening Hand</div>

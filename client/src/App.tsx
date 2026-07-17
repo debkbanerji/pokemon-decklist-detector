@@ -89,7 +89,7 @@ function LandingPreviewGraphic() {
                   <path
                     d="M238.136 80.452 140.024 0l16.6 49.075C59.435 63.831-11.074 147.386 1.44 248.064c0 0 10.5-58.171 65.268-103.175a144.579 144.579 0 0 1 76.628-31.35c4.236-.386 8.645-.605 13.019-.595l-16.331 47.961Z"
                     fill="none"
-                    stroke="#3f3f46"
+                    stroke="currentColor"
                     strokeWidth="8"
                     strokeLinecap="round"
                     strokeLinejoin="round"

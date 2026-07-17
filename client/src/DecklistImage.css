@@ -55,5 +55,5 @@
 
 .decklist-image-force-low-rarity-label {
     font-size: small;
-    color: #555;
+    color: var(--color-text-muted);
 }

@@ -16,7 +16,7 @@
 }
 
 .header>a {
-  color: black;
+  color: var(--color-text);
   text-decoration: none;
   margin-top: 0;
   font-size: 20px;
@@ -76,7 +76,7 @@ h3 {
   width: 100%;
   aspect-ratio: 1.06;
   border-radius: 28px;
-  background: #fff;
+  background: var(--color-surface);
   overflow: visible;
 }
 
@@ -97,7 +97,7 @@ h3 {
   display: block;
   width: 100%;
   border-radius: var(--card-corner-radius);
-  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 20px var(--color-card-shadow);
   object-fit: cover;
 }
 
@@ -132,7 +132,7 @@ h3 {
 
 .landing-process-copy p {
   margin: 0;
-  color: #1f2937;
+  color: var(--color-landing-copy);
   font-size: clamp(0.82rem, 3.8cqw, 0.94rem);
   font-weight: 500;
   line-height: 1.3;
@@ -161,6 +161,7 @@ h3 {
   width: 100%;
   height: auto;
   overflow: visible;
+  color: var(--color-landing-graphic);
   transform: translate(22%, -18%) rotate(-30deg) scale(1.14);
   transform-origin: center;
 }
@@ -177,7 +178,7 @@ h3 {
   place-items: center;
   width: clamp(36px, 7.4vw, 56px);
   height: clamp(36px, 7.4vw, 56px);
-  color: #3f3f46;
+  color: var(--color-landing-graphic);
   transform: translate(-50%, -50%) rotate(-85deg);
 }
 
@@ -205,9 +206,9 @@ h3 {
   aspect-ratio: 0.78;
   padding-top: 6%;
   text-align: left;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: #fff;
-  box-shadow: 0 7px 12px rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--color-venn-section-border);
+  background: var(--color-document-surface);
+  box-shadow: 0 7px 12px var(--color-paper-shadow);
   transform: rotate(11deg);
   overflow: hidden;
 }
@@ -246,7 +247,7 @@ h3 {
 }
 
 .saved-decklists-empty {
-  color: #616161;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   margin: 8px 0 24px;
 }
@@ -269,7 +270,7 @@ h3 {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border: 0.5px solid rgba(0, 0, 0, 0.4);
+  border: 0.5px solid var(--color-border);
   border-radius: 5px;
 }
 
@@ -338,7 +339,7 @@ h3 {
 }
 
 .decklist-timestamp {
-  color: grey;
+  color: var(--color-text-muted);
   font-size: small;
 }
 
@@ -392,7 +393,7 @@ h3 {
 
 hr {
   border: none;
-  background-color: grey;
+  background-color: var(--color-border-subtle);
   height: 1px;
 }
 
@@ -430,7 +431,7 @@ hr {
   padding: 6px 10px;
   border-radius: 10px;
   background: rgba(33, 138, 243, 0.95);
-  color: #fff;
+  color: var(--color-text-on-accent);
   font-size: 0.82rem;
   line-height: 1.1;
   white-space: nowrap;
@@ -470,12 +471,12 @@ hr {
 }
 
 .metadata-text {
-  color: #757575;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
 }
 
 .compare-chooser-empty {
-  color: #616161;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   text-align: center;
 }
@@ -508,9 +509,9 @@ hr {
   z-index: 1;
   padding: 12px 10px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--color-venn-section-background);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-venn-section-border);
 }
 
 .deck-venn-section-header h4 {
@@ -522,7 +523,7 @@ hr {
 }
 
 .deck-venn-section-subtitle {
-  color: #616161;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   margin-bottom: 10px;
 }
@@ -556,7 +557,7 @@ hr {
 }
 
 .deck-venn-card-set {
-  color: #757575;
+  color: var(--color-text-muted);
   font-size: 0.78rem;
 }
 
@@ -567,7 +568,7 @@ hr {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--color-count-badge-background);
   font-weight: 700;
 }
 
