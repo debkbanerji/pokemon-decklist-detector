@@ -53,6 +53,8 @@ const INCLUDED_SINGLE_PRIZE_ATTACKER_CANDIDATE_REFERENCE_IDS = [
     'me2-68', // Toxtricity
     'sv6-111', // Okidogi
     'sv7-50', // Joltik
+    'me5-39', // Dhelmise
+    'me5-68', // Toucannon
 ];
 
 function getCardMechanicsHashSet(cardDatabase: CardDatabase, exampleIDs: string[]) {
