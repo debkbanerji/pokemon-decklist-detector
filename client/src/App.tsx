@@ -16,8 +16,8 @@ const TITLE_ADJECTIVES = [
 
 const LANDING_PREVIEW_CARDS = [
   { id: 'sv6pt5-20', name: 'Dusknoir', slot: 1 },
-  { id: 'sv6-200', name: 'Dragapult ex', slot: 3 },
-  { id: 'sv8pt5-14', name: 'Flareon ex', slot: 2 },
+  { id: 'sv6-130', name: 'Dragapult ex', slot: 3 },
+  { id: 'me5-94', name: 'Toucannon', slot: 2 },
 ];
 
 const LANDING_POP_VARIANTS = {
