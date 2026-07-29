@@ -411,18 +411,26 @@ h3 {
 }
 
 .candidate-card-ids {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    --art-option-min-width: 5rem;
+    --art-option-max-width: 6.75rem;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: center;
+    gap: 8px;
 }
 
 .candidate-card-ids>div {
-    width: calc(25% - 8px);
-    padding: 4px;
+    min-width: 0;
 }
 
 .manual-art-selector-container {
     margin-top: 8px;
+}
+
+@media (min-width: 36rem) {
+    .candidate-card-ids {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--art-option-min-width)), var(--art-option-max-width)));
+    }
 }
 
 .manual-art-selector-container h3,
@@ -675,7 +683,7 @@ h3 {
     margin: 8% auto;
     padding: 18px;
     border: 1px solid var(--color-border-strong);
-    width: 88%;
+    width: min(88vw, 52rem);
     border-radius: 12px;
     max-height: 82vh;
     overflow: auto;
@@ -694,6 +702,8 @@ h3 {
 
 .art-swap-options-grid {
     margin-top: 2px;
+    --art-option-min-width: 5rem;
+    --art-option-max-width: 6.5rem;
 }
 
 .art-swap-options-grid>div {
