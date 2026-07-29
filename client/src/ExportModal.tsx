@@ -3,7 +3,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
@@ -316,6 +316,45 @@ function processStringForPDFCompatibility(str) {
     return str;
 }
 
+function getNestedCompareDecklists(savedDecklists) {
+    const createdTimestampToDecklist = {};
+    savedDecklists.forEach(decklist => {
+        createdTimestampToDecklist[decklist.createdTimestamp] = {
+            ...decklist,
+            previousDecklistInfo: []
+        };
+    });
+
+    const result = [];
+    Object.values(createdTimestampToDecklist).forEach(decklist => {
+        if (decklist.successorCreatedTimestamp && createdTimestampToDecklist[decklist.successorCreatedTimestamp]) {
+            createdTimestampToDecklist[decklist.successorCreatedTimestamp].previousDecklistInfo.push(decklist);
+        } else {
+            result.push(decklist);
+        }
+    });
+
+    return result;
+}
+
+function CompareSavedDeckButton({ decklist, onCompareSavedDeck, isPreviousVersion }) {
+    return <button
+        type='button'
+        className={`compare-saved-deck-button${isPreviousVersion ? ' compare-saved-deck-button-previous' : ''}`}
+        onClick={() => onCompareSavedDeck(decklist)}
+    >
+        {decklist.coverPokemonSpriteUrl ? <img
+            className='compare-saved-deck-icon'
+            src={decklist.coverPokemonSpriteUrl}
+            alt=''
+        /> : null}
+        <span className='compare-saved-deck-text'>
+            <strong>{decklist.name || 'Unnamed Deck'}</strong>
+            <span className='metadata-text'>{formatDeckTimestamp(decklist.createdTimestamp)}</span>
+        </span>
+    </button>;
+}
+
 function CompareChooser({
     currentDeckName,
     savedDecklists,
@@ -323,7 +362,8 @@ function CompareChooser({
     onCompareClipboard,
     clipboardButtonText,
 }) {
-    const selectableDecklists = [...(savedDecklists ?? [])].sort((a, b) => b.createdTimestamp - a.createdTimestamp);
+    const selectableDecklists = getNestedCompareDecklists(savedDecklists ?? [])
+        .sort((a, b) => b.createdTimestamp - a.createdTimestamp);
 
     return <div>
         <div className='deck-venn-description'>
@@ -336,22 +376,28 @@ function CompareChooser({
         </div>
         <h4 className='compare-chooser-heading'>Saved Decks</h4>
         {selectableDecklists.length > 0 ? <div className='compare-saved-deck-list'>
-            {selectableDecklists.map(decklist => <button
-                type='button'
-                className='compare-saved-deck-button'
+            {selectableDecklists.map(decklist => <div
+                className='compare-saved-deck-group'
                 key={decklist.createdTimestamp}
-                onClick={() => onCompareSavedDeck(decklist)}
             >
-                {decklist.coverPokemonSpriteUrl ? <img
-                    className='compare-saved-deck-icon'
-                    src={decklist.coverPokemonSpriteUrl}
-                    alt=''
-                /> : null}
-                <span className='compare-saved-deck-text'>
-                    <strong>{decklist.name || 'Unnamed Deck'}</strong>
-                    <span className='metadata-text'>{new Date(decklist.createdTimestamp).toLocaleString()}</span>
-                </span>
-            </button>)}
+                <CompareSavedDeckButton
+                    decklist={decklist}
+                    onCompareSavedDeck={onCompareSavedDeck}
+                />
+                {decklist.previousDecklistInfo.length > 0 ? <details className='compare-previous-decklists-container'>
+                    <summary>Previous Versions</summary>
+                    <div className='compare-previous-decklist-rows-container'>
+                        {[...decklist.previousDecklistInfo]
+                            .sort((a, b) => b.createdTimestamp - a.createdTimestamp)
+                            .map(previousDecklist => <CompareSavedDeckButton
+                                key={previousDecklist.createdTimestamp}
+                                decklist={previousDecklist}
+                                onCompareSavedDeck={onCompareSavedDeck}
+                                isPreviousVersion={true}
+                            />)}
+                    </div>
+                </details> : null}
+            </div>)}
         </div> : <div className='compare-chooser-empty'>No saved decks available.</div>}
     </div>;
 }

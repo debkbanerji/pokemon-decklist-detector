@@ -1,6 +1,7 @@
 import { MdOutlineClose } from 'react-icons/md';
 import CardImageForID from './CardImageForID';
 import { buildDeckVennSections, buildMinRarityDecklist } from './DeckComparison';
+import { formatDeckTimestamp } from './StorageManager';
 
 function DeckSection({ title, metadata, subtitle, cards, className }) {
     return <section className={`deck-venn-section ${className}`}>
@@ -33,8 +34,8 @@ function VennDiagramModal({
 }) {
     const leftDeckName = leftDeck.name || 'Unnamed Deck';
     const rightDeckName = rightDeck.name || 'Unnamed Deck';
-    const leftDeckMetadata = leftDeck.createdTimestamp != null ? new Date(leftDeck.createdTimestamp).toLocaleString() : null;
-    const rightDeckMetadata = rightDeck.createdTimestamp != null ? new Date(rightDeck.createdTimestamp).toLocaleString() : null;
+    const leftDeckMetadata = leftDeck.createdTimestamp != null ? formatDeckTimestamp(leftDeck.createdTimestamp) : null;
+    const rightDeckMetadata = rightDeck.createdTimestamp != null ? formatDeckTimestamp(rightDeck.createdTimestamp) : null;
     const minRarityLeftDeck = buildMinRarityDecklist(leftDeck.cards, cardDatabase);
     const minRarityRightDeck = buildMinRarityDecklist(rightDeck.cards, cardDatabase);
     const { deckAOnly, shared, deckBOnly } = buildDeckVennSections(minRarityLeftDeck, minRarityRightDeck, cardDatabase);

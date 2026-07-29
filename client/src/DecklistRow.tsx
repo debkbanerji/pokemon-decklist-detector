@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ExportModal from './ExportModal.tsx';
 import ErrorBoundary from './ErrorBoundary.tsx';
 import './App.css';
-import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer } from './StorageManager';
+import { deserializeDecklist, deleteDecklist, getDecklists, getLatestPlayer, formatDeckTimestamp } from './StorageManager';
 import { motion } from "motion/react"
 import { MdIosShare, MdOutlineBarChart, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 import ProbabilityModal from './ProbabilityModal.tsx';
@@ -57,7 +57,7 @@ function DecklistRow({ cardDatabase, loadInDecklist, deleteDecklist, createdTime
                             {startingDeckName}
                         </div>
                         <div className='decklist-timestamp'>
-                            {new Date(createdTimestamp).toLocaleString()}
+                            {formatDeckTimestamp(createdTimestamp)}
                         </div>
                     </div>
                     <div className={isNested ? 'decklist-row-action-row-nested' : ''}>

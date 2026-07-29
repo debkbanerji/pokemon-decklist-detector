@@ -4,6 +4,15 @@ import type { CardInfo, CardDatabase } from './DecklistSort';
 const SERIALIZED_COUNT_SEPERATOR = '__';
 const SERIALIZED_ENTRY_SEPARATOR = '___';
 
+const DECK_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+});
+
 const TCG_LIVE_REVERSE_SET_OVERRIDE = {
     'PR-SV': 'SVP',
     'PR-SW': 'PR',
@@ -73,6 +82,16 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
         const name = cardDatabase[id]['name'];
         return { cardInfo: { id, count, name } };
     });
+}
+
+function formatDeckTimestamp(timestamp) {
+    const parts = Object.fromEntries(
+        DECK_TIMESTAMP_FORMATTER
+            .formatToParts(new Date(timestamp))
+            .map(({ type, value }) => [type, value])
+    );
+
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.dayPeriod}`;
 }
 
 function getAutoCoverPokemonName(cards: CardInfo[], cardDatabase: CardDatabase) {
@@ -282,4 +301,4 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
     return dedupedRows;
 }
 
-export { seralizeDecklist, deserializeDecklist, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist, getAutoCoverPokemonName };
+export { seralizeDecklist, deserializeDecklist, formatDeckTimestamp, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist, getAutoCoverPokemonName };
