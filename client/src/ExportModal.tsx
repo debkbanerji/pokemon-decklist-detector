@@ -1127,10 +1127,13 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         return <div>
             <div className='modal-header-row'>
                 <div>
-                    <h2>List QR Code</h2>&nbsp;
-                    <div onClick={onClose} className='modal-header-row-button'>
-                    </div>
+                    <button
+                        className='modal-header-nav-button'
+                        aria-label='Back to export decklist'
+                        onClick={() => setShowQRCode(false)}
+                    ><MdOutlineArrowBack /></button>
                 </div>
+                <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>List QR Code</h3>
             </div>
             <ReactQRCode
                 size={256}
