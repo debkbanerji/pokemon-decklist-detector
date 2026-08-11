@@ -13,6 +13,7 @@ import { MdCompareArrows, MdOutlineArrowBack, MdOutlineBarChart, MdOutlineClose,
 import { sortDecklistCards } from './DecklistSort.ts';
 import { useLiveQuery } from 'dexie-react-hooks';
 import VennDiagramModal from './VennDiagramModal.tsx';
+import { buildMinRarityDecklist } from './DeckComparison';
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -414,6 +415,13 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const savedDecklists = useLiveQuery(() => getDecklists());
     const currentDeckName = deckName?.length > 0 ? deckName : 'Primary Deck';
     const currentDeckCards = useMemo(() => undeletedCardData.map(card => card.cardInfo), [undeletedCardData]);
+    const minRarityDecklistData = useMemo(() => {
+        const fullCurrentDeckCards = currentDeckCards.map(card => ({
+            ...cardDatabase[card.id],
+            ...card,
+        }));
+        return buildMinRarityDecklist(fullCurrentDeckCards, cardDatabase).map(cardInfo => ({ cardInfo }));
+    }, [currentDeckCards, cardDatabase]);
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -563,6 +571,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     }
 
     const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(undeletedCardData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
+    const minRarityShareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(minRarityDecklistData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
     const canshareUrl = window.location.href.indexOf('forceShareable') > -1 || (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
     async function onShareUrl() {
         await saveDecklistToStorage();
@@ -1121,24 +1130,26 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }, 30);
     }
 
-    const [showQRCode, setShowQRCode] = useState(false);
+    const [qrCodeMode, setQRCodeMode] = useState(null);
 
-    if (showQRCode) {
+    if (qrCodeMode != null) {
         return <div>
             <div className='modal-header-row'>
                 <div>
                     <button
                         className='modal-header-nav-button'
                         aria-label='Back to export decklist'
-                        onClick={() => setShowQRCode(false)}
+                        onClick={() => setQRCodeMode(null)}
                     ><MdOutlineArrowBack /></button>
                 </div>
-                <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>List QR Code</h3>
+                <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>
+                    {qrCodeMode === 'minRarity' ? 'List QR Code (Min Rarity)' : 'List QR Code'}
+                </h3>
             </div>
             <ReactQRCode
                 size={256}
                 style={{ height: "auto", maxWidth: "100%", width: "100%", marginTop: '12px' }}
-                value={shareableUrl}
+                value={qrCodeMode === 'minRarity' ? minRarityShareableUrl : shareableUrl}
                 viewBox={`0 0 256 256`}
             />
         </div>
@@ -1385,9 +1396,15 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     </button>
                     <button type="button" onClick={async () => {
                         await saveDecklistToStorage();
-                        setShowQRCode(true);
+                        setQRCodeMode('standard');
                     }}>
-                        View QR Code
+                        QR Code
+                    </button>
+                    <button type="button" onClick={async () => {
+                        await saveDecklistToStorage();
+                        setQRCodeMode('minRarity');
+                    }}>
+                        Min Rarity QR Code
                     </button>
                 </> : null}
                 <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
