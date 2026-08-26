@@ -1143,7 +1143,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     ><MdOutlineArrowBack /></button>
                 </div>
                 <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>
-                    {qrCodeMode === 'minRarity' ? 'List QR Code (Min Rarity)' : 'List QR Code'}
+                    {qrCodeMode === 'minRarity' ? 'Min Rarity QR Code' : 'List QR Code'}
                 </h3>
             </div>
             <ReactQRCode
