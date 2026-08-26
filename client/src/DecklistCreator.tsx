@@ -8,8 +8,9 @@ import { createWorker, PSM, OEM } from 'tesseract.js';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
-import { MdCameraAlt, MdIosShare, MdOutlineClose, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
+import { MdCameraAlt, MdIosShare, MdOutlineBarChart, MdOutlineClose, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
+import ProbabilityModal from './ProbabilityModal.tsx';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -210,11 +211,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     // const tesseractDebugCanvasRef = useRef(null);
     const tesseractPreProcessingTypeNum = useRef(0);
     const exportModalRef = useRef(null);
+    const probabilityModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
     const [coverPokemon, setCoverPokemon] = useState(startingCoverPokemon);
     const [deckName, setDeckName] = useState(startingDeckName);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isProbabilityModalOpen, setIsProbabilityModalOpen] = useState(false);
     const [isArtSwapModalOpen, setIsArtSwapModalOpen] = useState(false);
     const [isScannerActive, setIsScannerActive] = useState(false);
     const [artSwapSourceOriginalIndex, setArtSwapSourceOriginalIndex] = useState(null);
@@ -374,6 +377,15 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         });
     },
         [exportModalRef, setIsExportModalOpen]);
+
+    useEffect(() => {
+        window.addEventListener("click", function (event) {
+            if (event.target === probabilityModalRef.current) {
+                setIsProbabilityModalOpen(false);
+            }
+        });
+    },
+        [probabilityModalRef, setIsProbabilityModalOpen]);
 
 
     useEffect(() => {
@@ -973,13 +985,27 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             }} className={'export-modal-open-button' + (totalCards === 60 ? ' export-modal-open-button-success' : '')} disabled={cardInfoListNonNull.length === 0}>
                 <MdIosShare className='export-modal-open-button-icon' /> Export
             </button>
-            <button
-                onClick={saveChanges}
-                className='scanner-save-changes-button'
-                disabled={cardInfoListNonNull.length === 0 || saveChangesButtonText === 'Saving...'}
-            >
-                <MdOutlineSave className='scanner-save-changes-button-icon' /> {saveChangesButtonText}
-            </button>
+            <div className='editor-action-row'>
+                <button
+                    onClick={() => {
+                        setIsProbabilityModalOpen(true);
+                        setTimeout(() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 100);
+                    }}
+                    className='scanner-save-changes-button'
+                    disabled={cardInfoListNonNull.length === 0}
+                >
+                    <MdOutlineBarChart className='scanner-save-changes-button-icon' /> Probability Analysis
+                </button>
+                <button
+                    onClick={saveChanges}
+                    className='scanner-save-changes-button'
+                    disabled={cardInfoListNonNull.length === 0 || saveChangesButtonText === 'Saving...'}
+                >
+                    <MdOutlineSave className='scanner-save-changes-button-icon' /> {saveChangesButtonText}
+                </button>
+            </div>
         </div>
         {totalCards > 0 ?
             <div>
@@ -1078,6 +1104,20 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                                 previousDecklistTimestamp={startingDecklistTimestamp}
                                 currentDeckCreatedTimestamp={startingDecklistTimestamp}
                                 onClose={() => setIsExportModalOpen(false)}
+                            />
+                        </div>
+                    </motion.div>
+                </div> : null
+        }
+        {
+            isProbabilityModalOpen ?
+                <div ref={probabilityModalRef} className="modal">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <div className="probability-modal-content">
+                            <ProbabilityModal
+                                undeletedCardData={cardInfoListNonNull.map(cardInfo => { return { cardInfo } })}
+                                cardDatabase={cardDatabase}
+                                onClose={() => setIsProbabilityModalOpen(false)}
                             />
                         </div>
                     </motion.div>

@@ -405,6 +405,20 @@ h3 {
     margin-bottom: 10px;
 }
 
+.editor-action-row {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    max-width: min(95%, var(--app-control-max-width));
+}
+
+.editor-action-row .scanner-save-changes-button {
+    margin-bottom: 0;
+}
+
 .scanner-save-changes-button-icon {
     font-size: 1.05em;
     line-height: 1;
