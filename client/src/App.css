@@ -626,18 +626,76 @@ hr {
   height: 56px;
 }
 
+.opening-hand-simulator-section {
+  padding: 10px;
+}
+
+.opening-hand-simulator-note {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.opening-hand-simulator-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.opening-hand-simulator-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.opening-hand-simulator-toggle-label {
+  font-size: small;
+  color: var(--color-text-muted);
+}
+
+.opening-hand-simulator-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.opening-hand-example-entry {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
 .opening-hand-example {
   --section-gap: 12px;
   --card-gap: 6px;
-  --panel-chrome: 6px;
   display: grid;
   grid-template-columns:
-    minmax(0, calc((((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) * 2) + var(--card-gap) + var(--panel-chrome)))
-    minmax(0, calc((((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) * 3) + (2 * var(--card-gap)) + var(--panel-chrome)))
-    minmax(0, calc(((100% - (2 * var(--section-gap)) - (3 * var(--card-gap)) - (3 * var(--panel-chrome))) / 6) + var(--panel-chrome)));
+    minmax(0, 2fr)
+    minmax(0, 3fr)
+    minmax(0, 1fr);
   grid-template-areas: "prizes hand draw";
   gap: var(--section-gap);
   align-items: start;
+}
+
+.opening-hand-example-hide-prizes.opening-hand-example-show-draw {
+  grid-template-columns:
+    minmax(0, 5fr)
+    minmax(0, 1fr);
+  grid-template-areas: "hand draw";
+}
+
+.opening-hand-example-show-prizes.opening-hand-example-hide-draw {
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(0, 4fr);
+  grid-template-areas: "prizes hand";
+}
+
+.opening-hand-example-hide-prizes.opening-hand-example-hide-draw {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "hand";
 }
 
 .opening-hand-example-section {
@@ -678,8 +736,27 @@ hr {
   width: 100%;
 }
 
+.opening-hand-example-show-prizes.opening-hand-example-hide-draw .opening-hand-card-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.opening-hand-example-hide-prizes.opening-hand-example-show-draw .opening-hand-card-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.opening-hand-example-hide-prizes.opening-hand-example-hide-draw .opening-hand-card-row {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
 .opening-hand-card-slot {
   min-width: 0;
+}
+
+.opening-hand-card-slot-basic .card-image-container,
+.opening-hand-card-slot-basic .card-image-loading-spinner-container {
+  box-shadow:
+    0 0 0 2px rgba(33, 138, 243, 0.72),
+    0 0 0 4px rgba(33, 138, 243, 0.18);
 }
 
 .opening-hand-example-sidebar {
@@ -701,7 +778,7 @@ hr {
   min-width: 0;
 }
 
-.opening-hand-card-slot:nth-child(7) {
+.opening-hand-example-show-prizes.opening-hand-example-show-draw .opening-hand-card-slot:nth-child(7) {
   grid-column: 1;
 }
 
@@ -709,6 +786,10 @@ hr {
   .opening-hand-example {
     --section-gap: 8px;
     --card-gap: 4px;
+  }
+
+  .opening-hand-simulator-controls {
+    gap: 10px 14px;
   }
 
   .opening-hand-example-section {
