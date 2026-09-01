@@ -4,6 +4,7 @@ import { pMulligan, pOnlyStartWithTargetBasic, pBasicInStartingHand, pPrizedTarg
 import DecklistImage from './DecklistImage';
 import OpeningHandSimulator from './OpeningHandSimulator';
 import { MdOutlineClose } from 'react-icons/md';
+import { buildMinRarityDecklist } from './DeckComparison';
 
 const UNSUPPORTED_PROBABILITY_CARD_IDS = new Set(['me1-28']);
 
@@ -50,8 +51,25 @@ function ProbabilityCardName({ card }) {
     </div>;
 }
 
+export function ProbabilityHeader({ title, leadingControl = null, trailingControl = null }) {
+    return <div className='modal-header-row'>
+        <div className='probability-modal-header'>
+            <div className='probability-modal-header-title-row'>
+                {leadingControl}
+                <h3 style={{ marginRight: trailingControl != null ? 8 : 0 }}>{title}</h3>
+                {trailingControl}
+            </div>
+            <div className='decklist-image-force-low-rarity-label'>Calculated using min rarity</div>
+        </div>
+    </div>;
+}
+
 // ProbabilityContent: the main content, no modal wrapper
 export function ProbabilityContent({ cardList, cardDatabase }) {
+    const minRarityCardList = useMemo(
+        () => buildMinRarityDecklist(cardList, cardDatabase),
+        [cardList, cardDatabase]
+    );
     const modes = ['setup', 'prizing', 'openingHandPlusOne', 'openingHandSimulator'];
     const modeLabels = {
         'setup': 'Setup',
@@ -59,10 +77,10 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
         'prizing': 'Prizing',
         'openingHandSimulator': 'Examples'
     };
-    const numCards = cardList.reduce((sum, card) => sum + card.count, 0);
-    const basics = cardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
+    const numCards = minRarityCardList.reduce((sum, card) => sum + card.count, 0);
+    const basics = minRarityCardList.filter(card => card.supertype === 'Pokémon' && card.subtypes.includes('Basic'));
     const numBasics = basics.reduce((sum, card) => sum + card.count, 0);
-    const unavailableReason = getProbabilityUnavailableReason(cardList, numCards, numBasics);
+    const unavailableReason = getProbabilityUnavailableReason(minRarityCardList, numCards, numBasics);
     const [mode, setMode] = useState(modes[0]);
     let innerContent = null;
     if (mode === 'setup') {
@@ -93,7 +111,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                 What's the probability of prizing a card?
             </div>
             <div className='probability-card-analysis-list'>
-            {cardList.map(card => {
+            {minRarityCardList.map(card => {
                 return <div className='probability-card-analysis' key={card.id}>
                     <ProbabilityCardName card={card} />
                     <div className='probability-card-values'>
@@ -172,7 +190,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
                 Assuming no mulligans, what's the probability of seeing a card by your turn 1 draw?
             </div>
             <div className='probability-card-analysis-list'>
-            {cardList.map(card => {
+            {minRarityCardList.map(card => {
                 return <div className='probability-card-analysis' key={card.id}>
                     <ProbabilityCardName card={card} />
                     <div className='probability-card-values'>
@@ -244,7 +262,7 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
             </div>
         </div>;
     } else if (mode === 'openingHandSimulator') {
-        innerContent = <OpeningHandSimulator cardList={cardList} cardDatabase={cardDatabase} />;
+        innerContent = <OpeningHandSimulator cardList={minRarityCardList} cardDatabase={cardDatabase} />;
     }
 
     if (unavailableReason != null) {
@@ -272,18 +290,26 @@ export function ProbabilityContent({ cardList, cardDatabase }) {
 
 // ProbabilityModal: wrapper with modal header and close
 function ProbabilityModal({ undeletedCardData, onClose, cardDatabase }) {
-    const cardList = undeletedCardData.map(({ cardInfo }) => cardInfo);
+    const minRarityCardList = useMemo(
+        () => buildMinRarityDecklist(
+            undeletedCardData.map(({ cardInfo }) => cardInfo),
+            cardDatabase
+        ),
+        [undeletedCardData, cardDatabase]
+    );
     return <div>
-        <div className='modal-header-row'>
-            <div>
-                <h3>Probability Analysis</h3>&nbsp;
+        <ProbabilityHeader
+            title='Probability Analysis'
+            trailingControl={
                 <button onClick={onClose} className='modal-header-row-button' aria-label='Close probability analysis'>
                     <MdOutlineClose />
                 </button>
-            </div>
+            }
+        />
+        <div className='probability-modal-decklist'>
+            <DecklistImage decklist={minRarityCardList} cardDatabase={cardDatabase} />
         </div>
-        <DecklistImage decklist={cardList} cardDatabase={cardDatabase} />
-        <ProbabilityContent cardList={cardList} cardDatabase={cardDatabase} />
+        <ProbabilityContent cardList={minRarityCardList} cardDatabase={cardDatabase} />
     </div>;
 }
 

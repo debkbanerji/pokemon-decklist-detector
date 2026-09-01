@@ -366,6 +366,22 @@ h3 {
   align-items: center;
 }
 
+.modal-header-row > .probability-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.probability-modal-header-title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.probability-modal-decklist {
+  margin-top: 8px;
+}
+
 
 .modal-header-row-button {
   margin-left: 8px;

@@ -180,7 +180,7 @@ textarea::placeholder {
 
 .probability-modal-mode-select-grid {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 6px;
   padding-top: 10px;
   padding-bottom: 10px;
   border-top: 1px solid var(--color-border-subtle);

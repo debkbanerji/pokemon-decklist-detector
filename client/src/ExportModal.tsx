@@ -8,7 +8,7 @@ import DecklistImage from './DecklistImage.tsx';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
-import { ProbabilityContent } from './ProbabilityModal.tsx';
+import { ProbabilityContent, ProbabilityHeader } from './ProbabilityModal.tsx';
 import { MdCompareArrows, MdOutlineArrowBack, MdOutlineBarChart, MdOutlineClose, MdOutlineContentPaste, MdOutlineSave } from 'react-icons/md';
 import { sortDecklistCards } from './DecklistSort.ts';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -1158,14 +1158,16 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     if (showProbabilityContent) {
         return (
             <div>
-                <div className='modal-header-row'>
-                    <div> <button
-                        className='modal-header-nav-button'
-                        aria-label='Back to export decklist'
-                        onClick={() => setShowProbabilityContent(false)}
-                    ><MdOutlineArrowBack /></button></div>
-                    <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>Probability Analysis</h3>
-                </div>
+                <ProbabilityHeader
+                    title='Probability Analysis'
+                    leadingControl={
+                        <button
+                            className='modal-header-nav-button'
+                            aria-label='Back to export decklist'
+                            onClick={() => setShowProbabilityContent(false)}
+                        ><MdOutlineArrowBack /></button>
+                    }
+                />
                 <ProbabilityContent cardList={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
             </div>
         );
