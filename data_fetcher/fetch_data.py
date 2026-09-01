@@ -715,18 +715,31 @@ def get_rarity_for_mismatch_correction(card_id, rarity):
     return rarity
 
 
-def add_similar_card_ids_to_df(cards_df):
-    # function that adds a column to the df to help tell the user if they might be mis-scanning a card
-    
-    # group together cards with the same mechanics hash
-    # if these match, the cards are mechanically identical and can safely swap art
+def add_card_similarity_columns_to_df(cards_df):
+    def get_mechanically_identical_card_ids(row):
+        if row['cardMechanicsHash'] is None:
+            return []
+        return cards_df[
+            (cards_df['cardMechanicsHash'] == row['cardMechanicsHash']) &
+            (cards_df['id'] != row['id'])
+        ]['id'].tolist()
+
+    def get_similar_looking_card_ids(row):
+        if row['cardMechanicsHash'] is None:
+            return []
+        return cards_df[
+            (cards_df['cardMechanicsHash'] == row['cardMechanicsHash']) &
+            (cards_df['rarity_for_mismatch_correction'] == row['rarity_for_mismatch_correction']) &
+            (cards_df['id'] != row['id'])
+        ]['id'].tolist()
+
     cards_df = cards_df.assign(
-        similar_card_ids = cards_df.apply(
-            lambda row: cards_df[
-                (row['cardMechanicsHash'] is not None) &
-                (cards_df['cardMechanicsHash'] == row['cardMechanicsHash']) &
-                (cards_df['id'] != row['id'])
-            ]['id'].tolist(),
+        mechanically_identical_card_ids=cards_df.apply(
+            get_mechanically_identical_card_ids,
+            axis=1
+        ),
+        similar_looking_card_ids=cards_df.apply(
+            get_similar_looking_card_ids,
             axis=1
         )
     )
@@ -852,12 +865,11 @@ if __name__ == '__main__':
     # cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
-    cards_df =  add_similar_card_ids_to_df(cards_df)
+    cards_df = add_card_similarity_columns_to_df(cards_df)
     
     # Drop intermediate mechanics fields before export; only the hash is used by the client.
     export_only_columns_to_drop = [
         'concatenated_attack_names',
-        'rarity_for_mismatch_correction',
         'abilities',
         'attacks',
         'weaknesses',

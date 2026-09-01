@@ -233,7 +233,8 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
     const isRunningTesseractDetection = currentDetectedCardName == null && currentDetectedCardID == null;
-    const numSimilarCards = ((cardDatabase[currentDetectedCardID] ?? {}).similar_card_ids ?? []).length;
+    const currentDetectedSimilarCardIDs = ((cardDatabase[currentDetectedCardID] ?? {}).similar_looking_card_ids ?? []);
+    const numSimilarCards = currentDetectedSimilarCardIDs.length;
 
     const isCurrentlyDetectedCardPokemon = currentDetectedCardID != null && cardDatabase[currentDetectedCardID]?.supertype === 'Pokémon';
     const currentDetectedCardIDCount = currentDetectedCardID != null ? cardInfoListNonNull.filter(
@@ -294,33 +295,6 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     const cardNames = Object.keys(cardNameToIDs);
     const detectionKeywords = Object.keys(keywordsToCardNames);
     const cardNameOptions = useMemo(() => cardNames.map(name => { return { label: name, value: name } }), [cardNameToIDs]);
-    const mechanicallyIdenticalCardIDsByHash = useMemo(() => {
-        const result = {};
-        Object.values(cardDatabase).forEach(card => {
-            if (card?.supertype !== 'Pokémon') {
-                return;
-            }
-
-            const mechanicsKey = card.cardMechanicsHash;
-            if (mechanicsKey == null) {
-                return;
-            }
-
-            result[mechanicsKey] = (result[mechanicsKey] ?? []).concat(card.id);
-        });
-
-        Object.keys(result).forEach(key => {
-            result[key].sort((a, b) => {
-                const cardA = cardDatabase[a];
-                const cardB = cardDatabase[b];
-                return (cardA.set_code ?? '').localeCompare(cardB.set_code ?? '')
-                    || (cardA.number ?? '').localeCompare(cardB.number ?? '')
-                    || a.localeCompare(b);
-            });
-        });
-
-        return result;
-    }, [cardDatabase]);
 
     function getCoverPokemonSpriteUrl() {
         if (!coverPokemon) {
@@ -851,7 +825,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                             ⚠️ at least {numSimilarCards} {numSimilarCards === 1 ? 'card looks' : 'cards look'} similar to {cardDatabase[currentDetectedCardID].set_code}&nbsp;
                             {cardDatabase[currentDetectedCardID].number}:
                         </div>
-                        <div>{cardDatabase[currentDetectedCardID].similar_card_ids
+                        <div>{currentDetectedSimilarCardIDs
                             .map((similarID) => {
                                 const similarCard = cardDatabase[similarID];
                                 return <button key={similarID} onClick={() => {
@@ -1020,8 +994,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             <motion.div>
                 {cardInfoListNonNull.map((cardInfo, index) => {
                     const { id, name, number, set_code, supertype, count, originalIndex } = cardInfo;
-                    const mechanicsKey = cardInfo.cardMechanicsHash;
-                    const artSwapCandidateIDs = supertype === 'Pokémon' && mechanicsKey != null ? (mechanicallyIdenticalCardIDsByHash[mechanicsKey] ?? []) : [];
+                    const artSwapCandidateIDs = supertype === 'Pokémon' ? ([id].concat(cardInfo.mechanically_identical_card_ids ?? [])) : [];
                     const canSwapArt = artSwapCandidateIDs.length > 1;
 
                     const deleteCard = () => {
@@ -1143,7 +1116,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                                 </button>
                             </div>
                             <div className='candidate-card-ids art-swap-options-grid'>
-                                {(mechanicallyIdenticalCardIDsByHash[cardInfoList[artSwapSourceOriginalIndex].cardMechanicsHash] ?? []).map(cardID => {
+                                {[cardInfoList[artSwapSourceOriginalIndex].id].concat(cardInfoList[artSwapSourceOriginalIndex].mechanically_identical_card_ids ?? []).map(cardID => {
                                     const isCurrentArt = cardInfoList[artSwapSourceOriginalIndex].id === cardID;
                                     return <div
                                         key={cardID}

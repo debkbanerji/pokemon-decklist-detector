@@ -9,6 +9,10 @@ export type CardInfo = {
     number?: string;
     evolves_from?: string | null;
     cardMechanicsHash?: string;
+    mechanically_identical_card_ids?: string[];
+    similar_looking_card_ids?: string[];
+    rarity?: string;
+    rarity_for_mismatch_correction?: string;
     rarity_order?: number;
 };
 
