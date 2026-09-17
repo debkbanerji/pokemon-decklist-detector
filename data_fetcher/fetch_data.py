@@ -15,6 +15,9 @@ DATA_DIRECTORY = './data'
 CARD_IMAGES_DIRECTORY = DATA_DIRECTORY + '/card-images'
 if not os.path.exists(CARD_IMAGES_DIRECTORY):
     os.makedirs(CARD_IMAGES_DIRECTORY)
+PROMO_HTML_CACHE_DIRECTORY = DATA_DIRECTORY + '/promo-html'
+if not os.path.exists(PROMO_HTML_CACHE_DIRECTORY):
+    os.makedirs(PROMO_HTML_CACHE_DIRECTORY)
 CLIENT_CARD_IMAGES_DIRECTORY = './../client/public/cards'
 if not os.path.exists(CLIENT_CARD_IMAGES_DIRECTORY):
     os.makedirs(CLIENT_CARD_IMAGES_DIRECTORY)
@@ -148,6 +151,11 @@ set_id_to_official_code_overrides = {
   "me3": "POR",
   "me4": "CRI",
   "me5": "PBL",
+  "me55": "30C",
+}
+
+EXCLUDED_SET_IDS = {
+    "me55c", # 30th Anniversary Classic Collection is not Standard legal
 }
 
 BASIC_ENERGY_NAMES = [
@@ -210,6 +218,17 @@ def open_url(url):
 def fetch_text_url(url):
     with open_url(url) as response:
         return response.read().decode('utf-8')
+
+
+def fetch_cached_text_url(url, cache_path):
+    if os.path.isfile(cache_path):
+        with open(cache_path, encoding='utf-8') as cache_file:
+            return cache_file.read()
+
+    text = fetch_text_url(url)
+    with open(cache_path, 'w', encoding='utf-8') as cache_file:
+        cache_file.write(text)
+    return text
 
 
 def download_url_to_file(url, destination_path):
@@ -512,8 +531,10 @@ def fetch_promo_cards_df(existing_card_ids=None):
             selected_entries.append((card_url, card_number))
 
         for index, (card_url, card_number) in enumerate(selected_entries, start=1):
-            print(f"Downloading promo card {index}/{len(selected_entries)}: {card_url}")
-            card_html = fetch_text_url(card_url)
+            card_id = f"{set_id}-{int(card_number)}"
+            cache_path = os.path.join(PROMO_HTML_CACHE_DIRECTORY, f"{card_id}.html")
+            print(f"Loading promo card {index}/{len(selected_entries)}: {card_url}")
+            card_html = fetch_cached_text_url(card_url, cache_path)
             parsed_card = parse_promo_card_page(card_html, set_id)
             if parsed_card is not None:
                 promo_cards.append(parsed_card)
@@ -533,7 +554,11 @@ def get_cards(): # Returns dataframe
     sets_data = json.load(open_url(sets_url))
     
     # only Scarlet & Violet and Mega Evolution sets are currently supported 
-    sets_data = [s for s in sets_data if s['series'] == 'Scarlet & Violet' or s['series'] == 'Mega Evolution']
+    sets_data = [
+        set_data for set_data in sets_data
+        if (set_data['series'] == 'Scarlet & Violet' or set_data['series'] == 'Mega Evolution')
+        and set_data['id'] not in EXCLUDED_SET_IDS
+    ]
 
     for set_data in sets_data:
         set_id = set_data['id']
