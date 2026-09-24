@@ -257,12 +257,12 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
         const setNumber = setNumberMatch[0]
         row = row.replace(/ [a-zA-Z0-9]+$/, '');
 
-        const setCodeMatch = row.match(/[A-Za-z-]+$/);
+        const setCodeMatch = row.match(/[A-Za-z0-9-]+$/);
         if (!setCodeMatch) {
             return null;
         }
         const setCode = TCG_LIVE_REVERSE_SET_OVERRIDE[setCodeMatch[0]] ?? setCodeMatch[0];
-        row = row.replace(/ [A-Za-z-]+$/, '');
+        row = row.replace(/ [A-Za-z0-9-]+$/, '');
 
         let cardName = TCG_LIVE_ENERGY_ABBREVIATION_OVERRIDE[row] ?? row;
         // if the card is a typed special energy
