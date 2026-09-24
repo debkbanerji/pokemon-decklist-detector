@@ -493,6 +493,7 @@ def parse_promo_card_page(card_html, set_id):
         "set_code": config['set_code'],
         "regulation_mark": regulation_mark,
         "set_name": config['set_name'],
+        "set_download_order": -1,
         "number": str(int(card_number)),
         "set_printed_total": promo_set_printed_total_from_card_number(set_id, card_number),
         "small_image_url": small_image_url,
@@ -560,7 +561,7 @@ def get_cards(): # Returns dataframe
         and set_data['id'] not in EXCLUDED_SET_IDS
     ]
 
-    for set_data in sets_data:
+    for set_download_order, set_data in enumerate(sets_data):
         set_id = set_data['id']
         if set_id in PROMO_SET_CONFIG:
             continue
@@ -582,6 +583,7 @@ def get_cards(): # Returns dataframe
                 "set_code": set_id_to_official_code_overrides[set_data.get('id')] if set_data.get('id') in set_id_to_official_code_overrides else set_data.get('ptcgoCode'),
                 "regulation_mark": card.get('regulationMark'),
                 "set_name": set_data.get('name'),
+                "set_download_order": set_download_order,
                 "number": card.get('number'),
                 "set_printed_total": set_data.get('printedTotal'),
                 "small_image_url": card.get('images', {}).get('small'),

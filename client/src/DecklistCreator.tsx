@@ -264,11 +264,24 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             result[name] = (result[name] ?? []).concat([id]);
         });
         for (const key of Object.keys(result)) {
-            // first, put longer IDs at the end so we check against this last when scanning and overwrite
-            // i.e. prefer the longer match
-            result[key].sort((a, b) => a.length - b.length);
+            result[key].sort((a, b) => {
+                const cardAIsSecretRare = isCardSecretRare(cardDatabase[a]);
+                const cardBIsSecretRare = isCardSecretRare(cardDatabase[b]);
+                const secretRareDifference = Number(cardAIsSecretRare) - Number(cardBIsSecretRare);
+                if (secretRareDifference !== 0) {
+                    return secretRareDifference;
+                }
 
-            result[key].sort((a, b) => isCardSecretRare(cardDatabase[a]) - isCardSecretRare(cardDatabase[b]));
+                if (!cardAIsSecretRare) {
+                    const setDownloadOrderDifference = (cardDatabase[b].set_download_order ?? -1)
+                        - (cardDatabase[a].set_download_order ?? -1);
+                    if (setDownloadOrderDifference !== 0) {
+                        return setDownloadOrderDifference;
+                    }
+                }
+
+                return a.length - b.length;
+            });
         }
         return result;
     }, [cardDatabase]);
@@ -522,6 +535,9 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             candidateCardIDs.forEach(id => {
                 const card = cardDatabase[id];
                 const { number, set_printed_total, set_code, hp } = card;
+                if (/^[a-zA-Z]$/.test(number)) { // ex 'R', 'G', 'B'
+                    return;
+                }
                 const includeSetNameInString = /[a-zA-Z]+/.test(number) || ['PR', 'SVP'].includes(set_code);
                 if (includeSetNameInString && hp === number) {
                     // Weird edge case - for a promo Squawkabilly, the card's hp is exactly equal to it's promo number

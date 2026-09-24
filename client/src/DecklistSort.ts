@@ -6,6 +6,7 @@ export type CardInfo = {
     subtypes?: string[];
     count: number;
     set_code?: string;
+    set_download_order?: number;
     number?: string;
     evolves_from?: string | null;
     cardMechanicsHash?: string;
