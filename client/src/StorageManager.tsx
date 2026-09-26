@@ -74,12 +74,25 @@ function seralizeDecklist(cardData) {
     return cardData.map(({ cardInfo }) => `${cardInfo['id']}${SERIALIZED_COUNT_SEPERATOR}${cardInfo['count']}`).join(SERIALIZED_ENTRY_SEPARATOR);
 }
 
+function findFirstMatchingCardPrinting(cards: CardInfo[], name: string, setCode?: string, setNumber?: string) {
+    return cards.find(card => card.name === name && (
+        card.supertype !== 'Pokémon'
+        || (setCode != null && card.set_code === setCode && card.number === setNumber)
+    ));
+}
+
 function deserializeDecklist(serializedDecklist, cardDatabase) {
+    const allCards = Object.values(cardDatabase) as CardInfo[];
+
     return serializedDecklist.split(SERIALIZED_ENTRY_SEPARATOR).map(entry => {
         const pair = entry.split(SERIALIZED_COUNT_SEPERATOR);
-        const id = pair[0];
+        const savedId = pair[0];
         const count = Number(pair[1]);
-        const name = cardDatabase[id]['name'];
+        const savedCard = cardDatabase[savedId];
+        const name = savedCard.name;
+        const id = savedCard.supertype === 'Trainer' || savedCard.supertype === 'Energy'
+            ? findFirstMatchingCardPrinting(allCards, name)?.id ?? savedId
+            : savedId;
         return { cardInfo: { id, count, name } };
     });
 }
@@ -275,13 +288,7 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
             }
         }
 
-        const result = allCards.find((card) => {
-            if (card.name !== cardName) {
-                return false;
-            }
-
-            return card.supertype !== 'Pokémon' || (card.set_code === setCode && card.number === setNumber);
-        });
+        const result = findFirstMatchingCardPrinting(allCards, cardName, setCode, setNumber);
 
         if (result != null) {
             return { cardInfo: { ...result, count } };
