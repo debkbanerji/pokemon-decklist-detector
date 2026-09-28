@@ -806,6 +806,24 @@ def add_card_similarity_columns_to_df(cards_df):
 
 def download_missing_card_images_and_sprites_for_df(cards_df):
     print("Downloading image data")
+    # Trainers for which we want to generate thumbnails
+    # Only generate thumbnails for trainers which aren't secret rares
+    # Unless they are supporters, in which case we want full arts where they are available
+    # This is because the character's face from a full art often looks better in thumbnail
+    # format as opposed to the upper body of the base rarity
+    preferred_trainer_ids = {}
+    supporter_full_arts = {}
+    for _, card in sorted(cards_df.iterrows(), key=lambda item: get_card_print_sort_key(item[1])):
+        if card['supertype'] != 'Trainer':
+            continue
+        if card['rarity'] == 'Ultra Rare' and card['subtypes'] is not None and 'Supporter' in card['subtypes']:
+            current_full_art = supporter_full_arts.get(card['name'])
+            if current_full_art is None or card['set_download_order'] > current_full_art['set_download_order']:
+                supporter_full_arts[card['name']] = card
+        elif convert_int_or_infinity(card['number']) <= card['set_printed_total']:
+            preferred_trainer_ids.setdefault(card['name'], card['id'])
+    preferred_trainer_ids.update({name: card['id'] for name, card in supporter_full_arts.items()})
+
     # Downloads images of cards for which the image does not already exist in CARD_IMAGES_DIRECTORY
     # Naturally, this function will download all the images if none of them exist
     for index, card in cards_df.iterrows():
@@ -872,13 +890,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
 
             cropped.convert('RGBA').save(energy_symbol_path)
 
-        # Trainers for which we want to generate thumbnails
-        # Only generate thumbnails for trainers which aren't secret rares
-        # Unless they are supporters, in which case we want full arts where they are available
-        # This is because the character's face from a full art often looks better in thumbnail
-        # format as opposed to the upper body of the base rarity
-        if card["supertype"] == 'Trainer' and (convert_int_or_infinity(card['number']) <= card['set_printed_total'] 
-                                               or (card['rarity'] == 'Ultra Rare' and card['subtypes'] is not None and 'Supporter' in card['subtypes'])):
+        if card["supertype"] == 'Trainer' and card['id'] == preferred_trainer_ids.get(card['name']):
             trainer_symbol_file_name = re.sub(' ', '-', card['name']).lower()
             trainer_symbol_file_name = re.sub(sprite_url_replacement_regex, '', trainer_symbol_file_name) + ".png"
             trainer_symbol_path = CLIENT_TRAINER_SYMBOLS_DIRECTORY + "/" + trainer_symbol_file_name
