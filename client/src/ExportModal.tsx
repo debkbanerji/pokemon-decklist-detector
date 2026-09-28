@@ -19,12 +19,6 @@ function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
 }
 
-function isCardSecretRare(card) {
-    const number = parseInt(card.number) || 0;
-    const setTotal = parseInt(card.set_printed_total) || 0;
-    return setTotal > 1 && number > setTotal;
-}
-
 function maybeProcessGalleryCardNumber(cardNumber) {
     const regex = /(?<=gg)0*/i;
     return cardNumber.replace(regex, '');
@@ -502,9 +496,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             const name = cardDatabase[id].name;
             result[name] = (result[name] ?? []).concat([id]);
         });
-        for (const key of Object.keys(result)) {
-            result[key].sort((a, b) => isCardSecretRare(cardDatabase[a]) - isCardSecretRare(cardDatabase[b]));
-        }
         return result;
     }, [cardDatabase]);
 

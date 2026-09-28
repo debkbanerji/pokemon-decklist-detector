@@ -177,6 +177,16 @@ def convert_int_or_infinity(s):
     return i
 
 
+def get_card_print_sort_key(card):
+    number_match = re.match(r'^\d+', str(card['number']))
+    set_total_match = re.match(r'^\d+', str(card['set_printed_total']))
+    number = int(number_match.group()) if number_match else 0
+    set_total = int(set_total_match.group()) if set_total_match else 0
+    is_secret_rare = set_total > 1 and number > set_total
+    set_order = card['set_download_order'] if not is_secret_rare else 0
+    return is_secret_rare, -set_order, len(card['id'])
+
+
 PROMO_SET_CONFIG = {
     "svp": {
         "set_code": "SVP",
@@ -931,7 +941,7 @@ if __name__ == '__main__':
     download_missing_card_images_and_sprites_for_df(cards_df)
 
     cards_dict = {}
-    for i, card in cards_df.iterrows():
+    for _, card in sorted(cards_df.iterrows(), key=lambda item: get_card_print_sort_key(item[1])):
         card_dict = card.to_dict()
         if card_dict.get('supertype') != 'Pokémon':
             card_dict.pop('cardMechanicsHash', None)

@@ -26,12 +26,6 @@ const EDGE_CASE_REGEXES = [
     [/(lono)/i, 'Iono']
 ]
 
-function isCardSecretRare(card) {
-    const number = parseInt(card.number) || 0;
-    const setTotal = parseInt(card.set_printed_total) || 0;
-    return setTotal > 1 && number > setTotal;
-}
-
 function doesCaseSensitiveTextContainEri(text) {
     // Hack to detect Eri
     // Eri is a common substring when the check is case sensitive
@@ -219,26 +213,6 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             const name = cardDatabase[id].name_without_prefix_and_postfix;
             result[name] = (result[name] ?? []).concat([id]);
         });
-        for (const key of Object.keys(result)) {
-            result[key].sort((a, b) => {
-                const cardAIsSecretRare = isCardSecretRare(cardDatabase[a]);
-                const cardBIsSecretRare = isCardSecretRare(cardDatabase[b]);
-                const secretRareDifference = Number(cardAIsSecretRare) - Number(cardBIsSecretRare);
-                if (secretRareDifference !== 0) {
-                    return secretRareDifference;
-                }
-
-                if (!cardAIsSecretRare) {
-                    const setDownloadOrderDifference = (cardDatabase[b].set_download_order ?? -1)
-                        - (cardDatabase[a].set_download_order ?? -1);
-                    if (setDownloadOrderDifference !== 0) {
-                        return setDownloadOrderDifference;
-                    }
-                }
-
-                return a.length - b.length;
-            });
-        }
         return result;
     }, [cardDatabase]);
 
