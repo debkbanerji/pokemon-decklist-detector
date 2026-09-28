@@ -1,5 +1,6 @@
 import { db } from './db';
 import type { CardInfo, CardDatabase } from './DecklistSort';
+import { getDefaultBasicEnergyId } from './BasicEnergy';
 
 const SERIALIZED_COUNT_SEPERATOR = '__';
 const SERIALIZED_ENTRY_SEPARATOR = '___';
@@ -74,7 +75,15 @@ function seralizeDecklist(cardData) {
     return cardData.map(({ cardInfo }) => `${cardInfo['id']}${SERIALIZED_COUNT_SEPERATOR}${cardInfo['count']}`).join(SERIALIZED_ENTRY_SEPARATOR);
 }
 
-function findFirstMatchingCardPrinting(cards: CardInfo[], name: string, setCode?: string, setNumber?: string) {
+function findPreferredCardPrinting(cards: CardInfo[], name: string, setCode?: string, setNumber?: string) {
+    const defaultBasicEnergyId = getDefaultBasicEnergyId(name);
+    if (defaultBasicEnergyId != null) {
+        const defaultBasicEnergy = cards.find(card => card.id === defaultBasicEnergyId);
+        if (defaultBasicEnergy?.name === name && defaultBasicEnergy.supertype === 'Energy') {
+            return defaultBasicEnergy;
+        }
+    }
+
     return cards.find(card => card.name === name && (
         card.supertype !== 'Pokémon'
         || (setCode != null && card.set_code === setCode && card.number === setNumber)
@@ -91,7 +100,7 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
         const savedCard = cardDatabase[savedId];
         const name = savedCard.name;
         const id = savedCard.supertype === 'Trainer' || savedCard.supertype === 'Energy'
-            ? findFirstMatchingCardPrinting(allCards, name)?.id ?? savedId
+            ? findPreferredCardPrinting(allCards, name)?.id ?? savedId
             : savedId;
         return { cardInfo: { id, count, name } };
     });
@@ -288,7 +297,7 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
             }
         }
 
-        const result = findFirstMatchingCardPrinting(allCards, cardName, setCode, setNumber);
+        const result = findPreferredCardPrinting(allCards, cardName, setCode, setNumber);
 
         if (result != null) {
             return { cardInfo: { ...result, count } };

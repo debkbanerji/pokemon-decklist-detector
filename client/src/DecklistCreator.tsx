@@ -11,6 +11,7 @@ import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
 import { MdCameraAlt, MdIosShare, MdOutlineBarChart, MdOutlineClose, MdOutlineDelete, MdOutlineSave, MdOutlineSwapHoriz, MdSearch } from "react-icons/md";
 import { sortDecklistCards } from './DecklistSort.ts';
 import ProbabilityModal from './ProbabilityModal.tsx';
+import { BASIC_ENERGY_INFO, BASIC_ENERGY_NAMES } from './BasicEnergy';
 
 const DETECTION_REPLACE_REGEX = /(é|')/i;
 
@@ -39,51 +40,6 @@ function doesCaseSensitiveTextContainEri(text) {
 
     return text.includes('Eri');
 }
-
-const BASIC_ENERGY_INFO = [
-    {
-        name: 'Grass Energy',
-        idSample: 'sve-9',
-        iconUri: 'grass-energy-symbol.png'
-    },
-    {
-        name: 'Fire Energy',
-        idSample: 'sve-10',
-        iconUri: 'fire-energy-symbol.png'
-    },
-    {
-        name: 'Water Energy',
-        idSample: 'sve-11',
-        iconUri: 'water-energy-symbol.png'
-    },
-    {
-        name: 'Lightning Energy',
-        idSample: 'sve-12',
-        iconUri: 'lightning-energy-symbol.png'
-    },
-    {
-        name: 'Psychic Energy',
-        idSample: 'sve-13',
-        iconUri: 'psychic-energy-symbol.png'
-    },
-    {
-        name: 'Fighting Energy',
-        idSample: 'sve-14',
-        iconUri: 'fighting-energy-symbol.png'
-    },
-    {
-        name: 'Darkness Energy',
-        idSample: 'sve-15',
-        iconUri: 'darkness-energy-symbol.png'
-    },
-    {
-        name: 'Metal Energy',
-        idSample: 'sve-16',
-        iconUri: 'metal-energy-symbol.png'
-    },
-]
-
-const BASIC_ENERGY_NAMES = BASIC_ENERGY_INFO.map(energy => energy.name);
 
 function SearchDropdownIndicator(props) {
     return <components.DropdownIndicator {...props}>
@@ -345,7 +301,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             // not a Pokemon - directly set card ID since art doesn't matter
             let cardID = cardSample.id;
             BASIC_ENERGY_INFO.forEach(energyInfo => {
-                // if it's an energy card, replace it with an SCR sample
+                // if it's a basic energy card, use the MEE sample
                 if (energyInfo.name === cardName) {
                     cardID = energyInfo.idSample;
                 }

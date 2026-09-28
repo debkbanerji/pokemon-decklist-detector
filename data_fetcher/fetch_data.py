@@ -549,6 +549,7 @@ def get_cards(): # Returns dataframe
     total_downloaded_cards = 0
     page_number = 1
     processed_cards = None
+    mee_energy_count = 2 * len(BASIC_ENERGY_NAMES)
     
     # get the set info directly from github, to avoid computationally expensive calls to the API
     sets_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/sets/en.json"
@@ -560,14 +561,34 @@ def get_cards(): # Returns dataframe
         if (set_data['series'] == 'Scarlet & Violet' or set_data['series'] == 'Mega Evolution')
         and set_data['id'] not in EXCLUDED_SET_IDS
     ]
+    sets_data.append({
+        "id": "mee",
+        "name": "Mega Evolution Energy",
+        "series": "Mega Evolution",
+        "printedTotal": mee_energy_count,
+        "ptcgoCode": "MEE",
+    })
 
     for set_download_order, set_data in enumerate(sets_data):
         set_id = set_data['id']
         if set_id in PROMO_SET_CONFIG:
             continue
         print("Downloading info for set " + set_id + " (" + set_data['name'] + ")")
-        set_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/cards/en/" + set_id + ".json"
-        cards_in_set = json.load(open_url(set_url))
+        if set_id == 'mee':
+            cards_in_set = [
+                {
+                    "id": f"mee-{number}",
+                    "name": f"Basic {BASIC_ENERGY_NAMES[(number - 1) % len(BASIC_ENERGY_NAMES)]}",
+                    "supertype": "Energy",
+                    "subtypes": ["Basic"],
+                    "number": str(number),
+                    "images": {"small": f"https://images.scrydex.com/pokemon/mee-{number}/small"},
+                }
+                for number in range(1, mee_energy_count + 1)
+            ]
+        else:
+            set_url = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/refs/heads/master/cards/en/" + set_id + ".json"
+            cards_in_set = json.load(open_url(set_url))
         processed_cards = [
             {
                 "id": card.get('id'),
