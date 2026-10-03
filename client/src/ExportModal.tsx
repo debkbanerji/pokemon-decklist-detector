@@ -744,7 +744,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     cards.forEach(card => {
                         const radius = Math.min(1.7, card.width * scale * 0.45);
                         const x = pdfLeft + card.x * scale;
-                        const y = pdfTop + card.bottom * scale - radius - 0.15;
+                        const y = pdfTop + card.bottom * scale - radius - 0.7;
                         doc.setFillColor(210, 0, 0).circle(x, y, radius, 'F');
                         doc.text(String(card.count), x, y, { align: 'center', baseline: 'middle' });
                     });
