@@ -791,7 +791,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                             {cardDatabase[currentDetectedCardID].number}
                         </> : null}
                     <br />
-                    <CardImageForID id={currentDetectedCardID} />
+                    <CardImageForID id={currentDetectedCardID} cardDatabase={cardDatabase} />
                 </motion.div>
             </div> : null
             }
@@ -831,7 +831,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         {cardDatabase[currentDetectedCardID].set_code}&nbsp;
                         {cardDatabase[currentDetectedCardID].number}
                     </div> : null}
-                <CardImageForID id={currentDetectedCardID} />
+                <CardImageForID id={currentDetectedCardID} cardDatabase={cardDatabase} />
             </div>
             <div className='manual-count-controls'>
                 <div className='manual-count-instructions'>
@@ -980,7 +980,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         exit={{ opacity: 0, x: 200, scale: 1.2 }}
                         transition={{ duration: 0.6, type: "spring" }}>
                         <div className='scan-row-image'>
-                            <CardImageForID id={id} />
+                            <CardImageForID id={id} cardDatabase={cardDatabase} />
                         </div>
                         <div className='scan-row-input'>
                             <div>{name}</div>

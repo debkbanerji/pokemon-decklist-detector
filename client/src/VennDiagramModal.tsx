@@ -3,7 +3,7 @@ import CardImageForID from './CardImageForID';
 import { buildDeckVennSections, buildMinRarityDecklist } from './DeckComparison';
 import { formatDeckTimestamp } from './StorageManager';
 
-function DeckSection({ title, metadata, subtitle, cards, className }) {
+function DeckSection({ title, metadata, subtitle, cards, className, cardDatabase }) {
     return <section className={`deck-venn-section ${className}`}>
         <div className='deck-venn-section-header'>
             <h4>{title}</h4>
@@ -13,7 +13,7 @@ function DeckSection({ title, metadata, subtitle, cards, className }) {
         {cards.length > 0 ? <div className='deck-venn-card-list'>
             {cards.map(card => <div className='deck-venn-card-row' key={`${className}-${card.comparisonKey}`}>
                 <div className='deck-venn-card-image'>
-                    <CardImageForID id={card.id} />
+                    <CardImageForID id={card.id} cardDatabase={cardDatabase} />
                 </div>
                 <div className='deck-venn-card-meta'>
                     <div className='deck-venn-card-name'>{card.name}</div>
@@ -60,12 +60,14 @@ function VennDiagramModal({
             <div className='deck-venn-circle deck-venn-circle-left' aria-hidden='true' />
             <div className='deck-venn-circle deck-venn-circle-right' aria-hidden='true' />
             <DeckSection
+                cardDatabase={cardDatabase}
                 className='deck-venn-middle'
                 title='Shared'
                 subtitle={`${sharedCount} cards shared by both decks`}
                 cards={shared}
             />
             <DeckSection
+                cardDatabase={cardDatabase}
                 className='deck-venn-left'
                 title={leftDeckName}
                 metadata={leftDeckMetadata}
@@ -73,6 +75,7 @@ function VennDiagramModal({
                 cards={deckAOnly}
             />
             <DeckSection
+                cardDatabase={cardDatabase}
                 className='deck-venn-right'
                 title={rightDeckName}
                 metadata={rightDeckMetadata}

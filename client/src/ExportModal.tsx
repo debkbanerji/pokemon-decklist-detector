@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
+import { toJpeg } from 'html-to-image';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
@@ -14,6 +15,8 @@ import { sortDecklistCards } from './DecklistSort.ts';
 import { useLiveQuery } from 'dexie-react-hooks';
 import VennDiagramModal from './VennDiagramModal.tsx';
 import { buildMinRarityDecklist } from './DeckComparison';
+
+const PDF_DECKLIST_SIZE = { width: 75, height: 32 };
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -599,6 +602,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
     const [format, setFormat] = useState('Standard');
     const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
+    const decklistPreviewRef = useRef<HTMLDivElement>(null);
+    const pdfCardRefs = useRef<({ element: HTMLDivElement; count: number } | null)[]>([]);
 
     function setCoverPokemonWrapped(name) {
         setCoverPokemon(name);
@@ -695,11 +700,12 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 }
                 doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerID : '', 37, 22);
                 doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerDOB.toLocaleDateString() : '', 45, 27);
-                doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? ageDivision : '', 45, 32);
+                const pdfAgeDivision = ageDivision.replace(/ Division$/, '');
+                doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? pdfAgeDivision : '', 45, 32);
                 if (includePlayerInfoInPDF) {
                     const ageDivisionPokeballIcon = new Image();
                     ageDivisionPokeballIcon.src = 'customization_sprites/' + AGE_DIVISION_TO_POKE_BALL_FILE[ageDivision];
-                    doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(ageDivision), 28.5, 4.5, 4.5);
+                    doc.addImage(ageDivisionPokeballIcon, 'png', 45.5 + doc.getTextWidth(pdfAgeDivision), 28.5, 4.5, 4.5);
                 }
                 doc.setFont(undefined, 'bold').text('Format:', 15, 37).setFont(undefined, 'normal').text(format, 33, 37);
 
@@ -710,6 +716,39 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     const decklistQRCodeImage = new Image();
                     decklistQRCodeImage.src = decklistQRObject.createDataURL(null, 0);
                     doc.addImage(decklistQRCodeImage, 'png', 161.5, 5, 40, 40);
+                }
+
+                if (decklistPreviewRef.current != null && undeletedCardData.length > 0) {
+                    const grid = decklistPreviewRef.current;
+                    const preview = grid.getBoundingClientRect();
+                    const cards = pdfCardRefs.current.flatMap(card => {
+                        if (card == null) return [];
+                        const bounds = card.element.getBoundingClientRect();
+                        return [{
+                            count: card.count,
+                            width: bounds.width,
+                            x: bounds.left - preview.left + bounds.width / 2,
+                            bottom: bounds.bottom - preview.top,
+                        }];
+                    });
+                    const image = await toJpeg(grid, { pixelRatio: 2, quality: 0.92, backgroundColor: '#fff', skipFonts: true });
+                    const scale = Math.min(PDF_DECKLIST_SIZE.width / preview.width, PDF_DECKLIST_SIZE.height / preview.height);
+                    const pdfWidth = preview.width * scale;
+                    const pdfHeight = preview.height * scale;
+                    const pdfLeft = 160 - pdfWidth;
+                    const pdfTop = 45 - pdfHeight;
+                    doc.addImage(image, 'JPEG', pdfLeft, pdfTop, pdfWidth, pdfHeight);
+                    // Draw counts directly in the PDF to keep them sharp at print size.
+                    doc.setFont(undefined, 'bold').setFontSize(7);
+                    doc.setTextColor(255, 255, 255);
+                    cards.forEach(card => {
+                        const radius = Math.min(1.7, card.width * scale * 0.45);
+                        const x = pdfLeft + card.x * scale;
+                        const y = pdfTop + card.bottom * scale - radius - 0.15;
+                        doc.setFillColor(210, 0, 0).circle(x, y, radius, 'F');
+                        doc.text(String(card.count), x, y, { align: 'center', baseline: 'middle' });
+                    });
+                    doc.setFont(undefined, 'normal').setTextColor(0, 0, 0);
                 }
 
 
@@ -1289,7 +1328,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
         <hr />
-        <DecklistImage decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
+        <DecklistImage pdfGridRef={decklistPreviewRef} pdfCardRefs={pdfCardRefs} pdfSize={PDF_DECKLIST_SIZE}
+            decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <br />
         {
             totalCountValid ?
@@ -1320,9 +1360,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         </div>
         <div className='export-pdf-field'>
             Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
-                <option>Junior Division</option>
-                <option>Senior Division</option>
-                <option>Masters Division</option>
+                <option value="Junior Division">Junior</option>
+                <option value="Senior Division">Senior</option>
+                <option value="Masters Division">Masters</option>
             </select>
         </div>
         <div className='export-pdf-field' style={{

@@ -15,6 +15,18 @@
 
 .decklist-image-card-container {
     position: relative;
+    isolation: isolate;
+}
+
+.decklist-image-pdf-preview {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    pointer-events: none;
+}
+
+.decklist-image-pdf-preview .decklist-image-cards {
+    background-color: white;
 }
 
 .decklist-image-card {
@@ -26,7 +38,7 @@
 .decklist-image-card-count {
     position: absolute;
     bottom: 0;
-    z-index: 0.5;
+    z-index: 3;
     display: flex;
     justify-content: center;
     width: 100%;
@@ -35,12 +47,16 @@
 
 .number-circle {
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(255, 0, 0, 0.699);
     color: white;
     text-align: center;
-    font-size: 14px;
+    font-size: 18px;
+    line-height: 1;
     font-weight: bold;
 }
 
