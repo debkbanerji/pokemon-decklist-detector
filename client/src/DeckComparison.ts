@@ -28,6 +28,8 @@ export function getLowRarityRank(card: Partial<CardInfo>, cardDatabase: CardData
 
 export function compareCardsForLowRarity(a: Partial<CardInfo>, b: Partial<CardInfo>, cardDatabase: CardDatabase) {
     return getLowRarityRank(a, cardDatabase) - getLowRarityRank(b, cardDatabase)
+        || (a.set_download_order ?? cardDatabase?.[a?.id ?? '']?.set_download_order ?? Number.MAX_SAFE_INTEGER)
+            - (b.set_download_order ?? cardDatabase?.[b?.id ?? '']?.set_download_order ?? Number.MAX_SAFE_INTEGER)
         || (a.set_code ?? cardDatabase?.[a?.id ?? '']?.set_code ?? '').localeCompare(b.set_code ?? cardDatabase?.[b?.id ?? '']?.set_code ?? '')
         || (a.number ?? cardDatabase?.[a?.id ?? '']?.number ?? '').localeCompare(b.number ?? cardDatabase?.[b?.id ?? '']?.number ?? '')
         || (a.id ?? '').localeCompare(b.id ?? '');
