@@ -29,6 +29,21 @@ function getCardTypeSortWeight(card: CardInfo) {
     }
 }
 
+function getTrainerTypeSortWeight(card: CardInfo) {
+    const subtypes = card.subtypes ?? [];
+    if (subtypes.includes('Supporter')) {
+        return 0;
+    } else if (subtypes.includes('Pokémon Tool')) {
+        return 2;
+    } else if (subtypes.includes('Stadium')) {
+        return 3;
+    } else if (subtypes.includes('Item')) {
+        return 1;
+    } else {
+        return 4;
+    }
+}
+
 function getPokemonEvolutionName(cardOrName: CardInfo | string | null | undefined) {
     return typeof cardOrName === 'string'
         ? cardOrName
@@ -143,6 +158,13 @@ export function sortDecklistCards(cards: CardInfo[], cardDatabase: CardDatabase 
             }
 
             return comparePokemonWithinLine(a, b);
+        }
+
+        if (a.supertype === 'Trainer' && b.supertype === 'Trainer') {
+            result = getTrainerTypeSortWeight(a) - getTrainerTypeSortWeight(b);
+            if (result !== 0) {
+                return result;
+            }
         }
 
         return b.count - a.count

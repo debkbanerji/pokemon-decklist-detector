@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { MutableRefObject, Ref } from 'react';
 import type { CardDatabase, CardInfo } from './DecklistSort';
+import { sortDecklistCards } from './DecklistSort';
 import './DecklistImage.css';
 import CardImageForID from './CardImageForID.tsx';
 import { buildMinRarityDecklist } from './DeckComparison';
@@ -20,9 +21,9 @@ function DecklistImage({
 }) {
     const [forceLowRarity, setForceLowRarity] = useState(false);
     const displayDecklist = useMemo(
-        () => forceLowRarity
+        () => sortDecklistCards(forceLowRarity
             ? buildMinRarityDecklist(decklist, cardDatabase)
-            : decklist.map((card, index) => ({
+            : decklist, cardDatabase).map((card, index) => ({
                 ...card,
                 displayKey: `${card.id ?? 'index'}-${index}`,
             })),

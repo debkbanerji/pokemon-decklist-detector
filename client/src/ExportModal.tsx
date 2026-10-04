@@ -457,7 +457,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         if (supertype === 'Energy') {
             energyDict[name] = (energyDict[name] ?? 0) + count; // key off of name for energies
         } else if (supertype === 'Trainer') {
-            trainerDict[name] = (trainerDict[name] ?? 0) + count; // key off of name for trainers
+            trainerDict[name] = {
+                ...cardDatabase[id],
+                ...cardInfo,
+                count: (trainerDict[name]?.count ?? 0) + count,
+            };
         } else {
             pokemonDict[id] = (pokemonDict[id] ?? 0) + count; // key off of id for pokemon
         }
@@ -468,7 +472,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         count: pokemonDict[id],
         ...cardDatabase[id]
     })), cardDatabase).map(card => [card.id, card.count]);
-    const trainers = Object.keys(trainerDict).map(id => [id, trainerDict[id]]);
+    const trainers = sortDecklistCards(Object.keys(trainerDict).map(name => trainerDict[name]), cardDatabase)
+        .map(card => [card.name, card.count]);
     const energies = Object.keys(energyDict).map(id => [id, energyDict[id]]);
 
     const pokemonNameToSpriteUrl = {};
@@ -479,10 +484,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }
     });
 
-    [trainers, energies].map(pairList => {
-        pairList.sort((a, b) => {
-            return (b[1] - a[1]) || a[0].localeCompare(b[0]);
-        })
+    energies.sort((a, b) => {
+        return (b[1] - a[1]) || a[0].localeCompare(b[0]);
     });
 
     const numPokemon = pokemon.reduce((a, b) => a + b[1], 0);
