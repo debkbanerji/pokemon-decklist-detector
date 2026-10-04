@@ -5,6 +5,7 @@ import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
+import DecklistPDFGrid from './DecklistPDFGrid';
 import { toJpeg } from 'html-to-image';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
@@ -402,6 +403,7 @@ function CompareChooser({
 
 
 function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPokemon, deckName, setDeckName, enableSaving, previousDecklistTimestamp, currentDeckCreatedTimestamp, onClose }) {
+    const [useMinRarityForExport, setUseMinRarityForExport] = useState(false);
     const [hasTriedDBWrite, setHasTriedDBWrite] = useState(false);
     const [modalOpenedTimestamp, setModalOpenedTimestamp] = useState(null);
     const [showProbabilityContent, setShowProbabilityContent] = useState(false);
@@ -419,6 +421,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }));
         return buildMinRarityDecklist(fullCurrentDeckCards, cardDatabase).map(cardInfo => ({ cardInfo }));
     }, [currentDeckCards, cardDatabase]);
+
+    const exportDecklistData = useMinRarityForExport ? minRarityDecklistData : undeletedCardData;
 
     useEffect(() => {
         if (modalOpenedTimestamp == null) {
@@ -452,7 +456,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
     const pokemonDict = {};
     const trainerDict = {};
     const energyDict = {};
-    undeletedCardData.forEach(({ cardInfo }) => {
+    exportDecklistData.forEach(({ cardInfo }) => {
         const { supertype, id, name, count } = cardInfo;
         if (supertype === 'Energy') {
             energyDict[name] = (energyDict[name] ?? 0) + count; // key off of name for energies
@@ -567,8 +571,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         setTimeout(() => setShowSaveTooltip(false), 1400);
     }
 
-    const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(undeletedCardData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
-    const minRarityShareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(minRarityDecklistData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
+    const shareableUrl = `${window.location.origin}?decklist=${seralizeDecklist(exportDecklistData)}${coverPokemon.length > 0 ? ('&cover_pokemon=' + coverPokemon) : ''}${deckName.length > 0 ? ('&deck_name=' + deckName) : ''}`;
     const canshareUrl = window.location.href.indexOf('forceShareable') > -1 || (navigator.share && navigator.canShare && navigator.canShare({ url: shareableUrl }) && (shareableUrl.length < 2000));
     async function onShareUrl() {
         await saveDecklistToStorage();
@@ -1163,26 +1166,26 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         }, 30);
     }
 
-    const [qrCodeMode, setQRCodeMode] = useState(null);
+    const [showQRCode, setShowQRCode] = useState(false);
 
-    if (qrCodeMode != null) {
+    if (showQRCode) {
         return <div>
             <div className='modal-header-row'>
                 <div>
                     <button
                         className='modal-header-nav-button'
                         aria-label='Back to export decklist'
-                        onClick={() => setQRCodeMode(null)}
+                        onClick={() => setShowQRCode(false)}
                     ><MdOutlineArrowBack /></button>
                 </div>
                 <h3 style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }}>
-                    {qrCodeMode === 'minRarity' ? 'Min Rarity QR Code' : 'List QR Code'}
+                    {useMinRarityForExport ? 'Min Rarity QR Code' : 'List QR Code'}
                 </h3>
             </div>
             <ReactQRCode
                 size={256}
                 style={{ height: "auto", maxWidth: "100%", width: "100%", marginTop: '12px' }}
-                value={qrCodeMode === 'minRarity' ? minRarityShareableUrl : shareableUrl}
+                value={shareableUrl}
                 viewBox={`0 0 256 256`}
             />
         </div>
@@ -1331,8 +1334,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             Deck Name: <input type="text" name='deck-name' onChange={e => setDeckName(e.target.value)} value={deckName} />
         </div>
         <hr />
-        <DecklistImage pdfGridRef={decklistPreviewRef} pdfCardRefs={pdfCardRefs} pdfSize={PDF_DECKLIST_SIZE}
-            decklist={undeletedCardData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
+        <DecklistImage decklist={currentDeckCards} cardDatabase={cardDatabase} />
+        <DecklistPDFGrid gridRef={decklistPreviewRef} cardRefs={pdfCardRefs} size={PDF_DECKLIST_SIZE}
+            decklist={exportDecklistData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <br />
         {
             totalCountValid ?
@@ -1398,6 +1402,25 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         <div>
             <h3>Export</h3>
             <div className='export-pdf-field'>
+                Use min rarity for export
+                <label className={`toggle-switch ${useMinRarityForExport ? 'checked' : ''}`}>
+                    <input
+                        className="toggle-input"
+                        type="checkbox"
+                        checked={useMinRarityForExport}
+                        onChange={e => setUseMinRarityForExport(e.target.checked)}
+                        aria-label="Use min rarity for export"
+                        disabled={isDownloadingPDF}
+                    />
+                    <span className="toggle-track" aria-hidden="true">
+                        <span className="toggle-knob" />
+                    </span>
+                </label>
+            </div>
+            {useMinRarityForExport ? <div className='warning-text'>
+                Ensure any list you submit is accurate!
+            </div> : null}
+            <div className='export-pdf-field'>
                 Include player info in pdf
                 <label className={`toggle-switch ${includePlayerInfoInPDF ? 'checked' : ''}`}>
                     <input
@@ -1432,15 +1455,9 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     </button>
                     <button type="button" onClick={async () => {
                         await saveDecklistToStorage();
-                        setQRCodeMode('standard');
+                        setShowQRCode(true);
                     }}>
                         QR Code
-                    </button>
-                    <button type="button" onClick={async () => {
-                        await saveDecklistToStorage();
-                        setQRCodeMode('minRarity');
-                    }}>
-                        Min Rarity QR Code
                     </button>
                 </> : null}
                 <a href={emailLink} onClick={saveDecklistToStorage} target="_blank"><button type="button" disabled={!(playerName && playerID && playerDOB)}>
