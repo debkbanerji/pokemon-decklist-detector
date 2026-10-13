@@ -1184,7 +1184,8 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             </div>
             <ReactQRCode
                 size={256}
-                style={{ height: "auto", maxWidth: "100%", width: "100%", marginTop: '12px' }}
+                bgColor="#fefefe"
+                style={{ height: "auto", maxWidth: "100%", width: "100%", marginTop: '12px', border: '16px solid #fefefe', boxSizing: 'border-box' }}
                 value={shareableUrl}
                 viewBox={`0 0 256 256`}
             />
