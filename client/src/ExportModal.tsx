@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
-import DecklistPDFGrid from './DecklistPDFGrid';
-import { toJpeg } from 'html-to-image';
+import { renderDecklistPDFImage } from './DecklistPDFImage';
 import Select from 'react-select';
 import { QRCode as ReactQRCode } from "react-qr-code";
 import qrcode from "qrcode-generator"
@@ -608,8 +607,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
     const [format, setFormat] = useState('Standard');
     const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-    const decklistPreviewRef = useRef<HTMLDivElement>(null);
-    const pdfCardRefs = useRef<({ element: HTMLDivElement; count: number } | null)[]>([]);
 
     function setCoverPokemonWrapped(name) {
         setCoverPokemon(name);
@@ -698,11 +695,14 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                 doc.setFont(undefined, 'normal').text(generatedText, 159.5 - doc.getTextWidth(generatedText), 10);
 
                 doc.setFontSize(13);
-                doc.setFont(undefined, 'bold').text('Player Name:', 15, 17).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerName : '', 45, 17);
+                const useShortPlayerNameLabel = includePlayerInfoInPDF && playerName.length > 13;
+                doc.setFont(undefined, 'bold');
+                const playerNameX = useShortPlayerNameLabel ? 45 - doc.getTextWidth('Player Name:') + doc.getTextWidth('Name:') : 45;
+                doc.setFont(undefined, 'bold').text(useShortPlayerNameLabel ? 'Name:' : 'Player Name:', 15, 17).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerName : '', playerNameX, 17);
                 if (playerSpriteFile != null && playerSpriteFile.length > 0 && includePlayerInfoInPDF) {
                     const playerSpriteImage = new Image();
                     playerSpriteImage.src = 'customization_sprites/' + playerSpriteFile;
-                    doc.addImage(playerSpriteImage, 'png', 45.5 + doc.getTextWidth(playerName), 13, 5, 5);
+                    doc.addImage(playerSpriteImage, 'png', playerNameX + 0.5 + doc.getTextWidth(playerName), 13, 5, 5);
                 }
                 doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerID : '', 37, 22);
                 doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerDOB.toLocaleDateString() : '', 45, 27);
@@ -724,20 +724,11 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     doc.addImage(decklistQRCodeImage, 'png', 161.5, 5, 40, 40);
                 }
 
-                if (decklistPreviewRef.current != null && undeletedCardData.length > 0) {
-                    const grid = decklistPreviewRef.current;
-                    const preview = grid.getBoundingClientRect();
-                    const cards = pdfCardRefs.current.flatMap(card => {
-                        if (card == null) return [];
-                        const bounds = card.element.getBoundingClientRect();
-                        return [{
-                            count: card.count,
-                            width: bounds.width,
-                            x: bounds.left - preview.left + bounds.width / 2,
-                            bottom: bounds.bottom - preview.top,
-                        }];
-                    });
-                    const image = await toJpeg(grid, { pixelRatio: 2, quality: 0.92, backgroundColor: '#fff', skipFonts: true });
+                if (exportDecklistData.length > 0) {
+                    const preview = await renderDecklistPDFImage(
+                        exportDecklistData.map(card => card.cardInfo), cardDatabase, PDF_DECKLIST_SIZE,
+                    );
+                    const { image, cards } = preview;
                     const scale = Math.min(PDF_DECKLIST_SIZE.width / preview.width, PDF_DECKLIST_SIZE.height / preview.height);
                     const pdfWidth = preview.width * scale;
                     const pdfHeight = preview.height * scale;
@@ -943,9 +934,15 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     }
                 }
                 const fileName = `${deckName.length > 0 ? deckName.replaceAll(' ', '-').replaceAll('/', '-') + '-' : ''}decklist-${new Date(Date.now()).toLocaleDateString().replaceAll('/', '-')}.pdf`;
-                doc.save(fileName, { returnPromise: true }).then(setTimeout(() => setIsDownloadingPDF(false), 500));
+                await doc.save(fileName, { returnPromise: true });
             }
-            await makeAndDownloadPDF();
+            try {
+                await makeAndDownloadPDF();
+            } catch (error) {
+                alert(error instanceof Error ? error.message : 'Could not create the PDF. Please retry.');
+            } finally {
+                setIsDownloadingPDF(false);
+            }
         }, 30);
     }
 
@@ -1336,8 +1333,6 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
         </div>
         <hr />
         <DecklistImage decklist={currentDeckCards} cardDatabase={cardDatabase} />
-        <DecklistPDFGrid gridRef={decklistPreviewRef} cardRefs={pdfCardRefs} size={PDF_DECKLIST_SIZE}
-            decklist={exportDecklistData.map(card => card.cardInfo)} cardDatabase={cardDatabase} />
         <br />
         {
             totalCountValid ?
