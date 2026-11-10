@@ -152,6 +152,7 @@ set_id_to_official_code_overrides = {
   "me4": "CRI",
   "me5": "PBL",
   "me55": "30C",
+  "me6": "DLR",
 }
 
 EXCLUDED_SET_IDS = {

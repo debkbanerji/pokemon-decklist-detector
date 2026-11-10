@@ -100,7 +100,7 @@ const POKEMON_NAME_TO_MANUAL_FORM_SPRITE = {
     'Mega Greninja ex': 'greninja-mega.png',
     // 'Mega Pyroar ex': 'pyroar-mega.png',
     // 'Mega Floette ex': 'floette-mega.png',
-    // 'Mega Malamar ex': 'malamar-mega.png',
+    'Mega Malamar ex': 'malamar-mega.png',
     // 'Mega Barbaracle ex': 'barbaracle-mega.png',
     // 'Mega Dragalge ex': 'dragalge-mega.png',
     'Mega Hawlucha ex': 'hawlucha-mega.png',
