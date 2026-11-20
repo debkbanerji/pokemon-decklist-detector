@@ -18,6 +18,8 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "motion": "^11.11.17",
+    "onnxruntime-web": "^1.31.1",
+    "ppu-paddle-ocr": "^6.7.1",
     "qrcode-generator": "^1.4.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

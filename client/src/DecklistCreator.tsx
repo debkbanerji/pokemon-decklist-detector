@@ -4,7 +4,8 @@ import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
 import { addDecklistToDB, seralizeDecklist } from './StorageManager';
 import Select, { components } from 'react-select';
-import { createWorker, PSM, OEM } from 'tesseract.js';
+import { PaddleOcrService } from 'ppu-paddle-ocr/web';
+import * as ort from 'onnxruntime-web';
 import { motion, AnimatePresence } from "motion/react"
 import DecklistImage from './DecklistImage.tsx';
 import { getPokemonSpriteUrlForCard } from './ExportModal.tsx';
@@ -13,35 +14,12 @@ import { sortDecklistCards } from './DecklistSort.ts';
 import ProbabilityModal from './ProbabilityModal.tsx';
 import { BASIC_ENERGY_INFO, BASIC_ENERGY_NAMES } from './BasicEnergy';
 
-const DETECTION_REPLACE_REGEX = /(é|')/i;
+// Self-hosted runtime: dev loads it from node_modules, prod from public/ort-wasm/.
+ort.env.wasm.wasmPaths = import.meta.env.DEV
+    ? '/node_modules/onnxruntime-web/dist/'
+    : '/ort-wasm/';
 
-const EDGE_CASE_REGEXES = [
-    [/(professor.*research)/i, 'Professor\'s Research'],
-    [/(boss.*order)/i, 'Boss\'s Orders'],
-    [/(professor turo)/i, 'Professor Turo\'s Scenario'],
-    [/(professor sada)/i, 'Professor Sada\'s Vitality'],
-    [/(ancient booster)/i, 'Ancient Booster Energy Capsule'],
-    [/(future booster)/i, 'Future Booster Energy Capsule'],
-    [/(ciphermaniac)/i, 'Ciphermaniac\'s Codebreaking'],
-    [/(lono)/i, 'Iono']
-]
-
-function doesCaseSensitiveTextContainEri(text) {
-    // Hack to detect Eri
-    // Eri is a common substring when the check is case sensitive
-    // An uppercase 'E', however, is rare enough that we can use it to help us find Eri
-    // while reducing the odds of false positives
-
-    return text.includes('Eri');
-}
-
-function SearchDropdownIndicator(props) {
-    return <components.DropdownIndicator {...props}>
-        <MdSearch />
-    </components.DropdownIndicator>
-}
-
-
+// Tesseract preprocessing cycles across frames: 0 = normalise only, 1 = + contrast 100, 2 = + threshold 200.
 function contrastImage(imgData, contrast) {  //input range [-100..100]
     let d = imgData.data;
     contrast = (contrast / 100) + 1;  //convert to decimal & shift range: [0..2]
@@ -50,16 +28,6 @@ function contrastImage(imgData, contrast) {  //input range [-100..100]
         d[i] = d[i] * contrast + intercept;
         d[i + 1] = d[i + 1] * contrast + intercept;
         d[i + 2] = d[i + 2] * contrast + intercept;
-    }
-    return imgData;
-}
-
-function adjustImageBrightness(imgData, brightnessFactor) {  //input range [-1..1]
-    let d = imgData.data;
-    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
-        d[i] = Math.min(Math.round(d[i] * brightnessFactor), 255);
-        d[i + 1] = Math.min(Math.round(d[i + 1] * brightnessFactor), 255);
-        d[i + 2] = Math.min(Math.round(d[i + 2] * brightnessFactor), 255);
     }
     return imgData;
 }
@@ -78,18 +46,7 @@ function getThresholdedBlack(imgData, threshold) {
     return imgData;
 }
 
-function greyscaleImage(imgData, contrast) {
-    let d = imgData.data;
-    for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
-        const avg = d[i] + d[i + 1] + d[i + 2];
-        d[i] = avg;
-        d[i + 1] = avg;
-        d[i + 2] = avg;
-    }
-    return imgData;
-}
-
-function normalizeImage(imgData, contrast) {
+function normalizeImage(imgData) {
     let d = imgData.data;
     let min1 = 255;
     let min2 = 255;
@@ -98,7 +55,6 @@ function normalizeImage(imgData, contrast) {
     let max2 = 0;
     let max3 = 0;
     for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
-        const avg = d[i] + d[i + 1] + d[i + 2];
         min1 = Math.min(min1, d[i]);
         min2 = Math.min(min2, d[i + 1]);
         min3 = Math.min(min3, d[i + 2]);
@@ -107,59 +63,74 @@ function normalizeImage(imgData, contrast) {
         max3 = Math.max(max3, d[i + 2]);
     }
     for (let i = 0; i < d.length; i += 4) {   //r,g,b,a
-        d[i] = Math.floor((d[i] - min1) * 255 / (max1 - min1));
-        d[i + 1] = Math.floor((d[i + 1] - min2) * 255 / (max2 - min2));;
-        d[i + 2] = Math.floor((d[i + 1] - min3) * 255 / (max3 - min3));;
+        if (max1 > min1) d[i] = Math.floor((d[i] - min1) * 255 / (max1 - min1));
+        if (max2 > min2) d[i + 1] = Math.floor((d[i + 1] - min2) * 255 / (max2 - min2));
+        if (max3 > min3) d[i + 2] = Math.floor((d[i + 2] - min3) * 255 / (max3 - min3));
     }
     return imgData;
 }
 
-const tesseractWorker = await createWorker('eng', 1, {
-    // logger: m => console.log(m),
-    tessedit_ocr_engine_mode: OEM.TESSERACT_LSTM_COMBINED
+// Runs init once; a failed init stays failed (same rejected promise, no retry).
+const lazy = (init) => { let p; return () => (p ??= init()); };
+
+const getTesseractWorker = lazy(async () => {
+    const { createWorker, PSM, OEM } = await import('tesseract.js');
+    const worker = await createWorker('eng', 1, {
+        tessedit_ocr_engine_mode: OEM.TESSERACT_LSTM_COMBINED
+    });
+    await worker.setParameters({
+        tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+    });
+    return worker;
 });
-await tesseractWorker.setParameters({
-    tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+
+const DETECTION_REPLACE_REGEX = /(é|')/i;
+
+// Remove evolution text so the previous evolution isn't mistaken for the card's name; the crop can clip the start of "Evolves".
+const EVOLVES_FROM_REGEX = /(?:evolves|volves|olves|lves|ves)?\s*from\s+[^\n\r]+/gi;
+
+const EDGE_CASE_REGEXES = [
+    [/(professor.*research)/i, 'Professor\'s Research'],
+    [/(boss.*order)/i, 'Boss\'s Orders'],
+    [/(professor turo)/i, 'Professor Turo\'s Scenario'],
+    [/(professor sada)/i, 'Professor Sada\'s Vitality'],
+    [/(ancient booster)/i, 'Ancient Booster Energy Capsule'],
+    [/(future booster)/i, 'Future Booster Energy Capsule'],
+    [/(ciphermaniac)/i, 'Ciphermaniac\'s Codebreaking'],
+    [/(lono)/i, 'Iono']
+]
+
+function SearchDropdownIndicator(props) {
+    return <components.DropdownIndicator {...props}>
+        <MdSearch />
+    </components.DropdownIndicator>
+}
+
+
+const getPaddleService = lazy(async () => {
+    const service = new PaddleOcrService({
+        model: {
+            detection: '/pp-models/PP-OCRv6_tiny_det.ort',
+            recognition: '/pp-models/PP-OCRv6_tiny_rec.ort',
+            charactersDictionary: '/pp-models/ppocrv6_tiny_dict.txt',
+        },
+        session: { executionProviders: ['wasm'] },
+        processing: { engine: 'canvas-native' },
+    });
+    await service.initialize();
+    return service;
 });
 
 function getViewportOffsets(currentDetectedCardName, currentDetectedCardID) {
-    if (currentDetectedCardName == null && currentDetectedCardID == null) {
-        // Detecting title
-        return {
-            top: 0.43,
-            height: 0.14,
-            left: 0.1,
-            width: 0.8
-        }
-    } else if (currentDetectedCardID == null) {
-        // Detecting set info
-        // return { // was using earlier, but let's try keeping it consistent instead
-        //     top: 0.4,
-        //     height: 0.2,
-        //     left: 0.2,
-        //     width: 0.6
-        // }
-        return {
-            top: 0.43,
-            height: 0.14,
-            left: 0.1,
-            width: 0.8
-        }
-    } else {
-        return {
-            top: 0,
-            height: 1,
-            left: 0,
-            width: 1
-        }
+    if (currentDetectedCardID != null) {
+        return { top: 0, height: 1, left: 0, width: 1 }
     }
+    return { top: 0.43, height: 0.14, left: 0.1, width: 0.8 }
 }
 
 function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, startingCoverPokemon, startingDecklistTimestamp, scrollToTop }) {
     const videoRef = useRef(null);
-    const tesseractCanvasRef = useRef(null);
-    // const tesseractDebugCanvasRef = useRef(null);
-    const tesseractPreProcessingTypeNum = useRef(0);
+    const ocrCanvasRef = useRef(null);
     const exportModalRef = useRef(null);
     const probabilityModalRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState(null);
@@ -182,7 +153,6 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
 
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
-    const isRunningTesseractDetection = currentDetectedCardName == null && currentDetectedCardID == null;
     const currentDetectedSimilarCardIDs = ((cardDatabase[currentDetectedCardID] ?? {}).similar_looking_card_ids ?? []);
     const numSimilarCards = currentDetectedSimilarCardIDs.length;
 
@@ -194,7 +164,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
 
     const [successfullyAddedCardText, setSuccessfullyAddedCardText] = useState(null);
 
+    const ocrEngineRef = useRef('paddle'); // 'paddle' | 'tesseract', read from ?ocr= at scanner start
     const [tesseractOutput, setTesseractOutput] = useState('');
+    const tesseractPreProcessingTypeNum = useRef(0);
+
+    // `frame` increments every completed inference so the matcher re-runs even when the text is unchanged.
+    const [ocrResult, setOcrResult] = useState({ text: '', frame: 0 });
+    const ocrFrameRef = useRef(0);
 
     const {
         top: viewportTop,
@@ -330,6 +306,18 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
 
         setErrorMessage(null);
 
+        // Read the engine selection once, at scanner start.
+        ocrEngineRef.current = new URLSearchParams(window.location.search).get('ocr') === 'tesseract'
+            ? 'tesseract'
+            : 'paddle';
+        const startTick = (shouldContinue) => {
+            if (ocrEngineRef.current === 'tesseract') {
+                tesseractTick(shouldContinue);
+            } else {
+                ocrTick(shouldContinue);
+            }
+        };
+
         const video = videoRef.current;
         if (video == null) {
             return;
@@ -376,7 +364,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                                     return;
                                 }
                                 video.play();
-                                requestAnimationFrame(() => tesseractTick(() => !cancelled));
+                                requestAnimationFrame(() => startTick(() => !cancelled));
                             };
                         })
                         .catch((err) => {
@@ -386,7 +374,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         });
                 } else {
                     video.play();
-                    requestAnimationFrame(() => tesseractTick(() => !cancelled));
+                    requestAnimationFrame(() => startTick(() => !cancelled));
                 }
             };
         };
@@ -419,13 +407,17 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         };
     }, [isScannerActive]);
 
-    // listen to changes to the tesseract output
+    // Shared matcher: both engines feed the same OCR text; first matching frame wins.
     useEffect(() => {
-        const lowercaseText = tesseractOutput.toLocaleLowerCase().replace(DETECTION_REPLACE_REGEX, '');
+        const ocrText = ocrEngineRef.current === 'tesseract' ? tesseractOutput : ocrResult.text;
+        const cleanedOcrText = ocrText.replace(EVOLVES_FROM_REGEX, '');
+        const lowercaseText = cleanedOcrText.toLocaleLowerCase().replace(DETECTION_REPLACE_REGEX, '');
 
         if (lowercaseText.includes('energy') && currentDetectedCardName == null) {
             setShowBasicEnergySelector(true);
         }
+
+        let accept = null;
 
         if (currentDetectedCardName == null) {
             // trying to detect the card name
@@ -446,9 +438,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             validCardNames.sort((a, b) => b.length - a.length); // longest first
             validCardNames = validCardNames.filter(name => name.toLocaleLowerCase() !== 'eri'); // Sorry Eri, you're just a frequent false positive :(
 
-            // Manually add back Eri through a case sensitive check
-            // It's the only card of name length 3 we recognize
-            if (doesCaseSensitiveTextContainEri(tesseractOutput)) {
+            if (cleanedOcrText.includes('Eri')) {
                 validCardNames.push('Eri')
             }
             if (validCardNames.length > 0) {
@@ -456,33 +446,40 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 // if the latest scanned card is not a pokemon, and its name matches this one, don't scan again
                 // this protects against accident duplicate scans of trainer cards
                 if (latestCard == null || (latestCard.supertype === 'Pokémon' || latestCard.name !== validCardNames[0])) {
-                    // We also clear the energy selector within the function below
-                    setCardNameWrapped(validCardNames[0]);
+                    accept = () => setCardNameWrapped(validCardNames[0]);
                 }
             }
         } else if (currentDetectedCardID == null) {
-            // trying to detect the set number
-            candidateCardIDs.forEach(id => {
+            // trying to detect the set number (same engine, same strip)
+            for (const id of candidateCardIDs) {
                 const card = cardDatabase[id];
                 const { number, set_printed_total, set_code, hp } = card;
                 if (/^[a-zA-Z]$/.test(number)) { // ex 'R', 'G', 'B'
-                    return;
+                    continue;
                 }
                 const includeSetNameInString = /[a-zA-Z]+/.test(number) || ['PR', 'SVP'].includes(set_code);
                 if (includeSetNameInString && hp === number) {
                     // Weird edge case - for a promo Squawkabilly, the card's hp is exactly equal to it's promo number
                     // Return immediately to prevent a false detection - the user will have to select it manually :(includeSetNameInString
-                    return;
+                    continue;
                 }
                 const setInfoRegex = new RegExp('.*' + (includeSetNameInString ? `${number}` : `${number}.*${set_printed_total}`) + '.*', 'gi');
                 if (lowercaseText.match(setInfoRegex)) {
-                    setShowBasicEnergySelector(false); // clear this
-                    setCurrentDetectedCardID(id);
-                    scrollToTop();
+                    accept = () => {
+                        setShowBasicEnergySelector(false); // clear this
+                        setCurrentDetectedCardID(id);
+                        scrollToTop();
+                    };
+                    break;
                 }
-            });
+            }
+        }
+
+        if (accept != null) {
+            accept();
         }
     }, [
+        ocrResult,
         tesseractOutput,
         currentDetectedCardID,
         setCurrentDetectedCardID,
@@ -522,30 +519,30 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         }
     }, []);
 
-    const tesseractTickrateRef = useRef(70); // in ms - this is the default
+    const ocrTickrateRef = useRef(70); // in ms - this is the default
 
     useEffect(() => {
-        // dynamically reduce tesseract tick rate to save CPU if we're not actively searching for something
+        // dynamically reduce OCR tick rate to save CPU if we're not actively searching for something
         // if we have cpu pressure data, and the system is behaving normally, go with a higher tick rate
         if (!isScannerActive || currentDetectedCardID != null || totalCards >= 60) {
             // scan not required
-            tesseractTickrateRef.current = 500;
+            ocrTickrateRef.current = 500;
         } else if (pressureData?.state === 'nominal' || pressureData?.state === 'fair') {
             // we have access to pressure data, and the CPU is behaving fine
             // go with a higher tick rate
-            tesseractTickrateRef.current = 7;
+            ocrTickrateRef.current = 7;
         } else {
-            tesseractTickrateRef.current = 70;
+            ocrTickrateRef.current = 70;
         }
-    }, [isScannerActive, currentDetectedCardID, totalCards, tesseractTickrateRef, pressureData]);
+    }, [isScannerActive, currentDetectedCardID, totalCards, ocrTickrateRef, pressureData]);
 
-    async function tesseractTick(shouldContinue = () => true) {
-        if (!shouldContinue()) {
-            return;
-        }
-
-        const canvas = tesseractCanvasRef.current;
+    // Crops the 512px name/set strip from the video frame; null when the camera isn't ready.
+    const cropStrip = () => {
+        const canvas = ocrCanvasRef.current;
         const video = videoRef.current;
+        if (canvas == null || video == null || video.videoWidth === 0) {
+            return null;
+        }
         const context = canvas.getContext("2d", { willReadFrequently: true });
         const targetWidth = video.videoWidth * viewportWidth;
         const targetHeight = video.videoHeight * viewportHeight;
@@ -556,30 +553,80 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             targetWidth, targetHeight,
             0, 0,
             canvas.width, canvas.height);
+        return { canvas, context };
+    };
 
-        // const debugCanvas = tesseractDebugCanvasRef.current;
-        // const debugContext = debugCanvas.getContext("2d", { willReadFrequently: true });
-        // debugCanvas.width = canvas.width;
-        // debugCanvas.height = canvas.height;
+    const nextTick = (tick, shouldContinue) => setTimeout(() => {
+        if (shouldContinue()) {
+            requestAnimationFrame(() => tick(shouldContinue));
+        }
+    }, ocrTickrateRef.current);
 
+    async function ocrTick(shouldContinue = () => true) {
+        if (!shouldContinue()) {
+            return;
+        }
+
+        const strip = cropStrip();
+        if (strip == null) {
+            nextTick(ocrTick, shouldContinue);
+            return;
+        }
+        const { canvas } = strip;
 
         setTimeout(async () => {
-            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            let pixels = normalizeImage(imageData, 100);
+            if (!shouldContinue()) {
+                return;
+            }
+            setTimeout(async () => {
+                if (!shouldContinue()) {
+                    return;
+                }
+                // PP-OCR reads the raw strip (no Tesseract-style preprocessing).
+                try {
+                    const service = await getPaddleService();
+                    const result = await service.recognize(canvas, { flatten: true });
+                    ocrFrameRef.current += 1;
+                    setOcrResult({ text: result.text ?? '', frame: ocrFrameRef.current });
+                } catch (err) {
+                    console.error('PP-OCR failed on frame:', err);
+                    ocrFrameRef.current += 1;
+                    setOcrResult({ text: '', frame: ocrFrameRef.current });
+                }
 
-            // depending on the value of tesseractPreProcessingTypeNum, apply a different type of preprocessing
-            // This lets us hedge our bets and increase the chance of detecting something
+                if (shouldContinue()) {
+                    requestAnimationFrame(() => ocrTick(shouldContinue));
+                }
+            }, ocrTickrateRef.current);
+        }, ocrTickrateRef.current);
+    }
+
+    async function tesseractTick(shouldContinue = () => true) {
+        if (!shouldContinue()) {
+            return;
+        }
+
+        const strip = cropStrip();
+        if (strip == null) {
+            nextTick(tesseractTick, shouldContinue);
+            return;
+        }
+        const { canvas, context } = strip;
+
+        setTimeout(async () => {
+            if (!shouldContinue()) {
+                return;
+            }
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            let pixels = normalizeImage(imageData);
+
             if (tesseractPreProcessingTypeNum.current === 1) {
                 pixels = contrastImage(pixels, 100);
             } else if (tesseractPreProcessingTypeNum.current === 2) {
                 pixels = getThresholdedBlack(pixels, 200);
-            } else {
-                // tesseractPreProcessingTypeNum.current = 0
-                // Do nothing
             }
             tesseractPreProcessingTypeNum.current = (tesseractPreProcessingTypeNum.current + 1) % 3
             context.putImageData(pixels, 0, 0);
-            // debugContext.putImageData(pixels, 0, 0);
 
             setTimeout(async () => {
                 if (!shouldContinue()) {
@@ -587,14 +634,20 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 }
                 const imageUrl = canvas.toDataURL("image/png");
 
-                const { data: { text } } = await tesseractWorker.recognize(imageUrl, { rotateAuto: true });
-                setTesseractOutput(text);
+                try {
+                    const worker = await getTesseractWorker();
+                    const { data: { text } } = await worker.recognize(imageUrl, { rotateAuto: true });
+                    setTesseractOutput(text);
+                } catch (err) {
+                    console.error('Tesseract failed on frame:', err);
+                    setTesseractOutput('');
+                }
 
                 if (shouldContinue()) {
                     requestAnimationFrame(() => tesseractTick(shouldContinue));
                 }
-            }, tesseractTickrateRef.current);
-        }, tesseractTickrateRef.current);
+            }, ocrTickrateRef.current);
+        }, ocrTickrateRef.current);
     }
 
     const addCard = (cardInfo, count) => {
@@ -685,7 +738,6 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         }
     }
 
-    const creatorStageClass = 'video-feed-container-active';
     const countButtons = currentDetectedCardID != null ? Array.from(Array(
         BASIC_ENERGY_NAMES.includes(currentDetectedCardName) ? 30 : 4
     ).keys()).map(countMinusOne => countMinusOne + 1) : [];
@@ -699,13 +751,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
             </small>
         </div>
         <div>{errorMessage} </div>
-        <canvas ref={tesseractCanvasRef} hidden></canvas>
+        <canvas ref={ocrCanvasRef} hidden></canvas>
 
         {!isScannerActive && currentDetectedCardID == null ? <button onClick={() => setIsScannerActive(true)} className='scanner-activate-button scanner-activate-button-top'>
             <MdCameraAlt className='scanner-activate-button-icon' /> Use Scanner
         </button> : null}
 
-        {isScannerActive ? <motion.div className={`video-feed-container ${creatorStageClass}${numSimilarCards > 0 ? ' video-feed-container-has-similar' : ''}`} >
+        {isScannerActive ? <motion.div className={`video-feed-container video-feed-container-active${numSimilarCards > 0 ? ' video-feed-container-has-similar' : ''}`} >
             <video className="video-feed" ref={videoRef}>Video stream not available.</video>
             {
                 isScannerActive && currentDetectedCardName != null && currentDetectedCardID == null ?
@@ -822,7 +874,6 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 }
             </AnimatePresence>
         </motion.div> : null}
-        {/* <canvas ref={tesseractDebugCanvasRef}></canvas> */}
 
         {!isScannerActive && currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='manual-count-selector'>
             <div className='manual-count-card'>
