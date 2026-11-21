@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import DatePicker from 'react-datepicker';
+import 'rsuite/dist/rsuite.min.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
@@ -1365,7 +1366,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
         </div>
         <div className='export-pdf-field'>
-            Year of Birth: <DatePicker className='export-date-picker' calendarClassName='export-date-picker-menu' selected={playerDOB} onChange={date => setPlayerDOB(date == null ? null : birthYearToDate(date.getFullYear()))} showYearPicker dateFormat="yyyy" isClearable />
+            Year of Birth: <DatePicker className='export-date-picker' calendarClassName='export-date-picker-menu' selected={playerDOB} onChange={date => setPlayerDOB(date == null ? null : birthYearToDate(date.getFullYear()))} showYearPicker dateFormat="yyyy" isClearable showPopperArrow={false} />
         </div>
         <div className='export-pdf-field'>
             Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>

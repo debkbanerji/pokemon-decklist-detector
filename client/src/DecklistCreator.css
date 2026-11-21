@@ -770,7 +770,7 @@ h3 {
     padding: 0;
 }
 
-.export-date-picker-menu,
+.export-date-picker-menu.react-datepicker,
 .export-date-picker-menu .react-datepicker__header {
     color: var(--color-text);
     background-color: var(--color-surface-raised);
@@ -781,9 +781,14 @@ h3 {
     color: var(--color-text);
 }
 
-.export-date-picker-menu .react-datepicker__year-text:hover,
+.export-date-picker-menu .react-datepicker__year-text:not([aria-disabled=true]):hover,
 .export-date-picker-menu .react-datepicker__year-text--keyboard-selected {
+    color: var(--color-text);
     background-color: var(--color-surface-active);
+}
+
+.export-date-picker-menu .react-datepicker__navigation:not(:focus-visible) {
+    outline: none;
 }
 
 .export-date-picker-menu .react-datepicker__year-text--disabled {
@@ -791,7 +796,7 @@ h3 {
 }
 
 .export-date-picker-menu .react-datepicker__year-text--selected,
-.export-date-picker-menu .react-datepicker__year-text--selected:hover {
+.export-date-picker-menu .react-datepicker__year-text--selected:not([aria-disabled=true]):hover {
     color: var(--color-text-on-accent);
     background-color: var(--color-accent);
 }
