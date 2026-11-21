@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { DatePicker } from 'rsuite';
-import 'rsuite/dist/rsuite.min.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import { renderDecklistPDFImage } from './DecklistPDFImage';
@@ -17,6 +17,12 @@ import VennDiagramModal from './VennDiagramModal.tsx';
 import { buildMinRarityDecklist } from './DeckComparison';
 
 const PDF_DECKLIST_SIZE = { width: 75, height: 32 };
+
+function birthYearToDate(year: number) {
+    const date = new Date('1970-07-01T12:00:00Z');
+    date.setUTCFullYear(year);
+    return date;
+}
 
 function getDisplaySetCode(card) {
     return card['set_code'] ?? card['set_id'];
@@ -629,7 +635,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
 
     const emailText = `Player Name: ${playerName}\n
   Player ID: ${playerID}\n
-  Date of Birth: ${playerDOB != null ? playerDOB.toLocaleDateString() : ''}\n
+  Year of Birth: ${playerDOB != null ? playerDOB.getFullYear() : ''}\n
   Age Division: ${ageDivision}\n
   Format: ${format}\n\n
   
@@ -705,7 +711,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                     doc.addImage(playerSpriteImage, 'png', playerNameX + 0.5 + doc.getTextWidth(playerName), 13, 5, 5);
                 }
                 doc.setFont(undefined, 'bold').text('Player ID:', 15, 22).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerID : '', 37, 22);
-                doc.setFont(undefined, 'bold').text('Date of Birth:', 15, 27).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerDOB.toLocaleDateString() : '', 45, 27);
+                doc.setFont(undefined, 'bold').text('Year of Birth:', 15, 27).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? playerDOB.getFullYear().toString() : '', 45, 27);
                 const pdfAgeDivision = ageDivision.replace(/ Division$/, '');
                 doc.setFont(undefined, 'bold').text('Age Division:', 15, 32).setFont(undefined, 'normal').text(includePlayerInfoInPDF ? pdfAgeDivision : '', 45, 32);
                 if (includePlayerInfoInPDF) {
@@ -1359,7 +1365,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
             Player ID: <input type="text" name='player-id' onChange={e => setPlayerID(e.target.value)} value={playerID} />
         </div>
         <div className='export-pdf-field'>
-            Date of Birth: <DatePicker className='export-date-picker' menuClassName='export-date-picker-menu' value={playerDOB} onChange={setPlayerDOB} format="MM/dd/yyyy" />
+            Year of Birth: <DatePicker className='export-date-picker' calendarClassName='export-date-picker-menu' selected={playerDOB} onChange={date => setPlayerDOB(date == null ? null : birthYearToDate(date.getFullYear()))} showYearPicker dateFormat="yyyy" isClearable />
         </div>
         <div className='export-pdf-field'>
             Age Division: <select onChange={e => setAgeDivision(e.target.value)} value={ageDivision}>
