@@ -5,7 +5,7 @@ import autoTable from 'jspdf-autotable'
 import DatePicker from 'react-datepicker';
 import 'rsuite/dist/rsuite.min.css';
 import 'react-datepicker/dist/react-datepicker.css';
-import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, stripStadiumHalf, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
+import { seralizeDecklist, addDecklistToDB, overWriteLatestPlayer, getLatestPlayer, getAutoCoverPokemonName, getDecklists, deserializeDecklist, parseFormattedDecklist, formatDeckTimestamp } from './StorageManager';
 import DecklistImage from './DecklistImage.tsx';
 import { renderDecklistPDFImage } from './DecklistPDFImage';
 import Select from 'react-select';
@@ -21,7 +21,7 @@ import { buildMinRarityDecklist } from './DeckComparison';
 // Adobe Symbol is a standard PDF font. Its arrow glyphs use these byte codes;
 // Helvetica can continue to render the rest of the text without an embedded font.
 const SYMBOL_ARROWS: Record<string, string> = { '←': '\u00ac', '→': '\u00ae' };
-const ARROW_SPACE = '   ';
+const ARROW_SPACE = '     ';
 
 function reservePDFArrowSpace({ cell }: CellHookData) {
     cell.text = cell.text.map(line => line.replace(/[←→]/g, ARROW_SPACE));
@@ -39,7 +39,7 @@ function drawPDFArrows({ doc, cell, section }: CellHookData) {
     doc.setFontSize(cell.styles.fontSize);
     const lineHeight = cell.styles.fontSize / doc.internal.scaleFactor * doc.getLineHeightFactor();
     cell.text.forEach((line, lineIndex) => {
-        for (const match of line.matchAll(/ {3}/g)) {
+        for (const match of line.matchAll(new RegExp(ARROW_SPACE, 'g'))) {
             const arrow = arrows[arrowIndex++];
             if (arrow == null) break;
             const x = cell.x + cell.padding('left') + doc.getTextWidth(line.slice(0, match.index));
@@ -235,7 +235,7 @@ function warmupSpriteURLs(cards) {
         if (card.supertype === 'Pokémon') {
             fetch(getPokemonSpriteUrlForCard(card));
         } else if (card.supertype === 'Trainer') {
-            const spriteUrl = 'trainer-symbols/' + stripStadiumHalf(card.name).replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+            const spriteUrl = 'trainer-symbols/' + card.name.replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
             fetch(spriteUrl);
         } else if (card.supertype === 'Energy') {
             let spriteUrl = TYPE_TO_ENERGY_SYMBOL_URL[card.name.replace(' Energy', '')];
@@ -875,7 +875,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                             try {
                                 if (data.column.index === 1 && data.row.section === 'body') {
                                     const rarity = table[data.row.index][2];
-                                    const spriteUrl = 'trainer-symbols/' + stripStadiumHalf(table[data.row.index][1]).replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                    const spriteUrl = 'trainer-symbols/' + table[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
                                     const dim = data.cell.height - data.cell.padding('vertical');
                                     const textPos = data.cell.textPos;
                                     const img = new Image();
@@ -1126,7 +1126,7 @@ function ExportModal({ undeletedCardData, cardDatabase, coverPokemon, setCoverPo
                             drawPDFArrows(data);
                             try {
                                 if (data.column.index === 1 && data.row.section === 'body') {
-                                    const spriteUrl = 'trainer-symbols/' + stripStadiumHalf(trainerTable[data.row.index][1]).replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
+                                    const spriteUrl = 'trainer-symbols/' + trainerTable[data.row.index][1].replaceAll(' ', '-').toLowerCase().replaceAll(/(\'|\.|:)/g, '') + '.png';
                                     const dim = data.cell.height - data.cell.padding('vertical');
                                     if (spriteUrl != null && spriteUrl.length > 0) {
                                         try {

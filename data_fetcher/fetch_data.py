@@ -892,7 +892,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             cropped.convert('RGBA').save(energy_symbol_path)
 
         if card["supertype"] == 'Trainer' and card['id'] == preferred_trainer_ids.get(card['name']):
-            trainer_symbol_file_name = re.sub(' ', '-', re.sub(r'\s*\[[←→]\]$', '', card['name'])).lower()
+            trainer_symbol_file_name = re.sub(' ', '-', card['name']).lower()
             trainer_symbol_file_name = re.sub(sprite_url_replacement_regex, '', trainer_symbol_file_name) + ".png"
             trainer_symbol_path = CLIENT_TRAINER_SYMBOLS_DIRECTORY + "/" + trainer_symbol_file_name
             img = Image.open(img_path)
