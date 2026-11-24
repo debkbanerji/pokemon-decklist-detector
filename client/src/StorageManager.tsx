@@ -2,6 +2,50 @@ import { db } from './db';
 import type { CardInfo, CardDatabase } from './DecklistSort';
 import { getDefaultBasicEnergyId } from './BasicEnergy';
 
+const STADIUM_NAMES = new Set(['Legendary Pyroduct', 'Legendary Summit', 'Legendary Trench']);
+
+export function stripStadiumHalf(name: string) {
+    return name.replace(/\s*\[[←→]\]$/, '').trim();
+}
+
+function isLegendaryStadium(name: string) {
+    return STADIUM_NAMES.has(stripStadiumHalf(name));
+}
+
+export function getLegendaryStadiumHalves(name: string, database: CardDatabase): CardInfo[] {
+    const base = stripStadiumHalf(name);
+    if (!STADIUM_NAMES.has(base)) return [];
+    const cards = Object.values(database);
+    const left = cards.find(card => card.name === `${base} [←]`);
+    const right = cards.find(card => card.name === `${base} [→]`);
+    return left && right ? [left, right] : [];
+}
+
+// Old lists merged both halves under one name. Normalize all input rows together
+// so rounding happens once per stadium, preserving the total number of cards.
+function splitLegendaryStadiumCounts<T extends { cardInfo: { name: string; count: number } }>(rows: T[], database: CardDatabase) {
+    const totals = new Map<string, number>();
+    rows.forEach(({ cardInfo }) => {
+        if (isLegendaryStadium(cardInfo.name)) {
+            const base = stripStadiumHalf(cardInfo.name);
+            totals.set(base, (totals.get(base) ?? 0) + cardInfo.count);
+        }
+    });
+    const emitted = new Set<string>();
+    return rows.flatMap(row => {
+        const base = stripStadiumHalf(row.cardInfo.name);
+        if (emitted.has(base)) return [];
+        const halves = getLegendaryStadiumHalves(base, database);
+        if (halves.length === 0) return [row];
+        emitted.add(base);
+        const total = totals.get(base)!;
+        return halves.map((card, index) => ({
+            ...row,
+            cardInfo: { ...card, count: index === 0 ? Math.ceil(total / 2) : Math.floor(total / 2) },
+        })).filter(({ cardInfo }) => cardInfo.count > 0);
+    });
+}
+
 const SERIALIZED_COUNT_SEPERATOR = '__';
 const SERIALIZED_ENTRY_SEPARATOR = '___';
 
@@ -93,7 +137,7 @@ function findPreferredCardPrinting(cards: CardInfo[], name: string, setCode?: st
 function deserializeDecklist(serializedDecklist, cardDatabase) {
     const allCards = Object.values(cardDatabase) as CardInfo[];
 
-    return serializedDecklist.split(SERIALIZED_ENTRY_SEPARATOR).map(entry => {
+    const rows = serializedDecklist.split(SERIALIZED_ENTRY_SEPARATOR).map(entry => {
         const pair = entry.split(SERIALIZED_COUNT_SEPERATOR);
         const savedId = pair[0];
         const count = Number(pair[1]);
@@ -104,6 +148,7 @@ function deserializeDecklist(serializedDecklist, cardDatabase) {
             : savedId;
         return { cardInfo: { id, count, name } };
     });
+    return splitLegendaryStadiumCounts(rows, cardDatabase);
 }
 
 function formatDeckTimestamp(timestamp) {
@@ -272,6 +317,12 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
         // remove ' PH' suffix if it exists - tcg live sometimes adds this for certain holo patterns
         row = row.replace(/ PH$/, '');
 
+        const stadiumName = row.replace(/ [A-Za-z0-9-]+ [A-Za-z0-9]+$/, '').trim();
+        if (isLegendaryStadium(stadiumName)) {
+            const stadium = getLegendaryStadiumHalves(stadiumName, cardDatabase)[0];
+            return stadium ? { cardInfo: { ...stadium, count } } : null;
+        }
+
         const setNumberMatch = row.match(/[a-zA-Z0-9]+$/);
         if (!setNumberMatch) {
             return null;
@@ -314,7 +365,7 @@ function parseFormattedDecklist(formattedDecklist, cardDatabase) {
             dedupedRows.push({ cardInfo: { ...cardInfo } });
         }
     });
-    return dedupedRows;
+    return splitLegendaryStadiumCounts(dedupedRows, cardDatabase);
 }
 
 export { seralizeDecklist, deserializeDecklist, formatDeckTimestamp, deleteDecklist, addDecklistToDB, getDecklists, getLatestPlayer, overWriteLatestPlayer, parseFormattedDecklist, getAutoCoverPokemonName };

@@ -892,7 +892,7 @@ def download_missing_card_images_and_sprites_for_df(cards_df):
             cropped.convert('RGBA').save(energy_symbol_path)
 
         if card["supertype"] == 'Trainer' and card['id'] == preferred_trainer_ids.get(card['name']):
-            trainer_symbol_file_name = re.sub(' ', '-', card['name']).lower()
+            trainer_symbol_file_name = re.sub(' ', '-', re.sub(r'\s*\[[←→]\]$', '', card['name'])).lower()
             trainer_symbol_file_name = re.sub(sprite_url_replacement_regex, '', trainer_symbol_file_name) + ".png"
             trainer_symbol_path = CLIENT_TRAINER_SYMBOLS_DIRECTORY + "/" + trainer_symbol_file_name
             img = Image.open(img_path)
@@ -936,6 +936,15 @@ if __name__ == '__main__':
     # cards_df = pd.read_csv('data/temp_cards.csv')
 
     cards_df = add_detection_keywords_to_df(cards_df)
+    legendary_stadium_names = {
+        'me6-94': 'Legendary Pyroduct [←]',
+        'me6-95': 'Legendary Pyroduct [→]',
+        'me6-96': 'Legendary Summit [←]',
+        'me6-97': 'Legendary Summit [→]',
+        'me6-98': 'Legendary Trench [←]',
+        'me6-99': 'Legendary Trench [→]',
+    }
+    cards_df['name'] = cards_df['id'].map(legendary_stadium_names).fillna(cards_df['name'])
     cards_df = add_card_similarity_columns_to_df(cards_df)
     
     # Drop intermediate mechanics fields before export; only the hash is used by the client.

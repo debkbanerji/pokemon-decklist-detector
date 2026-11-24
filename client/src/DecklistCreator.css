@@ -952,3 +952,27 @@ background: rgb(51, 170, 255);
         background-position-x: 0%
     }
 }
+
+.legendary-stadium-halves {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legendary-stadium-halves > div {
+    width: calc(50% - 2px);
+    min-width: 0;
+}
+
+.detected-card-in-feed.detected-legendary-stadium {
+    width: 80%;
+}
+
+.stadium-count-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.manual-count-card.manual-count-stadium {
+    width: min(95%, 26rem);
+}

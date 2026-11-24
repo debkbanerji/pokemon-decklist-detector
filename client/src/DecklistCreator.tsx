@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import './DecklistCreator.css';
 import CardImageForID from './CardImageForID.tsx';
 import ExportModal from './ExportModal.tsx';
-import { addDecklistToDB, seralizeDecklist } from './StorageManager';
+import { addDecklistToDB, seralizeDecklist, getLegendaryStadiumHalves, stripStadiumHalf } from './StorageManager';
 import Select, { components } from 'react-select';
 import { PaddleOcrService } from 'ppu-paddle-ocr/web';
 import * as ort from 'onnxruntime-web';
@@ -153,13 +153,19 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
 
     const [currentDetectedCardName, setCurrentDetectedCardName] = useState(null);
     const [currentDetectedCardID, setCurrentDetectedCardID] = useState(null);
+    const detectedStadiumHalves = getLegendaryStadiumHalves(cardDatabase[currentDetectedCardID]?.name ?? '', cardDatabase);
+    const isDetectedLegendaryStadium = detectedStadiumHalves.length === 2;
+    const detectedCardImages = isDetectedLegendaryStadium ?
+        <div className='legendary-stadium-halves'>
+            {detectedStadiumHalves.map(card => <CardImageForID key={card.id} id={card.id} cardDatabase={cardDatabase} />)}
+        </div> : <CardImageForID id={currentDetectedCardID} cardDatabase={cardDatabase} />;
     const currentDetectedSimilarCardIDs = ((cardDatabase[currentDetectedCardID] ?? {}).similar_looking_card_ids ?? []);
     const numSimilarCards = currentDetectedSimilarCardIDs.length;
 
     const isCurrentlyDetectedCardPokemon = currentDetectedCardID != null && cardDatabase[currentDetectedCardID]?.supertype === 'Pokémon';
     const currentDetectedCardIDCount = currentDetectedCardID != null ? cardInfoListNonNull.filter(
         cardInfo => isCurrentlyDetectedCardPokemon ?
-            cardInfo.id === currentDetectedCardID : cardInfo.name === currentDetectedCardName)
+            cardInfo.id === currentDetectedCardID : stripStadiumHalf(cardInfo.name) === currentDetectedCardName)
         .reduce((a, b) => a + b.count, 0) : 0;
 
     const [successfullyAddedCardText, setSuccessfullyAddedCardText] = useState(null);
@@ -445,7 +451,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                 // test against the latest scanned card
                 // if the latest scanned card is not a pokemon, and its name matches this one, don't scan again
                 // this protects against accident duplicate scans of trainer cards
-                if (latestCard == null || (latestCard.supertype === 'Pokémon' || latestCard.name !== validCardNames[0])) {
+                if (latestCard == null || (latestCard.supertype === 'Pokémon' || stripStadiumHalf(latestCard.name) !== validCardNames[0])) {
                     accept = () => setCardNameWrapped(validCardNames[0]);
                 }
             }
@@ -654,32 +660,30 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         setShowBasicEnergySelector(false); // clear this
         scrollToTop();
 
-        // if the card is a pokemon, match by id
-        // else, match by card name
-        const existingCardInfoIndex = cardInfoList.findIndex(existingCard =>
-            cardInfo?.supertype === 'Pokémon' ?
-                existingCard?.id === cardInfo.id
-                : existingCard?.name === cardInfo.name
-        );
-
-        if (existingCardInfoIndex < 0) { // add a new card
-            const augmentedCardInfo = {
-                count,
-                ...cardInfo,
-                originalIndex: cardInfoList.length, // track this for easier deletions
-            };
-            setCardInfoList(cardInfoList.concat([augmentedCardInfo]));
-        } else {
-            setCardInfoList(cardInfoList.map((info, index) => {
-                if (index === existingCardInfoIndex) {
-                    info.count = info.count + count;
+        setCardInfoList(cardInfoList => {
+            const nextCardInfoList = [...cardInfoList];
+            (isDetectedLegendaryStadium ? detectedStadiumHalves : [cardInfo]).forEach(cardInfo => {
+                // if the card is a pokemon, match by id
+                // else, match by card name
+                const existingCardInfoIndex = nextCardInfoList.findIndex(existingCard =>
+                    cardInfo?.supertype === 'Pokémon' ?
+                        existingCard?.id === cardInfo.id
+                        : existingCard?.name === cardInfo.name
+                );
+                if (existingCardInfoIndex < 0) {
+                    nextCardInfoList.push({ count, ...cardInfo, originalIndex: nextCardInfoList.length });
+                } else {
+                    const info = nextCardInfoList[existingCardInfoIndex];
+                    nextCardInfoList[existingCardInfoIndex] = { ...info, count: info.count + count };
                 }
-                return info;
-            }))
-        }
+            });
+            return nextCardInfoList;
+        });
         setCurrentDetectedCardID(null);
         setCurrentDetectedCardName(null);
-        if (cardInfo.supertype === 'Pokémon') {
+        if (isDetectedLegendaryStadium) {
+            setSuccessfullyAddedCardText(`Added ${count}x each half of ${cardInfo.name_without_prefix_and_postfix}`);
+        } else if (cardInfo.supertype === 'Pokémon') {
             setSuccessfullyAddedCardText(`Added ${count}x ${cardInfo.name} ${cardInfo.set_code} ${cardInfo.number}`);
         } else {
             setSuccessfullyAddedCardText(`Added ${count}x ${cardInfo.name}`);
@@ -739,7 +743,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
     }
 
     const countButtons = currentDetectedCardID != null ? Array.from(Array(
-        BASIC_ENERGY_NAMES.includes(currentDetectedCardName) ? 30 : 4
+        isDetectedLegendaryStadium ? 2 : BASIC_ENERGY_NAMES.includes(currentDetectedCardName) ? 30 : 4
     ).keys()).map(countMinusOne => countMinusOne + 1) : [];
 
     return <div>
@@ -835,7 +839,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         </div>
                     </div> : null
             }
-            {currentDetectedCardID != null ? <div className='detected-card-in-feed filter-blur'>
+            {currentDetectedCardID != null ? <div className={`detected-card-in-feed filter-blur${isDetectedLegendaryStadium ? ' detected-legendary-stadium' : ''}`}>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                     {cardDatabase[currentDetectedCardID].supertype === 'Pokémon' ?
                         <>
@@ -843,7 +847,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                             {cardDatabase[currentDetectedCardID].number}
                         </> : null}
                     <br />
-                    <CardImageForID id={currentDetectedCardID} cardDatabase={cardDatabase} />
+                    {detectedCardImages}
                 </motion.div>
             </div> : null
             }
@@ -854,13 +858,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                     <div style={{ marginTop: 2 }}>{currentDetectedCardIDCount === 0 ? 'How many?' : `${currentDetectedCardIDCount} already scanned`}</div>
                 </div>
                 <div className={BASIC_ENERGY_NAMES.includes(currentDetectedCardName)
-                    ? 'card-count-selector-buttons-energy' : 'card-count-selector-buttons-4'}>
+                    ? 'card-count-selector-buttons-energy' : isDetectedLegendaryStadium ? 'stadium-count-buttons' : 'card-count-selector-buttons-4'}>
                     {
                         countButtons.map(count => {
                             const onClick = () => {
                                 addCard(cardDatabase[currentDetectedCardID], count);
                             }
-                            return <button key={count} onClick={onClick}>{currentDetectedCardIDCount > 0 ? '+' : ''}{count}</button>
+                            return <button key={count} onClick={onClick}>{isDetectedLegendaryStadium ? `Add ${count}x each half` : `${currentDetectedCardIDCount > 0 ? '+' : ''}${count}`}</button>
                         })
                     }
                 </div>
@@ -876,13 +880,13 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
         </motion.div> : null}
 
         {!isScannerActive && currentDetectedCardID != null ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='manual-count-selector'>
-            <div className='manual-count-card'>
+            <div className={`manual-count-card${isDetectedLegendaryStadium ? ' manual-count-stadium' : ''}`}>
                 {cardDatabase[currentDetectedCardID].supertype === 'Pokémon' ?
                     <div className='manual-count-set-info'>
                         {cardDatabase[currentDetectedCardID].set_code}&nbsp;
                         {cardDatabase[currentDetectedCardID].number}
                     </div> : null}
-                <CardImageForID id={currentDetectedCardID} cardDatabase={cardDatabase} />
+                {detectedCardImages}
             </div>
             <div className='manual-count-controls'>
                 <div className='manual-count-instructions'>
@@ -895,7 +899,7 @@ function DecklistCreator({ cardDatabase, startingDecklist, startingDeckName, sta
                         const onClick = () => {
                             addCard(cardDatabase[currentDetectedCardID], count);
                         }
-                        return <button key={count} onClick={onClick}>{currentDetectedCardIDCount > 0 ? '+' : ''}{count}</button>
+                        return <button key={count} onClick={onClick}>{isDetectedLegendaryStadium ? `Add ${count}x each half` : `${currentDetectedCardIDCount > 0 ? '+' : ''}${count}`}</button>
                     })}
                 </div>
             </div>
